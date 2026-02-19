@@ -1,0 +1,142 @@
+<section class="page">
+  <header class="top">
+    <div class="brand">ZERO</div>
+    <div class="title">
+      <div class="kicker">Account</div>
+      <h1>Edit Profile</h1>
+    </div>
+    <a class="btn" routerLink="/dashboard">Back</a>
+  </header>
+
+  <main class="content">
+    <form [formGroup]="form" (ngSubmit)="save()" class="edit-form">
+      <div class="form-group">
+        <label for="full_name">Full Name</label>
+        <input
+          id="full_name"
+          type="text"
+          formControlName="full_name"
+          placeholder="Your name"
+          class="input-field"
+          [class.error]="form.get('full_name')?.invalid && form.get('full_name')?.touched"
+        />
+        <small *ngIf="form.get('full_name')?.errors?.['required'] && form.get('full_name')?.touched" class="error-text">
+          Name is required
+        </small>
+        <small *ngIf="form.get('full_name')?.errors?.['minlength'] && form.get('full_name')?.touched" class="error-text">
+          Minimum 2 characters
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="weekly_goal">Weekly Goal (sessions)</label>
+        <input
+          id="weekly_goal"
+          type="number"
+          formControlName="weekly_goal"
+          placeholder="1-14"
+          min="1"
+          max="14"
+          class="input-field"
+          [class.error]="form.get('weekly_goal')?.invalid && form.get('weekly_goal')?.touched"
+        />
+        <small *ngIf="form.get('weekly_goal')?.errors?.['required'] && form.get('weekly_goal')?.touched" class="error-text">
+          Weekly goal is required
+        </small>
+      </div>
+
+      <div class="measurements-grid">
+        <div class="form-group">
+          <label for="weight">Weight (kg)</label>
+          <input
+            id="weight"
+            type="number"
+            formControlName="weight"
+            placeholder="e.g., 75"
+            min="30"
+            max="300"
+            step="0.1"
+            class="input-field"
+            [class.error]="form.get('weight')?.invalid && form.get('weight')?.touched"
+          />
+          <small *ngIf="form.get('weight')?.errors?.['required'] && form.get('weight')?.touched" class="error-text">
+            Weight is required
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="height">Height (cm)</label>
+          <input
+            id="height"
+            type="number"
+            formControlName="height"
+            placeholder="e.g., 175"
+            min="100"
+            max="250"
+            step="1"
+            class="input-field"
+            [class.error]="form.get('height')?.invalid && form.get('height')?.touched"
+          />
+          <small *ngIf="form.get('height')?.errors?.['required'] && form.get('height')?.touched" class="error-text">
+            Height is required
+          </small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="fitness_goal">Fitness Goal</label>
+        <select
+          id="fitness_goal"
+          formControlName="fitness_goal"
+          class="input-field"
+          [class.error]="form.get('fitness_goal')?.invalid && form.get('fitness_goal')?.touched"
+        >
+          <option value="bulk">Muscle Gain (Bulk)</option>
+          <option value="cut">Definition (Cut)</option>
+          <option value="maintain">Maintain</option>
+        </select>
+        <small *ngIf="form.get('fitness_goal')?.errors?.['required'] && form.get('fitness_goal')?.touched" class="error-text">
+          Fitness goal is required
+        </small>
+      </div>
+
+      <fieldset class="interests-section">
+        <legend>What are you interested in?</legend>
+        <div class="interest-checks">
+          <label class="check-label">
+            <input type="checkbox" formControlName="sport" />
+            <span>Sport</span>
+          </label>
+          <label class="check-label">
+            <input type="checkbox" formControlName="food" />
+            <span>Food</span>
+          </label>
+          <label class="check-label">
+            <input type="checkbox" formControlName="mindset" />
+            <span>Mindset</span>
+          </label>
+          <label class="check-label">
+            <input type="checkbox" formControlName="growth" />
+            <span>Growth</span>
+          </label>
+          <label class="check-label">
+            <input type="checkbox" formControlName="challenges" />
+            <span>Challenges</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div
+        class="message-box"
+        *ngIf="msg()"
+        [class.error]="msg().includes('No se pudo') || msg().includes('Could not') || msg().includes('Error')"
+      >
+        {{ msg() }}
+      </div>
+
+      <button type="submit" class="submit-btn" [disabled]="loading() || form.invalid">
+        {{ loading() ? 'Saving...' : 'Save Changes' }}
+      </button>
+    </form>
+  </main>
+</section>

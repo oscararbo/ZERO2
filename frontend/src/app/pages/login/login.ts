@@ -1,9 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, Validators, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { CommonModule } from '@angular/common';
-
 
 @Component({
   selector: 'app-login',
@@ -11,18 +10,17 @@ import { CommonModule } from '@angular/common';
   imports: [ReactiveFormsModule, RouterLink, CommonModule],
   templateUrl: './login.html',
   styleUrl: './login.scss',
-
 })
 export class LoginComponent {
-  msg = '';
-  loading = false;
+  private fb = inject(FormBuilder);
+  private auth = inject(AuthService);
+  private router = inject(Router);
+
+  msg = signal('');
+  loading = signal(false);
   form: FormGroup;
 
-  constructor(
-    private fb: FormBuilder,
-    private auth: AuthService,
-    private router: Router
-  ) {
+  constructor() {
     this.form = this.fb.group({
       username: ['', [Validators.required]],
       password: ['', [Validators.required]],
@@ -34,22 +32,28 @@ export class LoginComponent {
   }
 
   submit() {
-    this.msg = '';
+    this.msg.set('');
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.msg = 'Completa usuario y contraseña.';
+      this.msg.set('Completa usuario y contraseña.');
       return;
     }
 
-    this.loading = true;
-    this.auth.login(this.form.getRawValue() as any).subscribe({
-      next: () => {
-        this.loading = false;
+    this.loading.set(true);
+    const dto = this.form.getRawValue();
+
+    this.auth.login(dto).subscribe({
+      next: (res) => {
+        this.loading.set(false);
+        const token = res?.access || res?.token;
+        if (token) {
+          this.auth.setToken(token, dto.username);
+        }
         this.router.navigateByUrl('/dashboard');
       },
       error: () => {
-        this.loading = false;
-        this.msg = 'Credenciales incorrectas.';
+        this.loading.set(false);
+        this.msg.set('Credenciales incorrectas.');
       },
     });
   }

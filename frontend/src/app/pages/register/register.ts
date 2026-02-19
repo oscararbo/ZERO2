@@ -1,8 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { finalize, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../core/auth.service';
 
 @Component({
@@ -17,8 +16,8 @@ export class RegisterComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
 
-  msg = '';
-  loading = false;
+  msg = signal('');
+  loading = signal(false);
 
   form = this.fb.nonNullable.group({
     username: ['', [Validators.required, Validators.minLength(3)]],
@@ -29,27 +28,40 @@ export class RegisterComponent {
   get f() { return this.form.controls; }
 
   submit() {
-    this.msg = '';
+    this.msg.set('');
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.msg = 'Revisa los campos.';
+      this.msg.set('Revisa los campos.');
       return;
     }
 
-    this.loading = true;
+    this.loading.set(true);
     const dto = this.form.getRawValue();
 
-    this.auth.register(dto).pipe(
-      switchMap(() => this.auth.login({ username: dto.username, password: dto.password })),
-      finalize(() => this.loading = false)
-    ).subscribe({
-      next: () => this.router.navigateByUrl('/register-step2'),
+    this.auth.register(dto).subscribe({
+      next: () => {
+        this.auth.login({ username: dto.username, password: dto.password }).subscribe({
+          next: (res) => {
+            this.loading.set(false);
+            const token = res?.access || res?.token;
+            if (token) {
+              this.auth.setToken(token, dto.username);
+            }
+            this.router.navigateByUrl('/register-step2');
+          },
+          error: () => {
+            this.loading.set(false);
+            this.msg.set('Error al iniciar sesión.');
+          }
+        });
+      },
       error: (err) => {
+        this.loading.set(false);
         const data = err?.error;
-        if (data?.username) this.msg = data.username[0];
-        else if (data?.email) this.msg = data.email[0];
-        else if (data?.password) this.msg = data.password[0];
-        else this.msg = 'No se pudo crear la cuenta.';
+        if (data?.username) this.msg.set(data.username[0]);
+        else if (data?.email) this.msg.set(data.email[0]);
+        else if (data?.password) this.msg.set(data.password[0]);
+        else this.msg.set('No se pudo crear la cuenta.');
       }
     });
   }

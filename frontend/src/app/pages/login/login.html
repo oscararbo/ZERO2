@@ -14,11 +14,11 @@
       <small *ngIf="f['password'].touched && f['password'].invalid">Obligatorio</small>
 
 
-      <button class="btn" type="submit" [disabled]="loading">
-        {{ loading ? 'Loading...' : 'Enter' }}
+      <button class="btn" type="submit" [disabled]="loading()">
+        {{ loading() ? 'Loading...' : 'Enter' }}
       </button>
 
-      <p class="msg" *ngIf="msg">{{ msg }}</p>
+      <p class="msg" *ngIf="msg()">{{ msg() }}</p>
     </form>
 
     <p class="bottom">

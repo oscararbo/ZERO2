@@ -6,6 +6,7 @@ import { LoginComponent } from './pages/login/login';
 import { RegisterComponent } from './pages/register/register';
 import { RegisterStep2Component } from './pages/register-step2/register-step2';
 import { DashboardComponent } from './pages/dashboard/dashboard';
+import { ProfileEditComponent } from './pages/profile-edit/profile-edit';
 
 import { SportComponent } from './pages/focus/sport/sport';
 import { FoodComponent } from './pages/focus/food/food';
@@ -21,6 +22,8 @@ export const routes: Routes = [
   { path: 'register-step2', component: RegisterStep2Component, canActivate: [authGuard] },
 
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
+  { path: 'profile/edit', component: ProfileEditComponent, canActivate: [authGuard] },
+
 
   { path: 'sport', component: SportComponent, canActivate: [authGuard] },
   { path: 'food', component: FoodComponent, canActivate: [authGuard] },

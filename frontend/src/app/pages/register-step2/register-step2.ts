@@ -1,9 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
-import { ProfileService, ProfileDTO, UnitSystem } from '../../core/profile.service';
+import { ProfileService, ProfileDTO, FitnessGoal } from '../../core/profile.service';
 
 @Component({
   selector: 'app-register-step2',
@@ -18,8 +18,8 @@ export class RegisterStep2Component {
   private auth = inject(AuthService);
   private profiles = inject(ProfileService);
 
-  msg = '';
-  loading = false;
+  msg = signal('');
+  loading = signal(false);
 
   interestsList = [
     { key: 'sport', label: 'Sport' },
@@ -32,7 +32,9 @@ export class RegisterStep2Component {
   form = this.fb.nonNullable.group({
     fullName: ['', [Validators.required, Validators.minLength(2)]],
     weeklyGoal: [4, [Validators.required, Validators.min(1), Validators.max(14)]],
-    unitSystem: ['metric' as UnitSystem, [Validators.required]],
+    fitnessGoal: ['bulk' as FitnessGoal, [Validators.required]],
+    weight: [0, [Validators.required, Validators.min(30), Validators.max(300)]],
+    height: [0, [Validators.required, Validators.min(100), Validators.max(250)]],
     interests: this.fb.nonNullable.group({
       sport: [true],
       food: [false],
@@ -54,7 +56,9 @@ export class RegisterStep2Component {
       this.form.patchValue({
         fullName: local.full_name ?? '',
         weeklyGoal: local.weekly_goal ?? 4,
-        unitSystem: (local.unit_system ?? 'metric') as UnitSystem,
+        fitnessGoal: (local.fitness_goal ?? 'bulk') as FitnessGoal,
+        weight: local.weight ?? 0,
+        height: local.height ?? 0,
         interests: {
           sport: !!local.sport,
           food: !!local.food,
@@ -72,7 +76,9 @@ export class RegisterStep2Component {
     return {
       full_name: v.fullName,
       weekly_goal: v.weeklyGoal,
-      unit_system: v.unitSystem,
+      fitness_goal: v.fitnessGoal,
+      weight: v.weight,
+      height: v.height,
       sport: v.interests.sport,
       food: v.interests.food,
       mindset: v.interests.mindset,
@@ -82,25 +88,25 @@ export class RegisterStep2Component {
   }
 
   submit() {
-    this.msg = '';
+    this.msg.set('');
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.msg = 'Completa los campos.';
+      this.msg.set('Completa los campos.');
       return;
     }
 
-    this.loading = true;
+    this.loading.set(true);
     const dto = this.buildDto();
 
     this.profiles.setLocal(dto);
 
     this.profiles.saveProfile(dto).subscribe({
       next: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.router.navigateByUrl('/dashboard');
       },
       error: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.router.navigateByUrl('/dashboard');
       },
     });

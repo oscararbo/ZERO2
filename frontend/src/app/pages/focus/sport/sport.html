@@ -9,18 +9,90 @@
   </header>
 
   <main class="content">
-    <div class="card">
-      <h2>Training</h2>
-      <p>Log workouts, track sessions and stay consistent.</p>
+    <div class="controls-bar">
+      
+      <div class="location-toggle">
+        <button 
+          class="toggle-btn" 
+          [class.active]="currentLocation() === 'home'"
+          (click)="setLocation('home')">
+          Home
+        </button>
+        <button 
+          class="toggle-btn" 
+          [class.active]="currentLocation() === 'gym'"
+          (click)="setLocation('gym')">
+          Gym
+        </button>
+      </div>
+
+      <div class="category-carousel">
+        <button 
+          *ngFor="let cat of categories"
+          class="category-btn"
+          [class.active]="selectedCategory() === cat.key"
+          (click)="selectCategory(cat.key)">
+          {{ cat.label }}
+        </button>
+      </div>
     </div>
 
-    <div class="card">
-      <h2>Today</h2>
-      <ul>
-        <li>Warm-up 10 min</li>
-        <li>Main session 30–60 min</li>
-        <li>Stretch 5 min</li>
-      </ul>
+    <div class="loading" *ngIf="loading()">
+      <p>Loading exercises...</p>
+    </div>
+
+    <div class="exercises-container" *ngIf="!loading() && filteredExercises.length > 0">
+      <article class="exercise-card" *ngFor="let exercise of filteredExercises">
+        <div class="exercise-header">
+          <h3>{{ exercise.name }}</h3>
+          <div class="exercise-meta">
+            {{ exercise.default_sets }} sets × {{ exercise.default_reps }} reps
+          </div>
+        </div>
+
+        <p class="exercise-desc" *ngIf="exercise.description">{{ exercise.description }}</p>
+
+        <div class="exercise-controls">
+          <div class="input-group">
+            <label>Sets</label>
+            <input 
+              type="number" 
+              [ngModel]="getExerciseState(exercise.id).sets"
+              (ngModelChange)="updateExerciseState(exercise.id, 'sets', $event)"
+              min="0"
+              max="10">
+          </div>
+
+          <div class="input-group">
+            <label>Reps</label>
+            <input 
+              type="number" 
+              [ngModel]="getExerciseState(exercise.id).reps"
+              (ngModelChange)="updateExerciseState(exercise.id, 'reps', $event)"
+              min="0"
+              max="50">
+          </div>
+
+          <div class="checkbox-group">
+            <input 
+              type="checkbox"
+              [id]="'exercise-' + exercise.id"
+              [ngModel]="getExerciseState(exercise.id).completed"
+              (ngModelChange)="updateExerciseState(exercise.id, 'completed', $event)">
+            <label [for]="'exercise-' + exercise.id">Done</label>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && filteredExercises.length === 0">
+      <p>No exercises found for this selection</p>
+    </div>
+
+    <div class="action-bar" *ngIf="!loading() && filteredExercises.length > 0">
+      <button class="save-btn" (click)="saveSession()" [disabled]="!hasCompletedExercises()">
+        Save Workout
+      </button>
     </div>
   </main>
 </section>

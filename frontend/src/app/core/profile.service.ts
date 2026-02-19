@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environments';
-import { tap } from 'rxjs/operators';
 
-export type UnitSystem = 'metric' | 'imperial';
+export type FitnessGoal = 'bulk' | 'cut' | 'maintain';
 
 export type ProfileDTO = {
   full_name: string;
   weekly_goal: number;
-  unit_system: UnitSystem;
+  fitness_goal: FitnessGoal;
+  weight: number;
+  height: number;
   sport: boolean;
   food: boolean;
   mindset: boolean;
@@ -25,7 +26,11 @@ export class ProfileService {
   getLocal(): ProfileDTO | null {
     const raw = localStorage.getItem(this.key);
     if (!raw) return null;
-    try { return JSON.parse(raw) as ProfileDTO; } catch { return null; }
+    try {
+      return JSON.parse(raw) as ProfileDTO;
+    } catch {
+      return null;
+    }
   }
 
   setLocal(p: ProfileDTO) {
@@ -33,14 +38,10 @@ export class ProfileService {
   }
 
   getProfile() {
-    return this.http.get<ProfileDTO>(`${environment.apiUrl}/api/accounts/profile/`).pipe(
-      tap(p => this.setLocal(p))
-    );
+    return this.http.get<ProfileDTO>(`${environment.apiUrl}/api/accounts/profile/`);
   }
 
   saveProfile(p: ProfileDTO) {
-    return this.http.post<ProfileDTO>(`${environment.apiUrl}/api/accounts/profile/`, p).pipe(
-      tap(saved => this.setLocal(saved))
-    );
+    return this.http.put<ProfileDTO>(`${environment.apiUrl}/api/accounts/profile/`, p);
   }
 }

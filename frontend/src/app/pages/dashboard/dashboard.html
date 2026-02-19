@@ -1,51 +1,57 @@
 <section class="dash">
-  <header class="dash__top">
-    <div class="dash__brand">ZERO</div>
+  <header class="top">
+    <div class="brand">ZERO</div>
 
-    <div class="dash__title">
-      <h1 class="dash__h1">Welcome back, {{ name }}</h1>
-      <p class="dash__sub">Stay consistent. Let the results talk.</p>
+    <div class="title">
+      <div class="kicker"></div>
+      <h1>Welcome back, <span class="name">{{ name() }}</span></h1>
+      <p class="sub">Stay consistent. Let the results talk.</p>
     </div>
 
-    <div class="dash__actions">
-      <a class="btn btn--ghost" routerLink="/profile">Profile</a>
+    <div class="menu">
+      <button class="menu-btn" type="button" (click)="toggleMenu()">
+        Account
+      </button>
+
+      <div class="menu-panel" *ngIf="menuOpen()">
+        <button class="menu-item" type="button" (click)="goProfile()">Edit profile</button>
+        <button class="menu-item danger" type="button" (click)="logout()">Logout</button>
+      </div>
     </div>
   </header>
 
-  <main class="dash__grid">
-    <article class="card card--kpi">
-      <div class="card__label">Weekly Goal</div>
-      <div class="kpi">
-        <div class="kpi__value">{{ weeklyGoal }}</div>
-        <div class="kpi__meta">days per week</div>
-      </div>
-    </article>
+  <main class="content">
+    <p class="msg" *ngIf="loadingProfile()">Loading your profile...</p>
 
-    <article class="card card--focus">
-      <div class="card__label">Your Focus</div>
-      <div class="focus">
-        <a
-          class="chip"
-          *ngFor="let f of focus"
-          [routerLink]="f.link"
-        >
-          {{ f.label }}
-        </a>
-      </div>
-    </article>
+    <div class="grid" *ngIf="!loadingProfile()">
+      <article class="card kpi">
+        <div class="card-title">Weekly Goal</div>
+        <div class="kpi-num">{{ weeklyGoal() }}</div>
+        <div class="kpi-sub">days per week</div>
+      </article>
 
-    <article class="card card--today">
-      <div class="card__label">Today</div>
-      <ul class="today">
-        <li>Train 30–60 min (even if you don’t feel like it)</li>
-        <li>Log one meal and drink water</li>
-        <li>Write one sentence: “What do I improve today?”</li>
-      </ul>
-    </article>
+      <article class="card focus">
+        <div class="card-title">Your Focus</div>
+        <div class="chips">
+          <a class="chip" *ngFor="let f of focus()" [routerLink]="f.link">{{ f.label }}</a>
+        </div>
+      </article>
 
-    <article class="card card--chart">
-      <div class="card__label">Progress</div>
-      <app-progress-chart></app-progress-chart>
-    </article>
+      <article class="card today">
+        <div class="card-title">Today</div>
+        <ul class="list">
+          <li>Train 30–60 min (even if you don’t feel like it)</li>
+          <li>Log one meal and drink water</li>
+          <li>Write one sentence: “What do I improve today?”</li>
+        </ul>
+      </article>
+
+      <article class="card chart">
+        <div class="card-title">Progress</div>
+        <div class="chart-box">
+          <canvas #progressCanvas></canvas>
+        </div>
+      </article>
+    </div>
   </main>
 </section>

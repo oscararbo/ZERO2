@@ -22,10 +22,10 @@
         <small class="error" *ngIf="f.password.touched && f.password.invalid">Min 6 characters</small>
       </label>
 
-      <small class="msg" *ngIf="msg">{{ msg }}</small>
+      <small class="msg" *ngIf="msg()">{{ msg() }}</small>
 
-      <button class="btn" type="submit" [disabled]="loading">
-        {{ loading ? 'Creating...' : 'Continue' }}
+      <button class="btn" type="submit" [disabled]="loading()">
+        {{ loading() ? 'Creating...' : 'Continue' }}
       </button>
 
       <p class="bottom">

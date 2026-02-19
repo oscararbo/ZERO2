@@ -9,18 +9,135 @@
   </header>
 
   <main class="content">
-    <div class="card">
-      <h2>Nutrition</h2>
-      <p>Track meals, habits and energy with simple logs.</p>
+    <div class="controls-bar">
+      <div class="meal-type-toggle">
+        <button 
+          class="toggle-btn" 
+          [class.active]="selectedMealView() === 'all'"
+          (click)="selectedMealView.set('all')">
+          All
+        </button>
+        <button 
+          class="toggle-btn" 
+          [class.active]="selectedMealView() === 'breakfast'"
+          (click)="selectedMealView.set('breakfast')">
+          Breakfast
+        </button>
+        <button 
+          class="toggle-btn" 
+          [class.active]="selectedMealView() === 'lunch'"
+          (click)="selectedMealView.set('lunch')">
+          Lunch
+        </button>
+        <button 
+          class="toggle-btn" 
+          [class.active]="selectedMealView() === 'dinner'"
+          (click)="selectedMealView.set('dinner')">
+          Dinner
+        </button>
+        <button 
+          class="toggle-btn" 
+          [class.active]="selectedMealView() === 'snack'"
+          (click)="selectedMealView.set('snack')">
+          Snack
+        </button>
+      </div>
     </div>
 
-    <div class="card">
-      <h2>Quick actions</h2>
-      <ul>
-        <li>Log breakfast</li>
-        <li>Drink water</li>
-        <li>Hit protein goal</li>
-      </ul>
+    <div class="meals-container">
+      <article class="meal-card" *ngFor="let meal of getFilteredMeals()">
+        <div class="meal-header">
+          <h3>{{ meal.recipe.title }}</h3>
+          <div class="meal-time">{{ meal.time }}</div>
+        </div>
+
+
+        <div class="meal-stats">
+          <div class="stat-item">
+            <span class="stat-label">Calories</span>
+            <span class="stat-value">{{ meal.recipe.nutritionPerServing.calories | number: '1.0-0' }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Protein</span>
+            <span class="stat-value">{{ meal.recipe.nutritionPerServing.protein | number: '1.0-1' }}g</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Carbs</span>
+            <span class="stat-value">{{ meal.recipe.nutritionPerServing.carbs | number: '1.0-1' }}g</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Fat</span>
+            <span class="stat-value">{{ meal.recipe.nutritionPerServing.fat | number: '1.0-1' }}g</span>
+          </div>
+        </div>
+
+        <div class="meal-macro-bar">
+          <div class="macro-bar-inner">
+            <div
+              class="macro-segment protein"
+              [style.width.%]="
+                (meal.recipe.nutritionPerServing.protein * 4) /
+                  (meal.recipe.nutritionPerServing.calories || 1) * 100
+              "
+            ></div>
+            <div
+              class="macro-segment carbs"
+              [style.width.%]="
+                (meal.recipe.nutritionPerServing.carbs * 4) /
+                  (meal.recipe.nutritionPerServing.calories || 1) * 100
+              "
+            ></div>
+            <div
+              class="macro-segment fat"
+              [style.width.%]="
+                (meal.recipe.nutritionPerServing.fat * 9) /
+                  (meal.recipe.nutritionPerServing.calories || 1) * 100
+              "
+            ></div>
+          </div>
+        </div>
+
+        <div class="recipe-section">
+          <h4>Ingredients</h4>
+          <ul class="ingredients-list">
+            <li *ngFor="let ing of meal.recipe.ingredients">
+              <span class="amount">{{ ing.amount | number: '1.0-2' }} {{ ing.unit }}</span>
+              <span class="name">{{ ing.name }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="recipe-section">
+          <h4>Instructions</h4>
+          <p class="instructions-text">{{ meal.recipe.instructions }}</p>
+        </div>
+
+        <div class="servings-info">
+          <small>Servings: {{ meal.recipe.servings }}</small>
+        </div>
+      </article>
+    </div>
+
+    <div class="daily-total-card">
+      <h3>Daily Total</h3>
+      <div class="daily-stats">
+        <div class="stat-item">
+          <span class="stat-label">Calories</span>
+          <span class="stat-value">{{ getTotalDailyNutrition().calories | number: '1.0-0' }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Protein</span>
+          <span class="stat-value">{{ getTotalDailyNutrition().protein | number: '1.0-1' }}g</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Carbs</span>
+          <span class="stat-value">{{ getTotalDailyNutrition().carbs | number: '1.0-1' }}g</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Fat</span>
+          <span class="stat-value">{{ getTotalDailyNutrition().fat | number: '1.0-1' }}g</span>
+        </div>
+      </div>
     </div>
   </main>
 </section>

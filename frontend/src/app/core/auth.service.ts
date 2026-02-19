@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environments';
 
 type LoginDTO = { username: string; password: string };
@@ -20,7 +19,11 @@ export class AuthService {
   get currentUsername(): string | null {
     const raw = localStorage.getItem(this.userKey);
     if (!raw) return null;
-    try { return JSON.parse(raw)?.username ?? null; } catch { return null; }
+    try {
+      return JSON.parse(raw)?.username ?? null;
+    } catch {
+      return null;
+    }
   }
 
   isLogged(): boolean {
@@ -32,13 +35,12 @@ export class AuthService {
   }
 
   login(dto: LoginDTO) {
-    return this.http.post<any>(`${environment.apiUrl}/api/accounts/login/`, dto).pipe(
-      tap(res => {
-        const token = res?.access || res?.token;
-        if (token) localStorage.setItem(this.tokenKey, token);
-        localStorage.setItem(this.userKey, JSON.stringify({ username: dto.username }));
-      })
-    );
+    return this.http.post<any>(`${environment.apiUrl}/api/accounts/login/`, dto);
+  }
+
+  setToken(token: string, username: string) {
+    localStorage.setItem(this.tokenKey, token);
+    localStorage.setItem(this.userKey, JSON.stringify({ username }));
   }
 
   logout() {
