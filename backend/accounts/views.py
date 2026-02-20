@@ -21,18 +21,15 @@ class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        print(f"Register request data: {request.data}")
-        print(f"Register request content-type: {request.META.get('CONTENT_TYPE')}")
-        
         username = request.data.get('username', '').strip()
         email = request.data.get('email', '').strip()
         password = request.data.get('password', '').strip()
 
         if not username or not password:
-            return Response({'detail': 'Username y password son obligatorios.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'El usuario y la contraseña son requeridos.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if User.objects.filter(username=username).exists():
-            return Response({'detail': 'Ese usuario ya existe.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'El usuario ya existe.'}, status=status.HTTP_400_BAD_REQUEST)
 
         user = User.objects.create_user(username=username, email=email, password=password)
         Profile.objects.create(user=user, full_name=username)
@@ -49,7 +46,7 @@ class LoginView(APIView):
 
         user = authenticate(username=username, password=password)
         if not user:
-            return Response({'detail': 'Credenciales incorrectas.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'detail': 'Usuario o contraseña inválidos.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         refresh = RefreshToken.for_user(user)
         return Response(
@@ -122,7 +119,7 @@ class ExerciseSessionView(APIView):
         exercises = request.data.get('exercises', [])
 
         if not location:
-            return Response({'detail': 'Location es obligatorio.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'La ubicación (location) es requerida.'}, status=status.HTTP_400_BAD_REQUEST)
 
         today = timezone.now().date()
         session, created = ExerciseSession.objects.get_or_create(
@@ -167,7 +164,7 @@ class ExerciseSessionDetailView(APIView):
             serializer = ExerciseSessionDetailSerializer(session)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except ExerciseSession.DoesNotExist:
-            return Response({'detail': 'Sesión no encontrada.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'La sesión no fue encontrada.'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class CompletedExerciseView(APIView):
@@ -199,7 +196,7 @@ class CompletedExerciseView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
         except (ExerciseSession.DoesNotExist, Exercise.DoesNotExist):
-            return Response({'detail': 'Sesión o ejercicio no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'La sesión o el ejercicio no fueron encontrados.'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class MainMenuExerciseView(APIView):

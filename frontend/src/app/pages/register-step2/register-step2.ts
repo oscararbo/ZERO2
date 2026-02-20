@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
-import { ProfileService, ProfileDTO, FitnessGoal } from '../../core/profile.service';
+import { ProfileService, Profile, FitnessGoal } from '../../core/profile.service';
 
 @Component({
   selector: 'app-register-step2',
@@ -70,7 +70,7 @@ export class RegisterStep2Component {
     }
   }
 
-  private buildDto(): ProfileDTO {
+  private buildDto(): Profile {
     const v = this.form.getRawValue();
 
     return {

@@ -11,36 +11,36 @@
   <main class="content">
     <form [formGroup]="form" (ngSubmit)="save()" class="edit-form" *ngIf="!loadingProfile()">
       <div class="form-group">
-        <label for="full_name">Full Name</label>
+        <label for="fullName">Full Name</label>
         <input 
-          id="full_name"
+          id="fullName"
           type="text" 
-          formControlName="full_name" 
+          formControlName="fullName" 
           placeholder="Your name"
           class="input-field"
-          [class.error]="form.get('full_name')?.invalid && form.get('full_name')?.touched"
+          [class.error]="form.get('fullName')?.invalid && form.get('fullName')?.touched"
         />
-        <small *ngIf="form.get('full_name')?.errors?.['required'] && form.get('full_name')?.touched" class="error-text">
+        <small *ngIf="form.get('fullName')?.errors?.['required'] && form.get('fullName')?.touched" class="error-text">
           Name is required
         </small>
-        <small *ngIf="form.get('full_name')?.errors?.['minlength'] && form.get('full_name')?.touched" class="error-text">
+        <small *ngIf="form.get('fullName')?.errors?.['minlength'] && form.get('fullName')?.touched" class="error-text">
           Minimum 2 characters
         </small>
       </div>
 
       <div class="form-group">
-        <label for="weekly_goal">Weekly Goal (sessions)</label>
+        <label for="weeklyGoal">Weekly Goal (sessions)</label>
         <input 
-          id="weekly_goal"
+          id="weeklyGoal"
           type="number" 
-          formControlName="weekly_goal" 
+          formControlName="weeklyGoal" 
           placeholder="1-14"
           min="1"
           max="14"
           class="input-field"
-          [class.error]="form.get('weekly_goal')?.invalid && form.get('weekly_goal')?.touched"
+          [class.error]="form.get('weeklyGoal')?.invalid && form.get('weeklyGoal')?.touched"
         />
-        <small *ngIf="form.get('weekly_goal')?.errors?.['required'] && form.get('weekly_goal')?.touched" class="error-text">
+        <small *ngIf="form.get('weeklyGoal')?.errors?.['required'] && form.get('weeklyGoal')?.touched" class="error-text">
           Weekly goal is required
         </small>
       </div>
@@ -84,25 +84,25 @@
       </div>
 
       <div class="form-group">
-        <label for="fitness_goal">Fitness Goal</label>
+        <label for="fitnessGoal">Fitness Goal</label>
         <select 
-          id="fitness_goal"
-          formControlName="fitness_goal"
+          id="fitnessGoal"
+          formControlName="fitnessGoal"
           class="input-field"
-          [class.error]="form.get('fitness_goal')?.invalid && form.get('fitness_goal')?.touched"
+          [class.error]="form.get('fitnessGoal')?.invalid && form.get('fitnessGoal')?.touched"
         >
           <option value="bulk">Muscle Gain (Bulk)</option>
           <option value="cut">Definition (Cut)</option>
           <option value="maintain">Maintain</option>
         </select>
-        <small *ngIf="form.get('fitness_goal')?.errors?.['required'] && form.get('fitness_goal')?.touched" class="error-text">
+        <small *ngIf="form.get('fitnessGoal')?.errors?.['required'] && form.get('fitnessGoal')?.touched" class="error-text">
           Fitness goal is required
         </small>
       </div>
 
       <fieldset class="interests-section">
         <legend>What are you interested in?</legend>
-        <div class="interest-checks">
+        <div class="interest-checks" formGroupName="interests">
           <label class="check-label">
             <input type="checkbox" formControlName="sport" />
             <span>Sport</span>

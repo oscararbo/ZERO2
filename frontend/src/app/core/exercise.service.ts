@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../environments/environments';
 
 export type Exercise = {
@@ -42,28 +42,39 @@ export class ExerciseService {
   constructor(private http: HttpClient) {}
 
   getExercisesByLocation(location: 'home' | 'gym', goal?: 'bulk' | 'cut' | 'maintain') {
-    let url = `${environment.apiUrl}/api/accounts/exercises-by-location/${location}/`;
+    let params = new HttpParams();
     if (goal) {
-      url += `?goal=${goal}`;
+      params = params.set('goal', goal);
     }
-    return this.http.get<ExercisesByCategory>(url);
+    return this.http.get<ExercisesByCategory>(
+      `${environment.apiUrl}/api/accounts/exercises-by-location/${location}/`,
+      { params }
+    );
   }
 
   getExercises(location?: string, category?: string) {
-    let url = `${environment.apiUrl}/api/accounts/exercises/`;
-    const params = new URLSearchParams();
-    if (location) params.append('location', location);
-    if (category) params.append('category', category);
-    if (params.toString()) url += `?${params.toString()}`;
-    return this.http.get<Exercise[]>(url);
+    let params = new HttpParams();
+    if (location) {
+      params = params.set('location', location);
+    }
+    if (category) {
+      params = params.set('category', category);
+    }
+    return this.http.get<Exercise[]>(
+      `${environment.apiUrl}/api/accounts/exercises/`,
+      { params }
+    );
   }
 
   getSessions(location?: string) {
-    let url = `${environment.apiUrl}/api/accounts/sessions/`;
-    const params = new URLSearchParams();
-    if (location) params.append('location', location);
-    if (params.toString()) url += `?${params.toString()}`;
-    return this.http.get<ExerciseSession[]>(url);
+    let params = new HttpParams();
+    if (location) {
+      params = params.set('location', location);
+    }
+    return this.http.get<ExerciseSession[]>(
+      `${environment.apiUrl}/api/accounts/sessions/`,
+      { params }
+    );
   }
 
   getSession(sessionId: number) {

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Chart } from 'chart.js/auto';
 import { AuthService } from '../../core/auth.service';
-import { ProfileService, ProfileDTO } from '../../core/profile.service';
+import { ProfileService, Profile } from '../../core/profile.service';
 import { ExerciseService } from '../../core/exercise.service';
 
 @Component({
@@ -72,7 +72,7 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
     this.router.navigateByUrl('/login');
   }
 
-  private applyProfile(p: ProfileDTO) {
+  private applyProfile(p: Profile) {
     this.name.set(p.full_name || 'User');
     this.weeklyGoal.set(p.weekly_goal || 3);
 

@@ -3,14 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
-export interface NutritionInfo {
+export type NutritionInfo = {
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
-}
+};
 
-export interface Recipe {
+export type Recipe = {
   id: number;
   title: string;
   image: string;
@@ -18,19 +18,19 @@ export interface Recipe {
   instructions: string;
   servings: number;
   nutritionPerServing: NutritionInfo;
-}
+};
 
-export interface MealPlan {
+export type MealPlan = {
   date: string;
   meals: { name: string; time: string; nutrition: NutritionInfo }[];
-}
+};
 
-export interface MealRecommendation {
+export type MealRecommendation = {
   name: string;
   time: string;
   type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   recipe: Recipe;
-}
+};
 
 const MOCK_RECIPES: { [key: string]: Recipe } = {
   'grilled chicken breast': {

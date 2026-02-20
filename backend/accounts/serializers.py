@@ -1,7 +1,12 @@
 from rest_framework import serializers
 from .models import Profile, Exercise, ExerciseSession, CompletedExercise
 
+
 class ProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Profile model.
+    Converts between Profile model instances and JSON representation.
+    """
     class Meta:
         model = Profile
         fields = (
@@ -19,6 +24,10 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class ExerciseSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Exercise model.
+    Provides complete exercise information including default intensity settings.
+    """
     class Meta:
         model = Exercise
         fields = (
@@ -34,6 +43,10 @@ class ExerciseSerializer(serializers.ModelSerializer):
 
 
 class CompletedExerciseSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the CompletedExercise model.
+    Includes exercise name and ID for frontend convenience.
+    """
     exercise_name = serializers.CharField(source='exercise.name', read_only=True)
     exercise_id = serializers.IntegerField(source='exercise.id', read_only=True)
 
@@ -50,6 +63,10 @@ class CompletedExerciseSerializer(serializers.ModelSerializer):
 
 
 class ExerciseSessionSerializer(serializers.ModelSerializer):
+    """
+    Serializer for ExerciseSession with nested completed exercises (read-only).
+    Used for list views and summary responses.
+    """
     exercises = CompletedExerciseSerializer(many=True, read_only=True)
 
     class Meta:
@@ -64,6 +81,10 @@ class ExerciseSessionSerializer(serializers.ModelSerializer):
 
 
 class ExerciseSessionDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer for ExerciseSession with writable nested completed exercises.
+    Used for creating and updating exercise sessions with their completed exercises.
+    """
     exercises = CompletedExerciseSerializer(many=True)
 
     class Meta:

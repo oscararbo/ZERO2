@@ -7,8 +7,8 @@ type RegisterDTO = { username: string; email: string; password: string };
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private tokenKey = 'zero_token';
-  private userKey = 'zero_user';
+  private readonly tokenKey = 'zero_auth_token';
+  private readonly userKey = 'zero_auth_user';
 
   constructor(private http: HttpClient) {}
 
