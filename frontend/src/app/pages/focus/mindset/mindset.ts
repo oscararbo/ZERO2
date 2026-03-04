@@ -17,7 +17,7 @@ export class MindsetComponent implements OnInit {
   private authService = inject(AuthService);
 
   dailyQuote = signal<string>('');
-  meditationTime = signal<number>(5); // minutes
+  meditationTime = signal<number>(5); 
   isMeditating = signal<boolean>(false);
   timeLeft = signal<number>(0);
   journalEntry = signal<string>('');
