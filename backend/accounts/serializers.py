@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Profile, Exercise, ExerciseSession, CompletedExercise
+from .models import Profile, Exercise, ExerciseSession, CompletedExercise, JournalEntry
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -96,3 +96,19 @@ class ExerciseSessionDetailSerializer(serializers.ModelSerializer):
             'completed_exercises',
             'exercises',
         )
+
+
+class JournalEntrySerializer(serializers.ModelSerializer):
+    """
+    Serializer for the JournalEntry model.
+    Handles journal entries for user mindset tracking.
+    """
+    class Meta:
+        model = JournalEntry
+        fields = (
+            'id',
+            'content',
+            'created_at',
+            'updated_at',
+        )
+        read_only_fields = ('id', 'created_at', 'updated_at')

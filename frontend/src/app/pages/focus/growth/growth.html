@@ -9,18 +9,70 @@
   </header>
 
   <main class="content">
-    <div class="card">
-      <h2>Progress</h2>
-      <p>Small steps, tracked weekly.</p>
+    <div class="card quote-card">
+      <h2>Daily Growth Quote</h2>
+      <blockquote>{{ dailyQuote() }}</blockquote>
+      <button class="btn-secondary" (click)="setRandomQuote()">New Quote</button>
     </div>
 
-    <div class="card">
-      <h2>Weekly</h2>
-      <ul>
-        <li>Review wins</li>
-        <li>Pick one improvement</li>
-        <li>Set one target</li>
+    <div class="card goals-card">
+      <h2>Growth Goals</h2>
+      <div class="goal-input">
+        <input
+          type="text"
+          [(ngModel)]="newGoal"
+          (keyup.enter)="addGoal()"
+          placeholder="Enter a new growth goal..."
+        />
+        <button class="btn-primary" (click)="addGoal()">Add Goal</button>
+      </div>
+      <ul class="goals-list">
+        <li *ngFor="let goal of goals()" class="goal-item" [class.completed]="goal.completed">
+          <input
+            type="checkbox"
+            [checked]="goal.completed"
+            (change)="toggleGoal(goal.id)"
+          />
+          <span>{{ goal.title }}</span>
+          <button class="remove-btn" (click)="removeGoal(goal.id)">×</button>
+        </li>
       </ul>
+    </div>
+
+    <div class="card journal-card">
+      <h2>Growth Journal</h2>
+      <div class="journal-input">
+        <textarea
+          [(ngModel)]="journalEntry"
+          placeholder="Reflect on your growth today..."
+          rows="4"
+        ></textarea>
+        <button class="btn-primary" (click)="addJournalEntry()">Save Entry</button>
+      </div>
+      <div class="journal-entries">
+        <div *ngFor="let entry of journalEntries(); let i = index" class="journal-entry">
+          <p>{{ entry }}</p>
+          <small>Entry #{{ i + 1 }}</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="card progress-card">
+      <h2>Weekly Progress</h2>
+      <div class="progress-stats">
+        <div class="stat">
+          <span class="number">{{ totalGoalsCount }}</span>
+          <span class="label">Total Goals</span>
+        </div>
+        <div class="stat">
+          <span class="number">{{ completedGoalsCount }}</span>
+          <span class="label">Completed</span>
+        </div>
+        <div class="stat">
+          <span class="number">{{ journalEntriesCount }}</span>
+          <span class="label">Journal Entries</span>
+        </div>
+      </div>
     </div>
   </main>
 </section>

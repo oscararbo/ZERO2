@@ -10,16 +10,68 @@
 
   <main class="content">
     <div class="card">
-      <h2>Clarity</h2>
-      <p>Simple prompts to keep your mind sharp.</p>
+      <h2>Daily Inspiration</h2>
+      <blockquote class="quote">{{ dailyQuote() }}</blockquote>
+      <button class="btn-secondary" (click)="setRandomQuote()">New Quote</button>
     </div>
 
     <div class="card">
-      <h2>Today</h2>
+      <h2>Meditation</h2>
+      <p>Take a moment to center yourself.</p>
+      <div class="meditation-controls">
+        <label>Duration (minutes):</label>
+        <input type="number" [(ngModel)]="meditationTime" min="1" max="60" class="time-input">
+        <button class="btn-primary" (click)="startMeditation()" [disabled]="isMeditating()">
+          {{ isMeditating() ? 'Meditating...' : 'Start Meditation' }}
+        </button>
+        <button class="btn-secondary" (click)="stopMeditation()" [disabled]="!isMeditating()">Stop</button>
+      </div>
+      <div class="timer" *ngIf="isMeditating()">
+        <div class="time-display">{{ formatTime(timeLeft()) }}</div>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="(timeLeft() / (meditationTime() * 60)) * 100"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Journal</h2>
+      <p>Reflect on your thoughts and progress.</p>
+      <div *ngIf="!isAuthenticated" class="auth-message">
+        <p>Please <a routerLink="/login">log in</a> to save and view your journal entries.</p>
+      </div>
+      <div *ngIf="isAuthenticated">
+        <textarea
+          [(ngModel)]="journalEntry"
+          placeholder="Write your thoughts here..."
+          rows="4"
+          class="journal-textarea"></textarea>
+        <button class="btn-primary" (click)="saveJournalEntry()" [disabled]="!journalEntry().trim() || isSaving()">
+          {{ isSaving() ? 'Saving...' : 'Save Entry' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="card" *ngIf="journalEntries().length > 0">
+      <h2>Previous Entries</h2>
+      <div class="journal-history" *ngIf="!isLoading(); else loadingTemplate">
+        <article class="journal-item" *ngFor="let entry of journalEntries()">
+          <div class="journal-date">{{ formatDate(entry.created_at) }}</div>
+          <div class="journal-content">{{ entry.content }}</div>
+        </article>
+      </div>
+      <ng-template #loadingTemplate>
+        <div class="loading">Loading journal entries...</div>
+      </ng-template>
+    </div>
+
+    <div class="card">
+      <h2>Mindfulness Tips</h2>
       <ul>
-        <li>Write one sentence</li>
-        <li>Plan your next action</li>
-        <li>Remove one distraction</li>
+        <li>Practice deep breathing: Inhale for 4 counts, hold for 4, exhale for 4</li>
+        <li>Set daily intentions in the morning</li>
+        <li>Take regular breaks to stretch and clear your mind</li>
+        <li>Focus on gratitude - note 3 things you're thankful for daily</li>
       </ul>
     </div>
   </main>

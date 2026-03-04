@@ -9,6 +9,8 @@ from .views import (
     CompletedExerciseView,
     MainMenuExerciseView,
     ProgressStatsView,
+    JournalEntryView,
+    JournalEntryDetailView,
 )
 
 urlpatterns = [
@@ -22,4 +24,7 @@ urlpatterns = [
     path('completed/', CompletedExerciseView.as_view()),
     path('exercises-by-location/<str:location>/', MainMenuExerciseView.as_view()),
     path('progress/', ProgressStatsView.as_view()),
+    
+    path('journal/', JournalEntryView.as_view()),
+    path('journal/<int:entry_id>/', JournalEntryDetailView.as_view()),
 ]

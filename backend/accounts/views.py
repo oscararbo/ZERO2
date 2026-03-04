@@ -7,13 +7,14 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
 
-from .models import Profile, Exercise, ExerciseSession, CompletedExercise
+from .models import Profile, Exercise, ExerciseSession, CompletedExercise, JournalEntry
 from .serializers import (
     ProfileSerializer,
     ExerciseSerializer,
     ExerciseSessionSerializer,
     ExerciseSessionDetailSerializer,
     CompletedExerciseSerializer,
+    JournalEntrySerializer,
 )
 
 
@@ -261,3 +262,62 @@ class ProgressStatsView(APIView):
             'labels': dates,
             'values': counts
         }, status=status.HTTP_200_OK)
+
+
+class JournalEntryView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        """Get all journal entries for the authenticated user."""
+        entries = JournalEntry.objects.filter(user=request.user)
+        serializer = JournalEntrySerializer(entries, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        """Create a new journal entry for the authenticated user."""
+        serializer = JournalEntrySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class JournalEntryDetailView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self, entry_id, user):
+        """Get journal entry by ID for the authenticated user."""
+        try:
+            return JournalEntry.objects.get(id=entry_id, user=user)
+        except JournalEntry.DoesNotExist:
+            return None
+
+    def get(self, request, entry_id):
+        """Get a specific journal entry."""
+        entry = self.get_object(entry_id, request.user)
+        if not entry:
+            return Response({'detail': 'Journal entry not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = JournalEntrySerializer(entry)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, entry_id):
+        """Update a specific journal entry."""
+        entry = self.get_object(entry_id, request.user)
+        if not entry:
+            return Response({'detail': 'Journal entry not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = JournalEntrySerializer(entry, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, entry_id):
+        """Delete a specific journal entry."""
+        entry = self.get_object(entry_id, request.user)
+        if not entry:
+            return Response({'detail': 'Journal entry not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        entry.delete()
+        return Response({'detail': 'Journal entry deleted.'}, status=status.HTTP_204_NO_CONTENT)
