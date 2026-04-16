@@ -17,7 +17,7 @@ Una aplicación full-stack para seguimiento de fitness, nutrición y bienestar m
 ## Tecnologías
 
 - **Backend**: Django 4.x, Django REST Framework, SimpleJWT
-- **Frontend**: Angular 17+, TypeScript, SCSS
+- **Frontend**: Angular 21+, TypeScript, SCSS
 - **Base de datos**: SQLite
 
 ## Instalación y Configuración
@@ -157,6 +157,21 @@ Frontend:
 cd frontend
 npm run lint
 ```
+
+### Notas de compatibilidad TypeScript 6+
+
+Para evitar errores deprecados reportados por TypeScript en dependencias (por ejemplo `rxjs`) sin romper el build de Angular, se aplicaron estos ajustes:
+
+- En `.vscode/settings.json`:
+   - `"typescript.tsdk": "frontend/node_modules/typescript/lib"`
+   - `"typescript.enablePromptUseWorkspaceTsdk": false`
+- En `frontend/tsconfig.spec.json`:
+   - `"compilerOptions.rootDir": "./src"`
+
+Con esto se corrigen los diagnósticos de editor de TS 6 en `node_modules/rxjs/tsconfig.json` y se mantiene compatibilidad de compilación con el TypeScript del proyecto (`5.9.x`).
+
+También se elimina el aviso de:
+
 
 ## Despliegue
 

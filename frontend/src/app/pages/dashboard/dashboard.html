@@ -1,4 +1,4 @@
-<section class="dash">
+﻿<section class="dash">
   <header class="top">
     <div class="brand">ZERO</div>
 
@@ -24,10 +24,22 @@
     <p class="msg" *ngIf="loadingProfile()">Loading your profile...</p>
 
     <div class="grid" *ngIf="!loadingProfile()">
+
       <article class="card kpi">
-        <div class="card-title">Weekly Goal</div>
-        <div class="kpi-num">{{ weeklyGoal() }}</div>
-        <div class="kpi-sub">days per week</div>
+        <div class="card-title">Weekly Sessions</div>
+        <div class="kpi-num">{{ sessionsThisWeek() }}<span class="kpi-of">/ {{ weeklyGoal() }}</span></div>
+        <div class="kpi-sub">this week</div>
+        <div class="week-bar">
+          <div class="week-fill" [style.width.%]="weeklyProgress()"></div>
+        </div>
+        <div class="kpi-pct">{{ weeklyProgress() }}%</div>
+      </article>
+
+      <article class="card kpi kpi-alt">
+        <div class="card-title">Exercises Done</div>
+        <div class="kpi-num">{{ totalExercisesThisWeek() }}</div>
+        <div class="kpi-sub">this week</div>
+        <div class="card-sub-label">Goal: {{ goalLabel() }}</div>
       </article>
 
       <article class="card focus">
@@ -40,16 +52,16 @@
       <article class="card today">
         <div class="card-title">Today</div>
         <ul class="list">
-          <li>Train 30–60 min (even if you don’t feel like it)</li>
+          <li>Train 30-60 min (even if you don't feel like it)</li>
           <li>Log one meal and drink water</li>
-          <li>Write one sentence: “What do I improve today?”</li>
+          <li>Write one sentence: "What do I improve today?"</li>
         </ul>
       </article>
 
-      <article class="card chart">
-        <div class="card-title">Progress</div>
+      <article class="card chart" #chartSection>
+        <div class="card-title">Weekly Progress</div>
         <div class="chart-box">
-          <canvas #progressCanvas></canvas>
+          <canvas #progressCanvas id="progressCanvas"></canvas>
         </div>
       </article>
     </div>

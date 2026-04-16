@@ -38,7 +38,7 @@
       <div class="group" formGroupName="interests">
         <p class="group__title">Choose your focus</p>
 
-        <label class="check" *ngFor="let i of interestsList">
+        <label class="check" *ngFor="let i of interestsList; trackBy: trackByInterestKey">
           <input type="checkbox" [formControlName]="i.key" />
           <span>{{ i.label }}</span>
         </label>

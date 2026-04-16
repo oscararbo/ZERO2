@@ -1,7 +1,10 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { MindsetService, JournalEntry } from '../../../core/mindset.service';
+import { AuthService } from '../../../core/auth.service';
+import { AppToastComponent } from '../../shared/components/toast/toast.component';
+import { FocusHeaderComponent } from '../../shared/components/focus-header/focus-header.component';
 
 interface GrowthGoal {
   id: number;
@@ -13,16 +16,27 @@ interface GrowthGoal {
 @Component({
   selector: 'app-growth',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AppToastComponent, FocusHeaderComponent],
   templateUrl: './growth.html',
   styleUrls: ['./growth.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GrowthComponent implements OnInit {
+  private mindsetService = inject(MindsetService);
+  private authService = inject(AuthService);
+
   dailyQuote = signal<string>('');
   newGoal = signal<string>('');
   goals = signal<GrowthGoal[]>([]);
   journalEntry = signal<string>('');
-  journalEntries = signal<string[]>([]);
+  journalEntries = signal<JournalEntry[]>([]);
+  loadingJournal = signal(false);
+  savingJournal = signal(false);
+  toast = signal('');
+
+  readonly completedGoalsCount = computed(() => this.goals().filter((g) => g.completed).length);
+  readonly totalGoalsCount = computed(() => this.goals().length);
+  readonly journalEntriesCount = computed(() => this.journalEntries().length);
 
   quotes = [
     "Growth is the only evidence of life. - John Henry Newman",
@@ -48,15 +62,34 @@ export class GrowthComponent implements OnInit {
   }
 
   loadJournalEntries(): void {
-    const saved = localStorage.getItem('growthJournal');
-    if (saved) {
-      this.journalEntries.set(JSON.parse(saved));
+    if (!this.authService.isLogged()) {
+      return;
     }
+
+    this.loadingJournal.set(true);
+    this.mindsetService.getJournalEntries().subscribe({
+      next: (entries) => {
+        this.journalEntries.set(entries);
+        this.loadingJournal.set(false);
+      },
+      error: () => {
+        this.loadingJournal.set(false);
+        this.showToast('Unable to load journal entries.');
+      }
+    });
   }
 
   setRandomQuote(): void {
     const randomIndex = Math.floor(Math.random() * this.quotes.length);
     this.dailyQuote.set(this.quotes[randomIndex]);
+  }
+
+  setNewGoal(value: string): void {
+    this.newGoal.set(value);
+  }
+
+  setJournalEntry(value: string): void {
+    this.journalEntry.set(value);
   }
 
   addGoal(): void {
@@ -70,6 +103,7 @@ export class GrowthComponent implements OnInit {
       this.goals.update(g => [...g, goal]);
       this.newGoal.set('');
       this.saveGoals();
+      this.showToast('Goal added.');
     }
   }
 
@@ -85,6 +119,7 @@ export class GrowthComponent implements OnInit {
   removeGoal(id: number): void {
     this.goals.update(g => g.filter(goal => goal.id !== id));
     this.saveGoals();
+    this.showToast('Goal removed.');
   }
 
   saveGoals(): void {
@@ -92,26 +127,41 @@ export class GrowthComponent implements OnInit {
   }
 
   addJournalEntry(): void {
-    if (this.journalEntry().trim()) {
-      this.journalEntries.update(e => [...e, this.journalEntry().trim()]);
-      this.journalEntry.set('');
-      this.saveJournalEntries();
+    if (!this.journalEntry().trim()) return;
+    if (!this.authService.isLogged()) {
+      this.showToast('Log in to save your journal.');
+      return;
     }
+
+    this.savingJournal.set(true);
+    this.mindsetService.createJournalEntry(this.journalEntry().trim()).subscribe({
+      next: (entry) => {
+        this.journalEntries.update(e => [entry, ...e]);
+        this.journalEntry.set('');
+        this.savingJournal.set(false);
+        this.showToast('Entry saved.');
+      },
+      error: () => {
+        this.savingJournal.set(false);
+        this.showToast('Unable to save entry.');
+      }
+    });
   }
 
-  saveJournalEntries(): void {
-    localStorage.setItem('growthJournal', JSON.stringify(this.journalEntries()));
+  trackByGoalId(_index: number, goal: GrowthGoal): number {
+    return goal.id;
   }
 
-  get completedGoalsCount(): number {
-    return this.goals().filter(g => g.completed).length;
+  trackByEntryId(_index: number, entry: JournalEntry): number {
+    return entry.id;
   }
 
-  get totalGoalsCount(): number {
-    return this.goals().length;
-  }
-
-  get journalEntriesCount(): number {
-    return this.journalEntries().length;
+  private showToast(message: string): void {
+    this.toast.set(message);
+    window.setTimeout(() => {
+      if (this.toast() === message) {
+        this.toast.set('');
+      }
+    }, 2400);
   }
 }

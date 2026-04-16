@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Chart from 'chart.js/auto';
 import { ProgressService } from "../../../core/progress.service";
@@ -17,7 +17,8 @@ import { ProgressService } from "../../../core/progress.service";
       padding: 12px;
     }
     canvas { width: 100% !important; height: 100% !important; }
-  `]
+  `],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProgressChartComponent implements AfterViewInit {
   @ViewChild('c') c!: ElementRef<HTMLCanvasElement>;

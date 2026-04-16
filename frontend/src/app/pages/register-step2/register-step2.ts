@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,6 +11,7 @@ import { ProfileService, Profile, FitnessGoal } from '../../core/profile.service
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './register-step2.html',
   styleUrls: ['./register-step2.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegisterStep2Component {
   private fb = inject(FormBuilder);
@@ -21,13 +22,17 @@ export class RegisterStep2Component {
   msg = signal('');
   loading = signal(false);
 
-  interestsList = [
+  readonly interestsList = [
     { key: 'sport', label: 'Sport' },
     { key: 'food', label: 'Food' },
     { key: 'mindset', label: 'Mindset' },
     { key: 'growth', label: 'Growth' },
     { key: 'challenges', label: 'Challenges' },
   ] as const;
+
+  trackByInterestKey(_index: number, interest: (typeof this.interestsList)[number]): string {
+    return interest.key;
+  }
 
   form = this.fb.nonNullable.group({
     fullName: ['', [Validators.required, Validators.minLength(2)]],

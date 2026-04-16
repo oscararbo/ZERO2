@@ -1,12 +1,6 @@
 <section class="page">
-  <header class="top">
-    <div class="brand">ZERO</div>
-    <div class="title">
-      <div class="kicker">Focus</div>
-      <h1>Growth</h1>
-    </div>
-    <a class="btn" routerLink="/dashboard">Back</a>
-  </header>
+  <app-toast *ngIf="toast()" [message]="toast()" position="top-right"></app-toast>
+  <app-focus-header title="Growth"></app-focus-header>
 
   <main class="content">
     <div class="card quote-card">
@@ -20,14 +14,15 @@
       <div class="goal-input">
         <input
           type="text"
-          [(ngModel)]="newGoal"
+          [ngModel]="newGoal()"
+          (ngModelChange)="setNewGoal($event)"
           (keyup.enter)="addGoal()"
           placeholder="Enter a new growth goal..."
         />
         <button class="btn-primary" (click)="addGoal()">Add Goal</button>
       </div>
       <ul class="goals-list">
-        <li *ngFor="let goal of goals()" class="goal-item" [class.completed]="goal.completed">
+        <li *ngFor="let goal of goals(); trackBy: trackByGoalId" class="goal-item" [class.completed]="goal.completed">
           <input
             type="checkbox"
             [checked]="goal.completed"
@@ -43,16 +38,22 @@
       <h2>Growth Journal</h2>
       <div class="journal-input">
         <textarea
-          [(ngModel)]="journalEntry"
+          [ngModel]="journalEntry()"
+          (ngModelChange)="setJournalEntry($event)"
           placeholder="Reflect on your growth today..."
           rows="4"
         ></textarea>
-        <button class="btn-primary" (click)="addJournalEntry()">Save Entry</button>
+        <button class="btn-primary" (click)="addJournalEntry()" [disabled]="savingJournal() || !journalEntry().trim()">
+          {{ savingJournal() ? 'Saving...' : 'Save Entry' }}
+        </button>
       </div>
       <div class="journal-entries">
-        <div *ngFor="let entry of journalEntries(); let i = index" class="journal-entry">
-          <p>{{ entry }}</p>
-          <small>Entry #{{ i + 1 }}</small>
+        <div *ngIf="loadingJournal()" class="journal-entry">
+          <p>Loading entries...</p>
+        </div>
+        <div *ngFor="let entry of journalEntries(); let i = index; trackBy: trackByEntryId" class="journal-entry">
+          <p>{{ entry.content }}</p>
+          <small>{{ entry.created_at | date:'mediumDate' }} · Entry #{{ i + 1 }}</small>
         </div>
       </div>
     </div>
@@ -61,15 +62,15 @@
       <h2>Weekly Progress</h2>
       <div class="progress-stats">
         <div class="stat">
-          <span class="number">{{ totalGoalsCount }}</span>
+          <span class="number">{{ totalGoalsCount() }}</span>
           <span class="label">Total Goals</span>
         </div>
         <div class="stat">
-          <span class="number">{{ completedGoalsCount }}</span>
+          <span class="number">{{ completedGoalsCount() }}</span>
           <span class="label">Completed</span>
         </div>
         <div class="stat">
-          <span class="number">{{ journalEntriesCount }}</span>
+          <span class="number">{{ journalEntriesCount() }}</span>
           <span class="label">Journal Entries</span>
         </div>
       </div>

@@ -1,25 +1,19 @@
 <section class="page">
-  <header class="top">
-    <div class="brand">ZERO</div>
-    <div class="title">
-      <div class="kicker">Focus</div>
-      <h1>Sport</h1>
-    </div>
-    <a class="btn" routerLink="/dashboard">Back</a>
-  </header>
+  <app-toast *ngIf="toast()" [message]="toast()" position="top-right"></app-toast>
+  <app-focus-header title="Sport"></app-focus-header>
 
   <main class="content">
     <div class="controls-bar">
-      
+
       <div class="location-toggle">
-        <button 
-          class="toggle-btn" 
+        <button
+          class="toggle-btn"
           [class.active]="currentLocation() === 'home'"
           (click)="setLocation('home')">
           Home
         </button>
-        <button 
-          class="toggle-btn" 
+        <button
+          class="toggle-btn"
           [class.active]="currentLocation() === 'gym'"
           (click)="setLocation('gym')">
           Gym
@@ -27,7 +21,7 @@
       </div>
 
       <div class="category-carousel">
-        <button 
+        <button
           *ngFor="let cat of categories"
           class="category-btn"
           [class.active]="selectedCategory() === cat.key"
@@ -41,8 +35,9 @@
       <p>Loading exercises...</p>
     </div>
 
-    <div class="exercises-container" *ngIf="!loading() && filteredExercises.length > 0">
-      <article class="exercise-card" *ngFor="let exercise of filteredExercises">
+    <div class="exercises-container" *ngIf="!loading() && exerciseRows().length > 0">
+      <article class="exercise-card" *ngFor="let row of exerciseRows(); trackBy: trackByExerciseId">
+        <ng-container *ngIf="row.exercise as exercise">
         <div class="exercise-header">
           <h3>{{ exercise.name }}</h3>
           <div class="exercise-meta">
@@ -55,9 +50,9 @@
         <div class="exercise-controls">
           <div class="input-group">
             <label>Sets</label>
-            <input 
-              type="number" 
-              [ngModel]="getExerciseState(exercise.id).sets"
+            <input
+              type="number"
+              [ngModel]="row.state.sets"
               (ngModelChange)="updateExerciseState(exercise.id, 'sets', $event)"
               min="0"
               max="10">
@@ -65,31 +60,32 @@
 
           <div class="input-group">
             <label>Reps</label>
-            <input 
-              type="number" 
-              [ngModel]="getExerciseState(exercise.id).reps"
+            <input
+              type="number"
+              [ngModel]="row.state.reps"
               (ngModelChange)="updateExerciseState(exercise.id, 'reps', $event)"
               min="0"
               max="50">
           </div>
 
           <div class="checkbox-group">
-            <input 
+            <input
               type="checkbox"
               [id]="'exercise-' + exercise.id"
-              [ngModel]="getExerciseState(exercise.id).completed"
+              [ngModel]="row.state.completed"
               (ngModelChange)="updateExerciseState(exercise.id, 'completed', $event)">
             <label [for]="'exercise-' + exercise.id">Done</label>
           </div>
         </div>
+        </ng-container>
       </article>
     </div>
 
-    <div class="empty-state" *ngIf="!loading && filteredExercises.length === 0">
+    <div class="empty-state" *ngIf="!loading() && exerciseRows().length === 0">
       <p>No exercises found for this selection</p>
     </div>
 
-    <div class="action-bar" *ngIf="!loading() && filteredExercises.length > 0">
+    <div class="action-bar" *ngIf="!loading() && exerciseRows().length > 0">
       <button class="save-btn" (click)="saveSession()" [disabled]="!hasCompletedExercises()">
         Save Workout
       </button>

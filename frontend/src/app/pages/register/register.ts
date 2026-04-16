@@ -1,8 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-register',
@@ -10,6 +11,7 @@ import { AuthService } from '../../core/auth.service';
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './register.html',
   styleUrls: ['./register.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegisterComponent {
   private fb = inject(FormBuilder);
@@ -38,22 +40,16 @@ export class RegisterComponent {
     this.loading.set(true);
     const dto = this.form.getRawValue();
 
-    this.auth.register(dto).subscribe({
-      next: () => {
-        this.auth.login({ username: dto.username, password: dto.password }).subscribe({
-          next: (res) => {
-            this.loading.set(false);
-            const token = res?.access || res?.token;
-            if (token) {
-              this.auth.setToken(token, dto.username);
-            }
-            this.router.navigateByUrl('/register-step2');
-          },
-          error: () => {
-            this.loading.set(false);
-            this.msg.set('Error al iniciar sesión.');
-          }
-        });
+    this.auth.register(dto).pipe(
+      switchMap(() => this.auth.login({ username: dto.username, password: dto.password }))
+    ).subscribe({
+      next: (res) => {
+        this.loading.set(false);
+        const token = res?.access || res?.token;
+        if (token) {
+          this.auth.setToken(token, dto.username);
+        }
+        this.router.navigateByUrl('/register-step2');
       },
       error: (err) => {
         this.loading.set(false);
@@ -61,6 +57,7 @@ export class RegisterComponent {
         if (data?.username) this.msg.set(data.username[0]);
         else if (data?.email) this.msg.set(data.email[0]);
         else if (data?.password) this.msg.set(data.password[0]);
+        else if (typeof data?.detail === 'string') this.msg.set(data.detail);
         else this.msg.set('No se pudo crear la cuenta.');
       }
     });
