@@ -77,6 +77,27 @@ h1 {
   flex-wrap: wrap;
 }
 
+.refresh-btn {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.loading-state,
+.error-state,
+.empty-state {
+  margin-bottom: 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,.03);
+  font-size: 13px;
+}
+
+.error-state {
+  border-color: rgba(255,120,120,.4);
+}
+
 .meal-type-toggle {
   display: flex;
   gap: 0;

@@ -1,12 +1,6 @@
 <section class="page">
-  <header class="top">
-    <div class="brand">ZERO</div>
-    <div class="title">
-      <div class="kicker">Focus</div>
-      <h1>Mindset</h1>
-    </div>
-    <a class="btn" routerLink="/dashboard">Back</a>
-  </header>
+  <app-toast *ngIf="toast()" [message]="toast()" position="top-right"></app-toast>
+  <app-focus-header title="Mindset"></app-focus-header>
 
   <main class="content">
     <div class="card">
@@ -20,16 +14,22 @@
       <p>Take a moment to center yourself.</p>
       <div class="meditation-controls">
         <label>Duration (minutes):</label>
-        <input type="number" [(ngModel)]="meditationTime" min="1" max="60" class="time-input">
+        <input
+          type="number"
+          [ngModel]="meditationTime()"
+          (ngModelChange)="setMeditationTime($event)"
+          min="1"
+          max="60"
+          class="time-input">
         <button class="btn-primary" (click)="startMeditation()" [disabled]="isMeditating()">
           {{ isMeditating() ? 'Meditating...' : 'Start Meditation' }}
         </button>
         <button class="btn-secondary" (click)="stopMeditation()" [disabled]="!isMeditating()">Stop</button>
       </div>
       <div class="timer" *ngIf="isMeditating()">
-        <div class="time-display">{{ formatTime(timeLeft()) }}</div>
+        <div class="time-display">{{ formattedTimeLeft() }}</div>
         <div class="progress-bar">
-          <div class="progress-fill" [style.width.%]="(timeLeft() / (meditationTime() * 60)) * 100"></div>
+          <div class="progress-fill" [style.width.%]="meditationProgress()"></div>
         </div>
       </div>
     </div>
@@ -42,7 +42,8 @@
       </div>
       <div *ngIf="isAuthenticated">
         <textarea
-          [(ngModel)]="journalEntry"
+          [ngModel]="journalEntry()"
+          (ngModelChange)="setJournalEntry($event)"
           placeholder="Write your thoughts here..."
           rows="4"
           class="journal-textarea"></textarea>
@@ -55,8 +56,8 @@
     <div class="card" *ngIf="journalEntries().length > 0">
       <h2>Previous Entries</h2>
       <div class="journal-history" *ngIf="!isLoading(); else loadingTemplate">
-        <article class="journal-item" *ngFor="let entry of journalEntries()">
-          <div class="journal-date">{{ formatDate(entry.created_at) }}</div>
+        <article class="journal-item" *ngFor="let entry of journalEntriesView(); trackBy: trackByJournalEntryId">
+          <div class="journal-date">{{ entry.formattedDate }}</div>
           <div class="journal-content">{{ entry.content }}</div>
         </article>
       </div>

@@ -3,140 +3,61 @@
     <div class="brand">ZERO</div>
     <div class="title">
       <div class="kicker">Account</div>
-      <h1>Edit Profile</h1>
+      <h1>Your Profile</h1>
     </div>
     <a class="btn" routerLink="/dashboard">Back</a>
   </header>
 
   <main class="content">
-    <form [formGroup]="form" (ngSubmit)="save()" class="edit-form">
-      <div class="form-group">
-        <label for="fullName">Full Name</label>
-        <input
-          id="fullName"
-          type="text"
-          formControlName="fullName"
-          placeholder="Your name"
-          class="input-field"
-          [class.error]="form.get('fullName')?.invalid && form.get('fullName')?.touched"
-        />
-        <small *ngIf="form.get('fullName')?.errors?.['required'] && form.get('fullName')?.touched" class="error-text">
-          Name is required
-        </small>
-        <small *ngIf="form.get('fullName')?.errors?.['minlength'] && form.get('fullName')?.touched" class="error-text">
-          Minimum 2 characters
-        </small>
-      </div>
+    <div class="loading-state" *ngIf="loadingProfile()">Loading profile...</div>
 
-      <div class="form-group">
-        <label for="weeklyGoal">Weekly Goal (sessions)</label>
-        <input
-          id="weeklyGoal"
-          type="number"
-          formControlName="weeklyGoal"
-          placeholder="1-14"
-          min="1"
-          max="14"
-          class="input-field"
-          [class.error]="form.get('weeklyGoal')?.invalid && form.get('weeklyGoal')?.touched"
-        />
-        <small *ngIf="form.get('weeklyGoal')?.errors?.['required'] && form.get('weeklyGoal')?.touched" class="error-text">
-          Weekly goal is required
-        </small>
-      </div>
-
-      <div class="measurements-grid">
-        <div class="form-group">
-          <label for="weight">Weight (kg)</label>
-          <input
-            id="weight"
-            type="number"
-            formControlName="weight"
-            placeholder="e.g., 75"
-            min="30"
-            max="300"
-            step="0.1"
-            class="input-field"
-            [class.error]="form.get('weight')?.invalid && form.get('weight')?.touched"
-          />
-          <small *ngIf="form.get('weight')?.errors?.['required'] && form.get('weight')?.touched" class="error-text">
-            Weight is required
-          </small>
+    <section class="profile-grid" *ngIf="!loadingProfile() && profile() as p">
+      <article class="card hero-card">
+        <div>
+          <div class="eyebrow">Identity</div>
+          <h2>{{ p.full_name || 'User' }}</h2>
+          <p class="hero-sub">Goal: {{ fitnessGoalLabel() }}</p>
         </div>
+        <a class="edit-link" routerLink="/profile/edit">Edit profile</a>
+      </article>
 
-        <div class="form-group">
-          <label for="height">Height (cm)</label>
-          <input
-            id="height"
-            type="number"
-            formControlName="height"
-            placeholder="e.g., 175"
-            min="100"
-            max="250"
-            step="1"
-            class="input-field"
-            [class.error]="form.get('height')?.invalid && form.get('height')?.touched"
-          />
-          <small *ngIf="form.get('height')?.errors?.['required'] && form.get('height')?.touched" class="error-text">
-            Height is required
-          </small>
+      <article class="card stats-card">
+        <div class="stat-block">
+          <span class="stat-value">{{ p.weekly_goal }}</span>
+          <span class="stat-label">Weekly sessions</span>
         </div>
-      </div>
-
-      <div class="form-group">
-        <label for="fitnessGoal">Fitness Goal</label>
-        <select
-          id="fitnessGoal"
-          formControlName="fitnessGoal"
-          class="input-field"
-          [class.error]="form.get('fitnessGoal')?.invalid && form.get('fitnessGoal')?.touched"
-        >
-          <option value="bulk">Muscle Gain (Bulk)</option>
-          <option value="cut">Definition (Cut)</option>
-          <option value="maintain">Maintain</option>
-        </select>
-        <small *ngIf="form.get('fitnessGoal')?.errors?.['required'] && form.get('fitnessGoal')?.touched" class="error-text">
-          Fitness goal is required
-        </small>
-      </div>
-
-      <fieldset class="interests-section">
-        <legend>What are you interested in?</legend>
-        <div class="interest-checks" formGroupName="interests">
-          <label class="check-label">
-            <input type="checkbox" formControlName="sport" />
-            <span>Sport</span>
-          </label>
-          <label class="check-label">
-            <input type="checkbox" formControlName="food" />
-            <span>Food</span>
-          </label>
-          <label class="check-label">
-            <input type="checkbox" formControlName="mindset" />
-            <span>Mindset</span>
-          </label>
-          <label class="check-label">
-            <input type="checkbox" formControlName="growth" />
-            <span>Growth</span>
-          </label>
-          <label class="check-label">
-            <input type="checkbox" formControlName="challenges" />
-            <span>Challenges</span>
-          </label>
+        <div class="stat-block">
+          <span class="stat-value">{{ p.weight || '--' }}</span>
+          <span class="stat-label">Weight (kg)</span>
         </div>
-      </fieldset>
+        <div class="stat-block">
+          <span class="stat-value">{{ p.height || '--' }}</span>
+          <span class="stat-label">Height (cm)</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-value">{{ bmi() }}</span>
+          <span class="stat-label">BMI</span>
+        </div>
+      </article>
 
-      <div
-        class="message-box"
-        *ngIf="msg()"
-        [class.error]="msg().includes('No se pudo') || msg().includes('Could not') || msg().includes('Error')"
-      >
-        {{ msg() }}
-      </div>
+      <article class="card focus-card">
+        <div class="section-title">Focus Areas</div>
+        <div class="chips" *ngIf="focusAreas().length; else noFocus">
+          <span class="chip" *ngFor="let item of focusAreas()">{{ item }}</span>
+        </div>
+        <ng-template #noFocus>
+          <p class="muted">No focus areas selected yet.</p>
+        </ng-template>
+      </article>
 
-      <button type="submit" class="submit-btn" [disabled]="loading() || form.invalid">
-        {{ loading() ? 'Saving...' : 'Save Changes' }}
-      </button>
-    </form>
+      <article class="card summary-card">
+        <div class="section-title">Summary</div>
+        <ul class="summary-list">
+          <li>You are training toward <strong>{{ fitnessGoalLabel() }}</strong>.</li>
+          <li>Your current weekly target is <strong>{{ p.weekly_goal }}</strong> sessions.</li>
+          <li *ngIf="focusAreas().length">Your selected areas are <strong>{{ focusAreasText() }}</strong>.</li>
+        </ul>
+      </article>
+    </section>
   </main>
 </section>

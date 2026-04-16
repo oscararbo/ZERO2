@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,6 +10,7 @@ import { ProfileService, Profile, FitnessGoal } from '../../core/profile.service
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './profile-edit.html',
   styleUrls: ['./profile-edit.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileEditComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -33,6 +34,17 @@ export class ProfileEditComponent implements OnInit {
       growth: [false],
       challenges: [false],
     }),
+  });
+
+  readonly fullNameControl = this.form.controls.fullName;
+  readonly weeklyGoalControl = this.form.controls.weeklyGoal;
+  readonly weightControl = this.form.controls.weight;
+  readonly heightControl = this.form.controls.height;
+  readonly fitnessGoalControl = this.form.controls.fitnessGoal;
+
+  readonly messageIsError = computed(() => {
+    const text = this.msg().toLowerCase();
+    return text.includes('no se pudo') || text.includes('could not') || text.includes('error');
   });
 
   ngOnInit() {

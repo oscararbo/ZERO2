@@ -139,6 +139,44 @@ h1 {
 
 .kpi-sub { opacity: .75; margin-top: 10px; }
 
+.kpi-of {
+  font-size: 20px;
+  font-weight: 500;
+  opacity: .55;
+  margin-left: 4px;
+}
+
+.kpi-pct {
+  margin-top: 6px;
+  font-size: 13px;
+  opacity: .6;
+  font-weight: 600;
+}
+
+.week-bar {
+  margin-top: 12px;
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(255,255,255,.12);
+  overflow: hidden;
+}
+
+.week-fill {
+  height: 100%;
+  background: #fff;
+  border-radius: 99px;
+  transition: width .4s ease;
+}
+
+.card-sub-label {
+  margin-top: 14px;
+  font-size: 12px;
+  opacity: .55;
+  font-weight: 600;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+
 .focus .chips {
   display: flex;
   flex-wrap: wrap;
@@ -167,7 +205,11 @@ h1 {
 }
 
 .today { grid-column: 1 / span 1; }
-.chart { grid-column: 2 / span 1; }
+.kpi { grid-column: 1; }
+.kpi-alt { grid-column: 2; }
+.focus { grid-column: 1 / span 2; }
+.today { grid-column: 1; }
+.chart { grid-column: 2; }
 
 .list {
   margin: 0;
@@ -203,7 +245,7 @@ h1 {
     grid-template-columns: 1fr;
   }
 
-  .today, .chart { grid-column: auto; }
+  .kpi, .kpi-alt, .focus, .today, .chart { grid-column: auto; }
 
   .chip {
     flex: 1 1 auto;

@@ -1,16 +1,19 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { ExerciseService, Exercise } from '../../../core/exercise.service';
 import { ProfileService, FitnessGoal } from '../../../core/profile.service';
+import { AppToastComponent } from '../../shared/components/toast/toast.component';
+import { FocusHeaderComponent } from '../../shared/components/focus-header/focus-header.component';
 
 @Component({
   selector: 'app-sport',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, FormsModule, AppToastComponent, FocusHeaderComponent],
   templateUrl: './sport.html',
   styleUrls: ['./sport.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SportComponent implements OnInit {
   private exerciseService = inject(ExerciseService);
@@ -18,6 +21,7 @@ export class SportComponent implements OnInit {
   private router = inject(Router);
 
   loading = signal(true);
+  toast = signal('');
   currentLocation = signal<'home' | 'gym'>('home');
   selectedCategory = signal<string | null>(null);
   fitnessGoal = signal<FitnessGoal>('bulk');
@@ -31,10 +35,29 @@ export class SportComponent implements OnInit {
     { key: 'accessories', label: 'Accessories' },
   ];
 
-  allExercises: { [key: string]: Exercise[] } = {};
-  filteredExercises: Exercise[] = [];
-  exerciseState: { [key: number]: any } = {};
+  allExercises = signal<Record<string, Exercise[]>>({});
+  exerciseState = signal<Record<number, { sets: number; reps: number; completed: boolean }>>({});
   hasCompletedExercises = signal(false);
+
+  readonly filteredExercises = computed(() => {
+    const location = this.currentLocation();
+    const category = this.selectedCategory();
+    const source = this.allExercises()[location] ?? [];
+    if (!category) return source;
+    return source.filter((exercise) => exercise.category === category);
+  });
+
+  readonly exerciseRows = computed(() => {
+    const stateMap = this.exerciseState();
+    return this.filteredExercises().map((exercise) => {
+      const state = stateMap[exercise.id] ?? {
+        sets: exercise.default_sets || 3,
+        reps: exercise.default_reps || 10,
+        completed: false,
+      };
+      return { exercise, state };
+    });
+  });
 
   ngOnInit() {
     const profile = this.profileService.getLocal();
@@ -47,34 +70,33 @@ export class SportComponent implements OnInit {
   setLocation(location: 'home' | 'gym') {
     this.currentLocation.set(location);
     this.selectedCategory.set(null);
-    this.exerciseState = {};
+    this.exerciseState.set({});
     this.loadExercises();
   }
 
   selectCategory(category: string) {
     this.selectedCategory.set(this.selectedCategory() === category ? null : category);
-    this.filterExercises();
   }
 
-  getExerciseState(exerciseId: number) {
-    if (!this.exerciseState[exerciseId]) {
-      const exercise = this.filteredExercises.find(e => e.id === exerciseId);
-      this.exerciseState[exerciseId] = {
-        sets: exercise?.default_sets || 3,
-        reps: exercise?.default_reps || 10,
-        completed: false,
-      };
-    }
-    return this.exerciseState[exerciseId];
-  }
+  updateExerciseState(exerciseId: number, field: 'sets' | 'reps' | 'completed', value: any) {
+    const current = this.exerciseState();
+    const exercise = this.filteredExercises().find((e) => e.id === exerciseId);
+    const state = current[exerciseId] ?? {
+      sets: exercise?.default_sets || 3,
+      reps: exercise?.default_reps || 10,
+      completed: false,
+    };
 
-  updateExerciseState(exerciseId: number, field: string, value: any) {
-    const state = this.getExerciseState(exerciseId);
     if (field === 'completed') {
       state.completed = !!value;
     } else {
       state[field] = parseInt(value) || 0;
     }
+    this.exerciseState.set({
+      ...current,
+      [exerciseId]: { ...state },
+    });
+    this.syncCompletedState();
   }
 
   private loadExercises() {
@@ -83,11 +105,15 @@ export class SportComponent implements OnInit {
     const goal = this.fitnessGoal();
     this.exerciseService.getExercisesByLocation(location, goal).subscribe({
       next: (data) => {
-        this.allExercises[location] = [];
+        const next = [...(this.allExercises()[location] ?? [])];
+        next.length = 0;
         for (const key in data) {
-          this.allExercises[location].push(...data[key].exercises);
+          next.push(...data[key].exercises);
         }
-        this.filterExercises();
+        this.allExercises.set({
+          ...this.allExercises(),
+          [location]: next,
+        });
         this.loading.set(false);
       },
       error: () => {
@@ -96,20 +122,11 @@ export class SportComponent implements OnInit {
     });
   }
 
-  private filterExercises() {
-    const location = this.currentLocation();
-    let exercises = this.allExercises[location] || [];
-    const category = this.selectedCategory();
-    if (category) {
-      exercises = exercises.filter(e => e.category === category);
-    }
-    this.filteredExercises = exercises;
-  }
-
   saveSession() {
     const completedExercises = [];
-    for (const id in this.exerciseState) {
-      const state = this.exerciseState[id];
+    const stateMap = this.exerciseState();
+    for (const id in stateMap) {
+      const state = stateMap[id];
       if (state.completed) {
         completedExercises.push({
           exercise_id: parseInt(id),
@@ -127,14 +144,32 @@ export class SportComponent implements OnInit {
       exercises: completedExercises,
     }).subscribe({
       next: () => {
-        alert('Workout saved.');
-        this.exerciseState = {};
+        this.showToast('Workout saved.');
+        this.exerciseState.set({});
         this.hasCompletedExercises.set(false);
-        this.router.navigateByUrl('/dashboard');
+        window.setTimeout(() => this.router.navigateByUrl('/dashboard'), 450);
       },
       error: () => {
-        alert('Error saving workout.');
+        this.showToast('Unable to save workout.');
       }
     });
+  }
+
+  private syncCompletedState() {
+    const hasCompleted = Object.values(this.exerciseState()).some((state) => state.completed);
+    this.hasCompletedExercises.set(hasCompleted);
+  }
+
+  private showToast(message: string) {
+    this.toast.set(message);
+    window.setTimeout(() => {
+      if (this.toast() === message) {
+        this.toast.set('');
+      }
+    }, 2400);
+  }
+
+  trackByExerciseId(_index: number, row: { exercise: Exercise }): number {
+    return row.exercise.id;
   }
 }

@@ -1,35 +1,61 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MindsetService, JournalEntry } from '../../../core/mindset.service';
 import { AuthService } from '../../../core/auth.service';
+import { AppToastComponent } from '../../shared/components/toast/toast.component';
+import { FocusHeaderComponent } from '../../shared/components/focus-header/focus-header.component';
 
 @Component({
   selector: 'app-mindset',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule],
+  imports: [RouterLink, CommonModule, FormsModule, AppToastComponent, FocusHeaderComponent],
   templateUrl: './mindset.html',
   styleUrls: ['./mindset.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MindsetComponent implements OnInit {
   private mindsetService = inject(MindsetService);
   private authService = inject(AuthService);
 
   dailyQuote = signal<string>('');
-  meditationTime = signal<number>(5); 
+  meditationTime = signal<number>(5);
   isMeditating = signal<boolean>(false);
   timeLeft = signal<number>(0);
   journalEntry = signal<string>('');
   journalEntries = signal<JournalEntry[]>([]);
   isLoading = signal<boolean>(false);
   isSaving = signal<boolean>(false);
+  toast = signal('');
+
+  readonly isAuthenticated = computed(() => this.authService.isLogged());
+
+  readonly meditationProgress = computed(() => {
+    const total = this.meditationTime() * 60;
+    if (!total) return 0;
+    return Math.max(0, Math.min(100, (this.timeLeft() / total) * 100));
+  });
+
+  readonly formattedTimeLeft = computed(() => {
+    const totalSeconds = this.timeLeft();
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  });
+
+  readonly journalEntriesView = computed(() => {
+    return this.journalEntries().map((entry) => ({
+      ...entry,
+      formattedDate: new Date(entry.created_at).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
+    }));
+  });
 
   private intervalId: any;
-
-  get isAuthenticated(): boolean {
-    return this.authService.isLogged();
-  }
 
   quotes = [
     "The only way to do great work is to love what you do. - Steve Jobs",
@@ -56,10 +82,20 @@ export class MindsetComponent implements OnInit {
     this.dailyQuote.set(this.quotes[randomIndex]);
   }
 
+  setMeditationTime(value: number | string): void {
+    const next = Number(value);
+    if (Number.isNaN(next)) return;
+    this.meditationTime.set(Math.max(1, Math.min(60, next)));
+  }
+
+  setJournalEntry(value: string): void {
+    this.journalEntry.set(value);
+  }
+
   startMeditation(): void {
     if (this.isMeditating()) return;
     this.isMeditating.set(true);
-    this.timeLeft.set(this.meditationTime() * 60); 
+    this.timeLeft.set(this.meditationTime() * 60);
     this.intervalId = setInterval(() => {
       this.timeLeft.update(t => t - 1);
       if (this.timeLeft() <= 0) {
@@ -74,15 +110,9 @@ export class MindsetComponent implements OnInit {
     this.timeLeft.set(0);
   }
 
-  formatTime(seconds: number): string {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  }
-
   loadJournalEntries(): void {
     if (!this.authService.isLogged()) {
-      console.warn('User not authenticated. Skipping journal entries load.');
+      this.showToast('Log in to sync your journal.');
       return;
     }
 
@@ -93,13 +123,8 @@ export class MindsetComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: (error) => {
-        console.error('Error loading journal entries:', error);
         this.isLoading.set(false);
-        if (error.status === 401) {
-          console.warn('Authentication failed. Token may be expired.');
-        } else if (error.status === 404) {
-          console.warn('Journal API endpoint not found. Check server configuration.');
-        }
+        this.showToast(error.status === 401 ? 'Session expired. Log in again.' : 'Unable to load journal entries.');
       }
     });
   }
@@ -108,7 +133,7 @@ export class MindsetComponent implements OnInit {
     if (!this.journalEntry().trim()) return;
 
     if (!this.authService.isLogged()) {
-      console.warn('User not authenticated. Cannot save journal entry.');
+      this.showToast('Log in to save your journal.');
       return;
     }
 
@@ -118,25 +143,25 @@ export class MindsetComponent implements OnInit {
         this.journalEntries.update(entries => [newEntry, ...entries]);
         this.journalEntry.set('');
         this.isSaving.set(false);
+        this.showToast('Entry saved.');
       },
       error: (error) => {
-        console.error('Error saving journal entry:', error);
         this.isSaving.set(false);
-        if (error.status === 401) {
-          console.warn('Authentication failed. Please log in again.');
-        } else if (error.status === 404) {
-          console.warn('Journal API endpoint not found. Check server configuration.');
-        }
+        this.showToast(error.status === 401 ? 'Session expired. Log in again.' : 'Unable to save entry.');
       }
     });
   }
 
-  formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+  private showToast(message: string): void {
+    this.toast.set(message);
+    window.setTimeout(() => {
+      if (this.toast() === message) {
+        this.toast.set('');
+      }
+    }, 2600);
+  }
+
+  trackByJournalEntryId(_index: number, entry: JournalEntry): number {
+    return entry.id;
   }
 }

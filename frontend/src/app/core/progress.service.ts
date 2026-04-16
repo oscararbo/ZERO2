@@ -12,6 +12,6 @@ export class ProgressService {
   constructor(private http: HttpClient) {}
 
   getProgress() {
-    return this.http.get<ProgressResponse>(`${environment.apiUrl}/api/progress/`);
+    return this.http.get<ProgressResponse>(`${environment.apiUrl}/api/accounts/progress/`);
   }
 }

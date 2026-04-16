@@ -1,11 +1,652 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import {
+  ChallengeService,
+  Challenge,
+  ChallengeCategory,
+  MyParticipation,
+  ChallengeUpdate,
+  InAppReminder,
+  UserBadge,
+  ChallengeAnalytics,
+  PaginatedLeaderboardResponse,
+  PaginatedUpdatesResponse,
+} from '../../../core/challenge.service';
+import { AuthService } from '../../../core/auth.service';
+import { AppToastComponent } from '../../shared/components/toast/toast.component';
+import { FocusHeaderComponent } from '../../shared/components/focus-header/focus-header.component';
+import { LoadMoreButtonComponent } from '../../shared/components/load-more-button/load-more-button.component';
+
+type ChallengeViewModel = Challenge & {
+  isOwner: boolean;
+  isParticipating: boolean;
+  progressPercent: number;
+  categoryLabel: string;
+  deadlineLabel: string;
+};
 
 @Component({
   selector: 'app-challenges',
   standalone: true,
-  imports: [RouterLink],
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    ReactiveFormsModule,
+    ScrollingModule,
+    AppToastComponent,
+    FocusHeaderComponent,
+    LoadMoreButtonComponent,
+  ],
   templateUrl: './challenges.html',
   styleUrls: ['./challenges.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ChallengesComponent {}
+export class ChallengesComponent implements OnInit {
+  private challengeService = inject(ChallengeService);
+  private authService = inject(AuthService);
+  private fb = inject(FormBuilder);
+
+  challenges = signal<Challenge[]>([]);
+  loading = signal(true);
+  saving = signal(false);
+  toast = signal<{ msg: string; type: 'success' | 'error' } | null>(null);
+
+  activeTab = signal<'all' | 'mine' | 'joined' | 'create'>('all');
+  activeFilter = signal<ChallengeCategory | 'all'>('all');
+  searchTerm = signal('');
+  sortMode = signal<'recent' | 'popular' | 'completed'>('recent');
+
+  reminders = signal<InAppReminder[]>([]);
+  unreadReminders = signal(0);
+  remindersOpen = signal(false);
+  remindersPage = signal(1);
+  remindersHasNext = signal(false);
+  remindersLoading = signal(false);
+
+  badges = signal<UserBadge[]>([]);
+  analytics = signal<ChallengeAnalytics | null>(null);
+  loadingInsights = signal(true);
+
+  expandedId = signal<number | null>(null);
+  progressEditing = signal<number | null>(null);
+  progressValue = signal(0);
+  progressNotes = signal('');
+
+  leaderboardByChallenge = signal<Partial<Record<number, MyParticipation[]>>>({});
+  leaderboardPageByChallenge = signal<Partial<Record<number, number>>>({});
+  leaderboardHasNextByChallenge = signal<Partial<Record<number, boolean>>>({});
+  loadingLeaderboardByChallenge = signal<Partial<Record<number, boolean>>>({});
+  updatesByChallenge = signal<Partial<Record<number, ChallengeUpdate[]>>>({});
+  updateDraftByChallenge = signal<Partial<Record<number, string>>>({});
+  updatesPageByChallenge = signal<Partial<Record<number, number>>>({});
+  updatesHasNextByChallenge = signal<Partial<Record<number, boolean>>>({});
+  loadingUpdatesByChallenge = signal<Partial<Record<number, boolean>>>({});
+
+  readonly categories: ReadonlyArray<{ key: ChallengeCategory | 'all'; label: string }> = [
+    { key: 'all', label: 'All' },
+    { key: 'sport', label: 'Sport' },
+    { key: 'nutrition', label: 'Nutrition' },
+    { key: 'mindset', label: 'Mindset' },
+    { key: 'growth', label: 'Growth' },
+    { key: 'general', label: 'General' },
+  ];
+
+  readonly sortOptions = [
+    { key: 'recent' as const, label: 'Most Recent' },
+    { key: 'popular' as const, label: 'Most Popular' },
+    { key: 'completed' as const, label: 'Most Completed' },
+  ];
+
+  readonly categoryLabelByKey: Partial<Record<string, string>> = {
+    all: 'All',
+    sport: 'Sport',
+    nutrition: 'Nutrition',
+    mindset: 'Mindset',
+    growth: 'Growth',
+    general: 'General',
+  };
+
+  readonly badgeIconByCode: Partial<Record<string, string>> = {
+    first_join: '•',
+    consistent_3: '◦',
+    finisher_1: '◆',
+    finisher_5: '◈',
+  };
+
+  createForm = this.fb.nonNullable.group({
+    title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(120)]],
+    description: [''],
+    category: ['general' as ChallengeCategory, Validators.required],
+    duration_days: [7, [Validators.required, Validators.min(1), Validators.max(365)]],
+    target_count: [1, [Validators.required, Validators.min(1), Validators.max(1000)]],
+  });
+
+  private readonly visibleChallengesComputed = computed(() => {
+    const query = this.searchTerm().trim().toLowerCase();
+    const sort = this.sortMode();
+    let list = [...this.challenges()];
+
+    if (query) {
+      list = list.filter((challenge) => {
+        const title = challenge.title.toLowerCase();
+        const description = (challenge.description ?? '').toLowerCase();
+        const creator = challenge.creator_username.toLowerCase();
+        return title.includes(query) || description.includes(query) || creator.includes(query);
+      });
+    }
+
+    if (sort === 'popular') {
+      list.sort((a, b) => b.participant_count - a.participant_count);
+    } else if (sort === 'completed') {
+      list.sort((a, b) => b.completed_count - a.completed_count);
+    } else {
+      list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
+
+    return list;
+  });
+
+  readonly visibleChallenges = computed<ChallengeViewModel[]>(() => {
+    const currentUsername = this.authService.currentUsername;
+    return this.visibleChallengesComputed().map((challenge) => ({
+      ...challenge,
+      isOwner: challenge.creator_username === currentUsername,
+      isParticipating: challenge.my_participation !== null,
+      progressPercent: challenge.my_participation?.progress ?? 0,
+      categoryLabel: this.categoryLabelByKey[challenge.category] ?? challenge.category,
+      deadlineLabel: this.getDeadlineLabel(challenge),
+    }));
+  });
+
+  readonly hasExpandedCard = computed(() => this.expandedId() !== null);
+
+  readonly leaderboardItems = computed(() => {
+    const source = this.leaderboardByChallenge();
+    const result: Record<number, MyParticipation[]> = {};
+    for (const challenge of this.visibleChallenges()) {
+      result[challenge.id] = source[challenge.id] ?? [];
+    }
+    return result;
+  });
+
+  readonly updatesItems = computed(() => {
+    const source = this.updatesByChallenge();
+    const result: Record<number, ChallengeUpdate[]> = {};
+    for (const challenge of this.visibleChallenges()) {
+      result[challenge.id] = source[challenge.id] ?? [];
+    }
+    return result;
+  });
+
+  readonly leaderboardHasNextMap = computed(() => {
+    const source = this.leaderboardHasNextByChallenge();
+    const result: Record<number, boolean> = {};
+    for (const challenge of this.visibleChallenges()) {
+      result[challenge.id] = source[challenge.id] ?? false;
+    }
+    return result;
+  });
+
+  readonly leaderboardLoadingMap = computed(() => {
+    const source = this.loadingLeaderboardByChallenge();
+    const result: Record<number, boolean> = {};
+    for (const challenge of this.visibleChallenges()) {
+      result[challenge.id] = source[challenge.id] ?? false;
+    }
+    return result;
+  });
+
+  readonly updatesHasNextMap = computed(() => {
+    const source = this.updatesHasNextByChallenge();
+    const result: Record<number, boolean> = {};
+    for (const challenge of this.visibleChallenges()) {
+      result[challenge.id] = source[challenge.id] ?? false;
+    }
+    return result;
+  });
+
+  readonly updatesLoadingMap = computed(() => {
+    const source = this.loadingUpdatesByChallenge();
+    const result: Record<number, boolean> = {};
+    for (const challenge of this.visibleChallenges()) {
+      result[challenge.id] = source[challenge.id] ?? false;
+    }
+    return result;
+  });
+
+  readonly updateDraftMap = computed(() => {
+    const source = this.updateDraftByChallenge();
+    const result: Record<number, string> = {};
+    for (const challenge of this.visibleChallenges()) {
+      result[challenge.id] = source[challenge.id] ?? '';
+    }
+    return result;
+  });
+
+  get currentUsername(): string | null {
+    return this.authService.currentUsername;
+  }
+
+  ngOnInit(): void {
+    this.loadChallenges();
+    this.loadInsights();
+    this.loadReminders();
+  }
+
+  setTab(tab: 'all' | 'mine' | 'joined' | 'create'): void {
+    this.activeTab.set(tab);
+    if (tab !== 'create') this.loadChallenges();
+  }
+
+  setFilter(cat: ChallengeCategory | 'all'): void {
+    this.activeFilter.set(cat);
+    this.loadChallenges();
+  }
+
+  setSearchTerm(value: string): void {
+    this.searchTerm.set(value);
+  }
+
+  setSort(mode: 'recent' | 'popular' | 'completed'): void {
+    this.sortMode.set(mode);
+  }
+
+  loadChallenges(): void {
+    this.loading.set(true);
+    const tab = this.activeTab();
+    const filter = this.activeFilter();
+    const category = filter !== 'all' ? filter : undefined;
+    const mine = tab === 'mine' ? true : undefined;
+
+    this.challengeService.getChallenges(category, mine).subscribe({
+      next: (data) => {
+        let filtered = data;
+        if (tab === 'joined') {
+          filtered = data.filter(c => c.my_participation !== null && c.creator_username !== this.currentUsername);
+        }
+        this.challenges.set(filtered);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.showToast('Failed to load challenges.', 'error');
+      },
+    });
+  }
+
+  loadInsights(): void {
+    this.loadingInsights.set(true);
+    this.challengeService.getBadges().subscribe({
+      next: (badges) => this.badges.set(badges),
+      error: () => this.badges.set([]),
+    });
+
+    this.challengeService.getAnalytics().subscribe({
+      next: (analytics) => {
+        this.analytics.set(analytics);
+        this.loadingInsights.set(false);
+      },
+      error: () => {
+        this.analytics.set(null);
+        this.loadingInsights.set(false);
+      },
+    });
+  }
+
+  loadReminders(unreadOnly = false): void {
+    this.remindersLoading.set(true);
+    this.challengeService.getReminders(unreadOnly, 1).subscribe({
+      next: (payload) => {
+        this.reminders.set(payload.items);
+        this.unreadReminders.set(payload.unread_count);
+        this.remindersPage.set(payload.page);
+        this.remindersHasNext.set(payload.has_next);
+        this.remindersLoading.set(false);
+      },
+      error: () => {
+        this.reminders.set([]);
+        this.unreadReminders.set(0);
+        this.remindersHasNext.set(false);
+        this.remindersLoading.set(false);
+      },
+    });
+  }
+
+  loadMoreReminders(unreadOnly = false): void {
+    if (!this.remindersHasNext() || this.remindersLoading()) return;
+    const nextPage = this.remindersPage() + 1;
+    this.remindersLoading.set(true);
+    this.challengeService.getReminders(unreadOnly, nextPage).subscribe({
+      next: (payload) => {
+        this.reminders.update((current) => [...current, ...payload.items]);
+        this.unreadReminders.set(payload.unread_count);
+        this.remindersPage.set(payload.page);
+        this.remindersHasNext.set(payload.has_next);
+        this.remindersLoading.set(false);
+      },
+      error: () => {
+        this.remindersLoading.set(false);
+      },
+    });
+  }
+
+  toggleReminders(): void {
+    this.remindersOpen.set(!this.remindersOpen());
+  }
+
+  markReminderRead(reminder: InAppReminder): void {
+    if (reminder.is_read) return;
+    this.challengeService.markReminderRead(reminder.id).subscribe({
+      next: () => {
+        this.loadReminders();
+      },
+    });
+  }
+
+  markAllRemindersRead(): void {
+    this.challengeService.markAllRemindersRead().subscribe({
+      next: () => {
+        this.loadReminders();
+        this.showToast('All reminders marked as read.', 'success');
+      },
+      error: () => this.showToast('Could not mark reminders.', 'error'),
+    });
+  }
+
+  toggleExpand(id: number): void {
+    const next = this.expandedId() === id ? null : id;
+    this.expandedId.set(next);
+    this.progressEditing.set(null);
+    if (next !== null) {
+      this.ensureChallengeDetailsLoaded(next);
+    }
+  }
+
+  ensureChallengeDetailsLoaded(challengeId: number): void {
+    const leaderboard = this.leaderboardByChallenge();
+    const updates = this.updatesByChallenge();
+
+    if (!leaderboard[challengeId]) {
+      this.setLoadingLeaderboard(challengeId, true);
+      this.challengeService.getLeaderboardPaginated(challengeId, 1).subscribe({
+        next: (payload: PaginatedLeaderboardResponse) => {
+          this.leaderboardByChallenge.set({
+            ...this.leaderboardByChallenge(),
+            [challengeId]: payload.items,
+          });
+          this.leaderboardPageByChallenge.set({
+            ...this.leaderboardPageByChallenge(),
+            [challengeId]: payload.page,
+          });
+          this.leaderboardHasNextByChallenge.set({
+            ...this.leaderboardHasNextByChallenge(),
+            [challengeId]: payload.has_next,
+          });
+          this.setLoadingLeaderboard(challengeId, false);
+        },
+        error: () => {
+          this.setLoadingLeaderboard(challengeId, false);
+        },
+      });
+    }
+
+    if (!updates[challengeId]) {
+      this.setLoadingUpdates(challengeId, true);
+      this.challengeService.getUpdatesPaginated(challengeId, 1).subscribe({
+        next: (payload: PaginatedUpdatesResponse) => {
+          this.updatesByChallenge.set({
+            ...this.updatesByChallenge(),
+            [challengeId]: payload.items,
+          });
+          this.updatesPageByChallenge.set({
+            ...this.updatesPageByChallenge(),
+            [challengeId]: payload.page,
+          });
+          this.updatesHasNextByChallenge.set({
+            ...this.updatesHasNextByChallenge(),
+            [challengeId]: payload.has_next,
+          });
+          this.setLoadingUpdates(challengeId, false);
+        },
+        error: () => {
+          this.setLoadingUpdates(challengeId, false);
+        },
+      });
+    }
+  }
+
+  loadMoreLeaderboard(challengeId: number): void {
+    if (!(this.leaderboardHasNextByChallenge()[challengeId] ?? false) || (this.loadingLeaderboardByChallenge()[challengeId] ?? false)) return;
+    const nextPage = (this.leaderboardPageByChallenge()[challengeId] ?? 1) + 1;
+    this.setLoadingLeaderboard(challengeId, true);
+    this.challengeService.getLeaderboardPaginated(challengeId, nextPage).subscribe({
+      next: (payload) => {
+        this.leaderboardByChallenge.set({
+          ...this.leaderboardByChallenge(),
+          [challengeId]: [...(this.leaderboardByChallenge()[challengeId] ?? []), ...payload.items],
+        });
+        this.leaderboardPageByChallenge.set({
+          ...this.leaderboardPageByChallenge(),
+          [challengeId]: payload.page,
+        });
+        this.leaderboardHasNextByChallenge.set({
+          ...this.leaderboardHasNextByChallenge(),
+          [challengeId]: payload.has_next,
+        });
+        this.setLoadingLeaderboard(challengeId, false);
+      },
+      error: () => {
+        this.setLoadingLeaderboard(challengeId, false);
+      },
+    });
+  }
+
+  loadMoreUpdates(challengeId: number): void {
+    if (!(this.updatesHasNextByChallenge()[challengeId] ?? false) || (this.loadingUpdatesByChallenge()[challengeId] ?? false)) return;
+    const nextPage = (this.updatesPageByChallenge()[challengeId] ?? 1) + 1;
+    this.setLoadingUpdates(challengeId, true);
+    this.challengeService.getUpdatesPaginated(challengeId, nextPage).subscribe({
+      next: (payload) => {
+        this.updatesByChallenge.set({
+          ...this.updatesByChallenge(),
+          [challengeId]: [...(this.updatesByChallenge()[challengeId] ?? []), ...payload.items],
+        });
+        this.updatesPageByChallenge.set({
+          ...this.updatesPageByChallenge(),
+          [challengeId]: payload.page,
+        });
+        this.updatesHasNextByChallenge.set({
+          ...this.updatesHasNextByChallenge(),
+          [challengeId]: payload.has_next,
+        });
+        this.setLoadingUpdates(challengeId, false);
+      },
+      error: () => {
+        this.setLoadingUpdates(challengeId, false);
+      },
+    });
+  }
+
+  join(challenge: Challenge): void {
+    this.challengeService.joinChallenge(challenge.id).subscribe({
+      next: () => {
+        this.showToast('Joined challenge!', 'success');
+        this.loadChallenges();
+        this.loadInsights();
+      },
+      error: () => this.showToast('Could not join.', 'error'),
+    });
+  }
+
+  leave(challenge: Challenge): void {
+    this.challengeService.leaveChallenge(challenge.id).subscribe({
+      next: () => {
+        this.showToast('Left challenge.', 'success');
+        this.loadChallenges();
+      },
+      error: () => this.showToast('Could not leave.', 'error'),
+    });
+  }
+
+  startProgressEdit(challenge: Challenge): void {
+    this.progressEditing.set(challenge.id);
+    this.progressValue.set(challenge.my_participation?.progress ?? 0);
+    this.progressNotes.set(challenge.my_participation?.notes ?? '');
+  }
+
+  cancelProgressEdit(): void {
+    this.progressEditing.set(null);
+  }
+
+  saveProgress(challenge: Challenge): void {
+    this.saving.set(true);
+    this.challengeService.updateProgress(challenge.id, this.progressValue(), this.progressNotes()).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.progressEditing.set(null);
+        this.showToast('Progress updated!', 'success');
+        this.loadChallenges();
+        this.loadInsights();
+      },
+      error: () => {
+        this.saving.set(false);
+        this.showToast('Failed to update progress.', 'error');
+      },
+    });
+  }
+
+  deleteChallenge(challenge: Challenge): void {
+    if (!confirm(`Delete "${challenge.title}"?`)) return;
+    this.challengeService.deleteChallenge(challenge.id).subscribe({
+      next: () => {
+        this.showToast('Challenge deleted.', 'success');
+        this.loadChallenges();
+      },
+      error: () => this.showToast('Could not delete.', 'error'),
+    });
+  }
+
+  submitCreate(): void {
+    if (this.createForm.invalid) {
+      this.createForm.markAllAsTouched();
+      return;
+    }
+    this.saving.set(true);
+    const v = this.createForm.getRawValue();
+    this.challengeService.createChallenge({
+      title: v.title,
+      description: v.description || undefined,
+      category: v.category,
+      duration_days: v.duration_days,
+      target_count: v.target_count,
+    }).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.createForm.reset({ category: 'general', duration_days: 7, target_count: 1, title: '', description: '' });
+        this.showToast('Challenge created!', 'success');
+        this.activeTab.set('mine');
+        this.loadChallenges();
+        this.loadInsights();
+      },
+      error: () => {
+        this.saving.set(false);
+        this.showToast('Failed to create challenge.', 'error');
+      },
+    });
+  }
+
+  setUpdateDraft(challengeId: number, value: string): void {
+    this.updateDraftByChallenge.set({
+      ...this.updateDraftByChallenge(),
+      [challengeId]: value,
+    });
+  }
+
+  postUpdate(challenge: Challenge): void {
+    const content = (this.updateDraftByChallenge()[challenge.id] ?? '').trim();
+    if (!content) return;
+    this.challengeService.postUpdate(challenge.id, content).subscribe({
+      next: (newUpdate) => {
+        this.updatesByChallenge.set({
+          ...this.updatesByChallenge(),
+          [challenge.id]: [newUpdate, ...(this.updatesByChallenge()[challenge.id] ?? [])],
+        });
+        this.updatesPageByChallenge.set({
+          ...this.updatesPageByChallenge(),
+          [challenge.id]: 1,
+        });
+        this.updatesHasNextByChallenge.set({
+          ...this.updatesHasNextByChallenge(),
+          [challenge.id]: true,
+        });
+        this.setUpdateDraft(challenge.id, '');
+        this.loadReminders();
+        this.showToast('Update posted.', 'success');
+      },
+      error: () => this.showToast('Could not post update.', 'error'),
+    });
+  }
+
+  trackByChallengeId(_index: number, challenge: Challenge): number {
+    return challenge.id;
+  }
+
+  trackByReminderId(_index: number, reminder: InAppReminder): number {
+    return reminder.id;
+  }
+
+  trackByUpdateId(_index: number, update: ChallengeUpdate): number {
+    return update.id;
+  }
+
+  trackByParticipationId(_index: number, item: MyParticipation): number {
+    return item.id;
+  }
+
+  trackByCategoryKey(_index: number, item: { key: ChallengeCategory | 'all' }): string {
+    return item.key;
+  }
+
+  trackBySortKey(_index: number, item: { key: 'recent' | 'popular' | 'completed' }): string {
+    return item.key;
+  }
+
+  trackByBadgeId(_index: number, badge: UserBadge): number {
+    return badge.id;
+  }
+
+  trackByCategoryAnalytics(_index: number, row: { category: string }): string {
+    return row.category;
+  }
+
+  private getDeadlineLabel(challenge: Challenge): string {
+    if (challenge.is_expired) return 'Expired';
+    if (challenge.days_left === 0) return 'Ends today';
+    if (challenge.days_left === 1) return '1 day left';
+    return `${challenge.days_left} days left`;
+  }
+
+  private showToast(msg: string, type: 'success' | 'error'): void {
+    this.toast.set({ msg, type });
+    setTimeout(() => this.toast.set(null), 3000);
+  }
+
+  private setLoadingUpdates(challengeId: number, loading: boolean): void {
+    this.loadingUpdatesByChallenge.set({
+      ...this.loadingUpdatesByChallenge(),
+      [challengeId]: loading,
+    });
+  }
+
+  private setLoadingLeaderboard(challengeId: number, loading: boolean): void {
+    this.loadingLeaderboardByChallenge.set({
+      ...this.loadingLeaderboardByChallenge(),
+      [challengeId]: loading,
+    });
+  }
+}
+

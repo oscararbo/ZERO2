@@ -1,0 +1,68 @@
+:host {
+  display: block;
+}
+
+.top {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px clamp(16px, 3vw, 44px) 16px;
+  display: grid;
+  grid-template-columns: 140px 1fr 180px;
+  gap: 16px;
+  align-items: start;
+}
+
+.brand {
+  letter-spacing: 2px;
+  font-weight: 600;
+  opacity: 0.9;
+  padding-top: 10px;
+}
+
+.title {
+  text-align: center;
+}
+
+.kicker {
+  opacity: 0.75;
+  letter-spacing: 1px;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 42px);
+  font-weight: 700;
+}
+
+.actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: #9aa0a6;
+  color: #0b0b0b;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+@media (max-width: 720px) {
+  .top {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .actions {
+    justify-self: center;
+  }
+}

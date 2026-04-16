@@ -1,51 +1,54 @@
 <section class="page">
-  <header class="top">
-    <div class="brand">ZERO</div>
-    <div class="title">
-      <div class="kicker">Focus</div>
-      <h1>Food</h1>
-    </div>
-    <a class="btn" routerLink="/dashboard">Back</a>
-  </header>
+  <app-focus-header title="Food"></app-focus-header>
 
   <main class="content">
     <div class="controls-bar">
       <div class="meal-type-toggle">
-        <button 
-          class="toggle-btn" 
+        <button
+          class="toggle-btn"
           [class.active]="selectedMealView() === 'all'"
           (click)="selectedMealView.set('all')">
           All
         </button>
-        <button 
-          class="toggle-btn" 
+        <button
+          class="toggle-btn"
           [class.active]="selectedMealView() === 'breakfast'"
           (click)="selectedMealView.set('breakfast')">
           Breakfast
         </button>
-        <button 
-          class="toggle-btn" 
+        <button
+          class="toggle-btn"
           [class.active]="selectedMealView() === 'lunch'"
           (click)="selectedMealView.set('lunch')">
           Lunch
         </button>
-        <button 
-          class="toggle-btn" 
+        <button
+          class="toggle-btn"
           [class.active]="selectedMealView() === 'dinner'"
           (click)="selectedMealView.set('dinner')">
           Dinner
         </button>
-        <button 
-          class="toggle-btn" 
+        <button
+          class="toggle-btn"
           [class.active]="selectedMealView() === 'snack'"
           (click)="selectedMealView.set('snack')">
           Snack
         </button>
       </div>
+
+      <button class="toggle-btn refresh-btn" type="button" (click)="loadMealRecommendations()">
+        Refresh Meals
+      </button>
     </div>
 
-    <div class="meals-container">
-      <article class="meal-card" *ngFor="let meal of getFilteredMeals()">
+    <div class="loading-state" *ngIf="loadingMeals()">Loading real meals from API...</div>
+    <div class="error-state" *ngIf="mealError()">{{ mealError() }}</div>
+    <div class="empty-state" *ngIf="!loadingMeals() && !mealError() && !hasMeals()">
+      No meals available for this filter.
+    </div>
+
+    <div class="meals-container" *ngIf="!loadingMeals() && !mealError() && hasMeals()">
+      <article class="meal-card" *ngFor="let meal of displayMeals(); trackBy: trackByMealId">
         <div class="meal-header">
           <h3>{{ meal.recipe.title }}</h3>
           <div class="meal-time">{{ meal.time }}</div>
@@ -75,24 +78,15 @@
           <div class="macro-bar-inner">
             <div
               class="macro-segment protein"
-              [style.width.%]="
-                (meal.recipe.nutritionPerServing.protein * 4) /
-                  (meal.recipe.nutritionPerServing.calories || 1) * 100
-              "
+              [style.width.%]="meal.macroPercentages.protein"
             ></div>
             <div
               class="macro-segment carbs"
-              [style.width.%]="
-                (meal.recipe.nutritionPerServing.carbs * 4) /
-                  (meal.recipe.nutritionPerServing.calories || 1) * 100
-              "
+              [style.width.%]="meal.macroPercentages.carbs"
             ></div>
             <div
               class="macro-segment fat"
-              [style.width.%]="
-                (meal.recipe.nutritionPerServing.fat * 9) /
-                  (meal.recipe.nutritionPerServing.calories || 1) * 100
-              "
+              [style.width.%]="meal.macroPercentages.fat"
             ></div>
           </div>
         </div>
@@ -100,7 +94,7 @@
         <div class="recipe-section">
           <h4>Ingredients</h4>
           <ul class="ingredients-list">
-            <li *ngFor="let ing of meal.recipe.ingredients">
+            <li *ngFor="let ing of meal.recipe.ingredients; trackBy: trackByIngredient">
               <span class="amount">{{ ing.amount | number: '1.0-2' }} {{ ing.unit }}</span>
               <span class="name">{{ ing.name }}</span>
             </li>
@@ -118,24 +112,24 @@
       </article>
     </div>
 
-    <div class="daily-total-card">
+    <div class="daily-total-card" *ngIf="!loadingMeals() && !mealError() && hasMeals()">
       <h3>Daily Total</h3>
       <div class="daily-stats">
         <div class="stat-item">
           <span class="stat-label">Calories</span>
-          <span class="stat-value">{{ getTotalDailyNutrition().calories | number: '1.0-0' }}</span>
+          <span class="stat-value">{{ dailyNutrition().calories | number: '1.0-0' }}</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Protein</span>
-          <span class="stat-value">{{ getTotalDailyNutrition().protein | number: '1.0-1' }}g</span>
+          <span class="stat-value">{{ dailyNutrition().protein | number: '1.0-1' }}g</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Carbs</span>
-          <span class="stat-value">{{ getTotalDailyNutrition().carbs | number: '1.0-1' }}g</span>
+          <span class="stat-value">{{ dailyNutrition().carbs | number: '1.0-1' }}g</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Fat</span>
-          <span class="stat-value">{{ getTotalDailyNutrition().fat | number: '1.0-1' }}g</span>
+          <span class="stat-value">{{ dailyNutrition().fat | number: '1.0-1' }}g</span>
         </div>
       </div>
     </div>
