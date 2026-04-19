@@ -1,8 +1,7 @@
 <section class="page">
-  <app-toast *ngIf="toast()" [message]="toast()" position="top-right"></app-toast>
-  <app-focus-header title="Sport"></app-focus-header>
+  <app-focus-page-header title="Sport" [toastMessage]="toast()"></app-focus-page-header>
 
-  <main class="content">
+  <main class="content container-xl pb-5">
     <div class="controls-bar">
 
       <div class="location-toggle">
@@ -20,10 +19,10 @@
         </button>
       </div>
 
-      <div class="category-carousel">
+      <div class="category-carousel d-flex flex-wrap gap-2">
         <button
           *ngFor="let cat of categories"
-          class="category-btn"
+          class="category-btn btn btn-sm"
           [class.active]="selectedCategory() === cat.key"
           (click)="selectCategory(cat.key)">
           {{ cat.label }}
@@ -31,14 +30,17 @@
       </div>
     </div>
 
-    <div class="loading" *ngIf="loading()">
-      <p>Loading exercises...</p>
-    </div>
+    <app-page-state
+      [loading]="loading()"
+      [empty]="exerciseRows().length === 0"
+      loadingText="Loading exercises..."
+      emptyText="No exercises found for this selection">
+    </app-page-state>
 
     <div class="exercises-container" *ngIf="!loading() && exerciseRows().length > 0">
       <article class="exercise-card" *ngFor="let row of exerciseRows(); trackBy: trackByExerciseId">
         <ng-container *ngIf="row.exercise as exercise">
-        <div class="exercise-header">
+        <div class="exercise-header d-flex justify-content-between align-items-start gap-3">
           <h3>{{ exercise.name }}</h3>
           <div class="exercise-meta">
             {{ exercise.default_sets }} sets × {{ exercise.default_reps }} reps
@@ -52,6 +54,7 @@
             <label>Sets</label>
             <input
               type="number"
+              class="form-control"
               [ngModel]="row.state.sets"
               (ngModelChange)="updateExerciseState(exercise.id, 'sets', $event)"
               min="0"
@@ -62,6 +65,7 @@
             <label>Reps</label>
             <input
               type="number"
+              class="form-control"
               [ngModel]="row.state.reps"
               (ngModelChange)="updateExerciseState(exercise.id, 'reps', $event)"
               min="0"
@@ -81,12 +85,8 @@
       </article>
     </div>
 
-    <div class="empty-state" *ngIf="!loading() && exerciseRows().length === 0">
-      <p>No exercises found for this selection</p>
-    </div>
-
     <div class="action-bar" *ngIf="!loading() && exerciseRows().length > 0">
-      <button class="save-btn" (click)="saveSession()" [disabled]="!hasCompletedExercises()">
+      <button class="save-btn btn btn-light" (click)="saveSession()" [disabled]="!hasCompletedExercises()">
         Save Workout
       </button>
     </div>

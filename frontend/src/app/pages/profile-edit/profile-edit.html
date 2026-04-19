@@ -1,14 +1,12 @@
 <section class="page">
-  <header class="top">
-    <div class="brand">ZERO</div>
-    <div class="title">
-      <div class="kicker">Settings</div>
-      <h1>Edit Profile</h1>
-    </div>
-    <a class="btn" routerLink="/dashboard">Back</a>
-  </header>
+  <app-page-top-header
+    brand="ZΞRO"
+    kicker="Settings"
+    title="Edit Profile"
+    backRoute="/profile">
+  </app-page-top-header>
 
-  <main class="content">
+  <main class="content container-lg pb-5">
     <form [formGroup]="form" (ngSubmit)="save()" class="edit-form" *ngIf="!loadingProfile()">
       <div class="form-group">
         <label for="fullName">Full Name</label>
@@ -17,7 +15,7 @@
           type="text"
           formControlName="fullName"
           placeholder="Your name"
-          class="input-field"
+          class="input-field form-control"
           [class.error]="fullNameControl.invalid && fullNameControl.touched"
         />
         <small *ngIf="fullNameControl.errors?.['required'] && fullNameControl.touched" class="error-text">
@@ -37,7 +35,7 @@
           placeholder="1-14"
           min="1"
           max="14"
-          class="input-field"
+          class="input-field form-control"
           [class.error]="weeklyGoalControl.invalid && weeklyGoalControl.touched"
         />
         <small *ngIf="weeklyGoalControl.errors?.['required'] && weeklyGoalControl.touched" class="error-text">
@@ -56,7 +54,7 @@
             min="30"
             max="300"
             step="0.1"
-            class="input-field"
+            class="input-field form-control"
             [class.error]="weightControl.invalid && weightControl.touched"
           />
             <small *ngIf="weightControl.errors?.['required'] && weightControl.touched" class="error-text">
@@ -74,7 +72,7 @@
             min="100"
             max="250"
             step="1"
-            class="input-field"
+            class="input-field form-control"
             [class.error]="heightControl.invalid && heightControl.touched"
           />
           <small *ngIf="heightControl.errors?.['required'] && heightControl.touched" class="error-text">
@@ -83,18 +81,70 @@
         </div>
       </div>
 
+      <fieldset class="interests-section">
+        <legend>Nutrition Targets (optional)</legend>
+        <div class="measurements-grid">
+          <div class="form-group">
+            <label for="macroCaloriesTarget">Daily calories target</label>
+            <input
+              id="macroCaloriesTarget"
+              type="number"
+              formControlName="macroCaloriesTarget"
+              placeholder="e.g., 2400"
+              min="0"
+              max="10000"
+              class="input-field form-control"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="macroProteinTarget">Protein target (g)</label>
+            <input
+              id="macroProteinTarget"
+              type="number"
+              formControlName="macroProteinTarget"
+              placeholder="e.g., 180"
+              min="0"
+              max="1000"
+              class="input-field form-control"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="macroCarbsTarget">Carbs target (g)</label>
+            <input
+              id="macroCarbsTarget"
+              type="number"
+              formControlName="macroCarbsTarget"
+              placeholder="e.g., 260"
+              min="0"
+              max="1500"
+              class="input-field form-control"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="macroFatTarget">Fat target (g)</label>
+            <input
+              id="macroFatTarget"
+              type="number"
+              formControlName="macroFatTarget"
+              placeholder="e.g., 70"
+              min="0"
+              max="500"
+              class="input-field form-control"
+            />
+          </div>
+        </div>
+      </fieldset>
+
       <div class="form-group">
         <label for="fitnessGoal">Fitness Goal</label>
-        <select
-          id="fitnessGoal"
-          formControlName="fitnessGoal"
-          class="input-field"
-          [class.error]="fitnessGoalControl.invalid && fitnessGoalControl.touched"
-        >
-          <option value="bulk">Muscle Gain (Bulk)</option>
-          <option value="cut">Definition (Cut)</option>
-          <option value="maintain">Maintain</option>
-        </select>
+        <app-ui-select
+          ariaLabel="Fitness Goal"
+          [options]="fitnessGoalOptions"
+          formControlName="fitnessGoal">
+        </app-ui-select>
         <small *ngIf="fitnessGoalControl.errors?.['required'] && fitnessGoalControl.touched" class="error-text">
           Fitness goal is required
         </small>
@@ -103,24 +153,24 @@
       <fieldset class="interests-section">
         <legend>What are you interested in?</legend>
         <div class="interest-checks" formGroupName="interests">
-          <label class="check-label">
-            <input type="checkbox" formControlName="sport" />
+          <label class="check-label form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" formControlName="sport" />
             <span>Sport</span>
           </label>
-          <label class="check-label">
-            <input type="checkbox" formControlName="food" />
+          <label class="check-label form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" formControlName="food" />
             <span>Food</span>
           </label>
-          <label class="check-label">
-            <input type="checkbox" formControlName="mindset" />
+          <label class="check-label form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" formControlName="mindset" />
             <span>Mindset</span>
           </label>
-          <label class="check-label">
-            <input type="checkbox" formControlName="growth" />
+          <label class="check-label form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" formControlName="growth" />
             <span>Growth</span>
           </label>
-          <label class="check-label">
-            <input type="checkbox" formControlName="challenges" />
+          <label class="check-label form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" formControlName="challenges" />
             <span>Challenges</span>
           </label>
         </div>
@@ -132,7 +182,7 @@
 
       <button
         type="submit"
-        class="submit-btn"
+        class="submit-btn btn btn-light w-100"
         [disabled]="loading() || form.invalid"
       >
         {{ loading() ? 'Saving...' : 'Save Changes' }}

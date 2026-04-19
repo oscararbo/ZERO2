@@ -1,203 +1,175 @@
-# Z-RO: Fitness & Wellness App
+# ZERO — Fitness & Wellness App
 
-Una aplicación full-stack para seguimiento de fitness, nutrición y bienestar mental, construida con Django REST Framework (backend) y Angular (frontend).
+Aplicación full-stack para seguimiento de fitness, nutrición y bienestar mental.
 
-## Características
+## Stack
 
-- **Dashboard**: Vista general del progreso
-- **Páginas Focus**:
-  - **Challenges**: Desafíos y motivación
-  - **Food**: Seguimiento nutricional
-  - **Growth**: Metas de crecimiento personal y diario
-  - **Mindset**: Meditación, citas y diario mental
-  - **Sport**: Actividades deportivas
-- **Autenticación**: Registro, login y gestión de usuarios
-- **Base de datos**: SQLite para desarrollo
+| Capa | Tecnología |
+|------|-----------|
+| Backend | Django + Django REST Framework + SimpleJWT |
+| Frontend | Angular 17+ (standalone, signals) + TypeScript + SCSS |
+| Base de datos | SQLite (desarrollo) |
 
-## Tecnologías
+## Características principales
 
-- **Backend**: Django 4.x, Django REST Framework, SimpleJWT
-- **Frontend**: Angular 21+, TypeScript, SCSS
-- **Base de datos**: SQLite
+- **Dashboard** — resumen del progreso semanal y gráfica de evolución
+- **Sport** — sesiones de entrenamiento, ejercicios por categoría/localización y seguimiento de sets/reps
+- **Food** — objetivos de macros y seguimiento nutricional
+- **Mindset** — journal personal, registro de estado de ánimo y meditación guiada
+- **Growth** — plantillas de crecimiento personal y templates versionados
+- **Challenges** — retos con leaderboard, updates, badges y reminders en-app
+- **Profile** — datos personales, métricas corporales, analytics por área de interés (datos reales del servidor)
 
-## Instalación y Configuración
+## Inicio rápido
 
-### Prerrequisitos
+### Backend
 
-- Python 3.8+
-- Node.js 18+
-- npm o yarn
+```bash
+cd backend
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
 
-### Backend (Django)
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver        # http://127.0.0.1:8000
+```
 
-1. Navega al directorio backend:
-   ```bash
-   cd backend
-   ```
+Datos seed de ejercicios:
+```bash
+python create_exercises.py
+python populate_exercises.py
+```
 
-2. Crea y activa un entorno virtual:
-   ```bash
-   python -m venv .venv
-   # En Windows:
-   .venv\Scripts\activate
-   # En macOS/Linux:
-   source .venv/bin/activate
-   ```
-
-3. Instala dependencias:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Ejecuta migraciones:
-   ```bash
-   python manage.py makemigrations
-   python manage.py migrate
-   ```
-
-5. (Opcional) Crea un superusuario:
-   ```bash
-   python manage.py createsuperuser
-   ```
-
-6. Inicia el servidor:
-   ```bash
-   python manage.py runserver
-   ```
-
-El backend estará disponible en `http://127.0.0.1:8000/`.
-
-### Frontend (Angular)
-
-1. Navega al directorio frontend:
-   ```bash
-   cd frontend
-   ```
-
-2. Instala dependencias:
-   ```bash
-   npm install
-   ```
-
-3. Inicia el servidor de desarrollo:
-   ```bash
-   npm start
-   # o
-   ng serve
-   ```
-
-El frontend estará disponible en `http://localhost:4200/`.
-
-### Build de Producción
-
-Para construir el frontend para producción:
+### Frontend
 
 ```bash
 cd frontend
+npm install
+npm start                         # http://localhost:4200
+```
+
+Build de producción:
+```bash
 npm run build
 ```
 
-Los archivos construidos estarán en `frontend/dist/`.
+## API — Endpoints principales
 
-## API Endpoints
+Todos los endpoints autenticados requieren header `Authorization: Bearer <access_token>`.
 
-### Autenticación
-- `POST /api/accounts/register/` - Registro de usuario
-- `POST /api/accounts/login/` - Login
-- `POST /api/accounts/logout/` - Logout
+### Auth (público)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | `/api/register/` | Registro + creación de perfil |
+| POST | `/api/login/` | Login → devuelve access + refresh tokens |
+| POST | `/api/token/refresh/` | Refresco de access token |
+| GET | `/api/health/` | Healthcheck |
+| GET | `/api/check-username/` | Disponibilidad de username |
+| GET | `/api/check-email/` | Disponibilidad de email |
 
-### Diario (Journal)
-- `GET /api/accounts/journal/` - Obtener entradas del diario
-- `POST /api/accounts/journal/` - Crear nueva entrada
-- `GET /api/accounts/journal/{id}/` - Obtener entrada específica
-- `PUT /api/accounts/journal/{id}/` - Actualizar entrada
-- `DELETE /api/accounts/journal/{id}/` - Eliminar entrada
+### Perfil (autenticado)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/profile/` | Obtener perfil del usuario |
+| PUT | `/api/profile/` | Actualizar perfil (parcial) |
+| GET | `/api/profile/insights/` | Analytics reales por área de interés |
+| GET | `/api/meta/` | Choices y límites de la API (público) |
 
-## Estructura del Proyecto
+### Entrenamientos (autenticado)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/exercises/` | Catálogo de ejercicios (filtrable) |
+| GET | `/api/exercises-by-location/<location>/` | Ejercicios agrupados por categoría |
+| GET/POST | `/api/sessions/` | Sesiones de entrenamiento |
+| GET | `/api/sessions/<id>/` | Detalle de sesión |
+| POST | `/api/completed/` | Registrar ejercicio completado |
+| GET | `/api/progress/` | Stats de progreso para gráfica |
+
+### Mindset (autenticado)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET/POST | `/api/journal/` | Entradas del journal |
+| GET/PUT/DELETE | `/api/journal/<id>/` | Detalle de entrada |
+| GET/POST | `/api/mood/` | Registro de estado de ánimo |
+| GET/POST | `/api/templates/` | Plantillas de usuario |
+| GET | `/api/templates/<kind>/<key>/history/` | Historial de versiones |
+
+### Challenges (autenticado)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET/POST | `/api/challenges/` | Lista / creación de challenges |
+| GET/PUT/DELETE | `/api/challenges/<id>/` | Detalle de challenge |
+| POST | `/api/challenges/<id>/join/` | Unirse a un challenge |
+| POST | `/api/challenges/<id>/leave/` | Salir de un challenge |
+| POST | `/api/challenges/<id>/progress/` | Actualizar progreso |
+| GET | `/api/challenges/<id>/leaderboard/` | Leaderboard paginado |
+| GET | `/api/challenges/<id>/updates/` | Updates paginados |
+| GET | `/api/challenges/analytics/` | Analytics del usuario |
+| GET/PUT | `/api/reminders/` | In-app reminders |
+| GET | `/api/badges/` | Badges del usuario |
+
+## Estructura del proyecto
 
 ```
-Z-RO/
-├── backend/                 # Django backend
-│   ├── accounts/           # App de cuentas de usuario
-│   ├── config/             # Configuración principal
-│   ├── db.sqlite3          # Base de datos SQLite
-│   ├── manage.py
-│   └── requirements.txt
-└── frontend/                # Angular frontend
-    ├── src/
-    │   ├── app/
-    │   │   ├── core/       # Servicios, guards, interceptores
-    │   │   └── pages/      # Páginas de la app
-    │   └── environments/
-    ├── angular.json
-    ├── package.json
-    └── tsconfig.json
+ZERO/
+├── backend/
+│   ├── config/             # settings, urls, wsgi/asgi
+│   ├── api_compat/         # enrutado externo → /api/...
+│   ├── common/             # responses, pagination, exception handler
+│   ├── core_domain/        # modelos y serializers por dominio
+│   └── apps/
+│       ├── account_auth/   # registro, login, check disponibilidad
+│       ├── profiles/       # perfil + insights analytics
+│       ├── workouts/       # ejercicios, sesiones, progreso
+│       ├── mindset/        # journal, mood, templates
+│       └── challenges/     # challenges, leaderboard, badges, reminders
+└── frontend/
+    └── src/app/
+        ├── core/           # servicios, guards, interceptores
+        └── pages/
+            ├── dashboard/
+            ├── profile/
+            ├── profile-edit/
+            ├── focus/      # sport, food, mindset, growth, challenges
+            ├── shared/     # componentes reutilizables
+            ├── login/
+            ├── register/
+            └── register-step2/
 ```
 
-## Desarrollo
+## Tests
 
-### Ejecutar Tests
-
-Backend:
 ```bash
+# Backend (todos los tests)
 cd backend
 python manage.py test
-```
 
-Frontend:
-```bash
+# Backend (módulo específico)
+python manage.py test apps.profiles.tests_api
+
+# Frontend
 cd frontend
 npm test
 ```
 
-### Linting
+## Variables de entorno (backend)
 
-Frontend:
-```bash
-cd frontend
-npm run lint
-```
-
-### Notas de compatibilidad TypeScript 6+
-
-Para evitar errores deprecados reportados por TypeScript en dependencias (por ejemplo `rxjs`) sin romper el build de Angular, se aplicaron estos ajustes:
-
-- En `.vscode/settings.json`:
-   - `"typescript.tsdk": "frontend/node_modules/typescript/lib"`
-   - `"typescript.enablePromptUseWorkspaceTsdk": false`
-- En `frontend/tsconfig.spec.json`:
-   - `"compilerOptions.rootDir": "./src"`
-
-Con esto se corrigen los diagnósticos de editor de TS 6 en `node_modules/rxjs/tsconfig.json` y se mantiene compatibilidad de compilación con el TypeScript del proyecto (`5.9.x`).
-
-También se elimina el aviso de:
-
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `DJANGO_SECRET_KEY` | insecure-dev-key | Clave secreta de Django |
+| `DJANGO_DEBUG` | `true` | Modo debug |
+| `DJANGO_ALLOWED_HOSTS` | `127.0.0.1,localhost` | Hosts permitidos |
+| `APP_VERSION` | `dev` | Versión reportada en `/api/health/` y `/api/meta/` |
 
 ## Despliegue
 
-1. Construye el frontend:
-   ```bash
-   cd frontend
-   npm run build --prod
-   ```
-
-2. Copia los archivos de `frontend/dist/` al directorio estático de Django.
-
-3. Configura variables de entorno para producción.
-
-4. Usa un servidor WSGI como Gunicorn para Django.
-
-## Contribución
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## Licencia
-
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+1. Configura variables de entorno para producción (`DJANGO_DEBUG=false`, `DJANGO_SECRET_KEY`, etc.)
+2. Construye el frontend: `npm run build` en `frontend/`
+3. Sirve Django con Gunicorn o uWSGI detrás de Nginx
+4. Usa PostgreSQL en producción (actualizar `DATABASES` en `settings.py`)
 
 ## Contacto
 

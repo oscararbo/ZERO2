@@ -1,28 +1,47 @@
-<div class="wrap">
-  <div class="card">
-    <div class="logo">ZΞRO</div>
-    <h2>Login</h2>
+<app-auth-layout title="Login" maxWidth="420px">
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <label>Username</label>
-      <input type="text" formControlName="username" placeholder="Name" />
-      <small *ngIf="f['username'].touched && f['username'].invalid">Obligatorio</small>
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label class="field__label" for="login-username">Username</label>
+        <input
+          id="login-username"
+          type="text"
+          formControlName="username"
+          placeholder="Your username"
+          autocomplete="username"
+          class="form-control"
+          [class.is-invalid]="f['username'].touched && f['username'].invalid"
+        />
+        <div class="field__error" [class.field__error--visible]="f['username'].touched && f['username'].invalid">Required</div>
+      </div>
 
+      <div class="field">
+        <label class="field__label" for="login-password">Password</label>
+        <div class="input-wrap">
+          <input
+            id="login-password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            class="form-control"
+            [class.is-invalid]="f['password'].touched && f['password'].invalid"
+          />
+          <button type="button" class="eye-btn" (click)="togglePasswordVisibility()" [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">
+            <i [class]="showPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+          </button>
+        </div>
+        <div class="field__error" [class.field__error--visible]="f['password'].touched && f['password'].invalid">Required</div>
+      </div>
 
-      <label>Password</label>
-      <input type="password" formControlName="password" placeholder="••••••••" />
-      <small *ngIf="f['password'].touched && f['password'].invalid">Obligatorio</small>
-
-
-      <button class="btn" type="submit" [disabled]="loading()">
+      <button class="btn btn-light w-100 submit-btn" type="submit" [disabled]="loading()">
         {{ loading() ? 'Loading...' : 'Enter' }}
       </button>
 
-      <p class="msg" *ngIf="msg()">{{ msg() }}</p>
+      <div class="form-msg" [class.form-msg--visible]="!!msg()">{{ msg() }}</div>
     </form>
 
     <p class="bottom">
       No tienes cuenta? <a routerLink="/register">Regístrate</a>
     </p>
-  </div>
-</div>
+  </app-auth-layout>

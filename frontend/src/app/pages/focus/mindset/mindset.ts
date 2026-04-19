@@ -2,15 +2,16 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { MindsetService, JournalEntry } from '../../../core/mindset.service';
 import { AuthService } from '../../../core/auth.service';
-import { AppToastComponent } from '../../shared/components/toast/toast.component';
-import { FocusHeaderComponent } from '../../shared/components/focus-header/focus-header.component';
+import { TemplateService } from '../../../core/template.service';
+import { FocusPageHeaderComponent } from '../../shared/components/focus-page-header/focus-page-header';
 
 @Component({
   selector: 'app-mindset',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule, AppToastComponent, FocusHeaderComponent],
+  imports: [RouterLink, CommonModule, FormsModule, FocusPageHeaderComponent],
   templateUrl: './mindset.html',
   styleUrls: ['./mindset.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,6 +19,8 @@ import { FocusHeaderComponent } from '../../shared/components/focus-header/focus
 export class MindsetComponent implements OnInit {
   private mindsetService = inject(MindsetService);
   private authService = inject(AuthService);
+  private templateService = inject(TemplateService);
+  private http = inject(HttpClient);
 
   dailyQuote = signal<string>('');
   meditationTime = signal<number>(5);
@@ -25,9 +28,18 @@ export class MindsetComponent implements OnInit {
   timeLeft = signal<number>(0);
   journalEntry = signal<string>('');
   journalEntries = signal<JournalEntry[]>([]);
+  moodToday = signal<number | null>(null);
+  moodHistory = signal<Array<{ date: string; value: number }>>([]);
   isLoading = signal<boolean>(false);
   isSaving = signal<boolean>(false);
   toast = signal('');
+  readonly meditationPresets = [5, 10, 15, 20];
+  readonly breathingSteps = [
+    'Inhale deeply for 4 seconds',
+    'Hold for 4 seconds',
+    'Exhale slowly for 6 seconds',
+    'Pause for 2 seconds and repeat 4 rounds',
+  ];
 
   readonly isAuthenticated = computed(() => this.authService.isLogged());
 
@@ -55,19 +67,28 @@ export class MindsetComponent implements OnInit {
     }));
   });
 
-  private intervalId: any;
+  readonly moodAverage = computed(() => {
+    const history = this.moodHistory();
+    if (!history.length) return null;
+    const avg = history.reduce((acc, item) => acc + item.value, 0) / history.length;
+    return Number(avg.toFixed(1));
+  });
 
-  quotes = [
-    "The only way to do great work is to love what you do. - Steve Jobs",
-    "Believe you can and you're halfway there. - Theodore Roosevelt",
-    "The mind is everything. What you think you become. - Buddha",
-    "Your only limit is you.",
-    "Success is not final, failure is not fatal: It is the courage to continue that counts. - Winston Churchill",
-    "The future belongs to those who believe in the beauty of their dreams. - Eleanor Roosevelt"
-  ];
+  readonly moodTrendLabel = computed(() => {
+    const average = this.moodAverage();
+    if (average === null) return 'No data yet';
+    if (average >= 4.2) return 'Very positive';
+    if (average >= 3.4) return 'Stable';
+    if (average >= 2.6) return 'Needs recovery';
+    return 'Low energy';
+  });
+
+  private intervalId: any;
+  private readonly QUOTE_CACHE_KEY = 'zero_daily_quote_mindset';
 
   ngOnInit(): void {
-    this.setRandomQuote();
+    this.loadDailyQuote();
+    this.loadMoodHistory();
     this.loadJournalEntries();
   }
 
@@ -77,15 +98,65 @@ export class MindsetComponent implements OnInit {
     }
   }
 
-  setRandomQuote(): void {
-    const randomIndex = Math.floor(Math.random() * this.quotes.length);
-    this.dailyQuote.set(this.quotes[randomIndex]);
+  loadDailyQuote(): void {
+    const today = new Date().toISOString().slice(0, 10);
+    try {
+      const cached = localStorage.getItem(this.QUOTE_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.date === today) { this.dailyQuote.set(parsed.text); return; }
+      }
+    } catch { /* ignore */ }
+    this.http.get<any[]>('https://api.quotable.io/quotes/random?tags=inspirational|motivational&limit=1').subscribe({
+      next: (res) => {
+        const q = Array.isArray(res) ? res[0] : res;
+        const text = q?.content ? `${q.content}${q.author ? ' — ' + q.author : ''}` : '';
+        if (text) {
+          this.dailyQuote.set(text);
+          try { localStorage.setItem(this.QUOTE_CACHE_KEY, JSON.stringify({ date: today, text })); } catch { /* ignore */ }
+        }
+      },
+      error: () => {},
+    });
   }
 
   setMeditationTime(value: number | string): void {
     const next = Number(value);
     if (Number.isNaN(next)) return;
     this.meditationTime.set(Math.max(1, Math.min(60, next)));
+  }
+
+  applyMeditationPreset(minutes: number): void {
+    this.setMeditationTime(minutes);
+  }
+
+  setMood(value: number): void {
+    this.moodToday.set(Math.max(1, Math.min(5, value)));
+  }
+
+  saveMood(): void {
+    const mood = this.moodToday();
+    if (!mood) return;
+
+    if (!this.authService.isLogged()) {
+      this.showToast('Log in to sync mood history.');
+      return;
+    }
+
+    this.templateService.saveMood(mood).subscribe({
+      next: (entry) => {
+        const next = [...this.moodHistory()];
+        const existingIndex = next.findIndex((item) => item.date === entry.date);
+        if (existingIndex >= 0) {
+          next[existingIndex] = { date: entry.date, value: entry.value };
+        } else {
+          next.unshift({ date: entry.date, value: entry.value });
+        }
+        this.moodHistory.set(next.slice(0, 14));
+        this.showToast('Mood check-in saved.');
+      },
+      error: () => this.showToast('Could not sync mood check-in.'),
+    });
   }
 
   setJournalEntry(value: string): void {
@@ -159,6 +230,22 @@ export class MindsetComponent implements OnInit {
         this.toast.set('');
       }
     }, 2600);
+  }
+
+  private loadMoodHistory(): void {
+    if (!this.authService.isLogged()) {
+      this.moodHistory.set([]);
+      return;
+    }
+
+    this.templateService.getMoodEntries(14).subscribe({
+      next: (entries) => {
+        this.moodHistory.set(entries.map((entry) => ({ date: entry.date, value: entry.value })));
+      },
+      error: () => {
+        this.moodHistory.set([]);
+      },
+    });
   }
 
   trackByJournalEntryId(_index: number, entry: JournalEntry): number {

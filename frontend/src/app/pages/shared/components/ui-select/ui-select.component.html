@@ -1,0 +1,26 @@
+<div class="ui-select" [class.open]="open()" [class.disabled]="disabled()">
+  <button
+    type="button"
+    class="trigger"
+    [attr.aria-label]="ariaLabel"
+    [attr.aria-expanded]="open()"
+    [disabled]="disabled()"
+    (click)="toggle()"
+    (blur)="touch()"
+  >
+    <span class="label">{{ selectedLabel() }}</span>
+    <span class="arrow" [class.up]="open()">▾</span>
+  </button>
+
+  <div class="menu" *ngIf="open()">
+    <button
+      type="button"
+      class="option"
+      *ngFor="let option of options; trackBy: trackByValue"
+      [class.active]="option.value === value()"
+      (click)="select(option.value)"
+    >
+      {{ option.label }}
+    </button>
+  </div>
+</div>

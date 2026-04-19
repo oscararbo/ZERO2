@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import {
   ChallengeService,
@@ -16,9 +15,10 @@ import {
   PaginatedUpdatesResponse,
 } from '../../../core/challenge.service';
 import { AuthService } from '../../../core/auth.service';
-import { AppToastComponent } from '../../shared/components/toast/toast.component';
-import { FocusHeaderComponent } from '../../shared/components/focus-header/focus-header.component';
+import { TemplateService, UserTemplateVersion } from '../../../core/template.service';
+import { FocusPageHeaderComponent } from '../../shared/components/focus-page-header/focus-page-header';
 import { LoadMoreButtonComponent } from '../../shared/components/load-more-button/load-more-button.component';
+import { UiSelectComponent, UiSelectOption } from '../../shared/components/ui-select/ui-select.component';
 
 type ChallengeViewModel = Challenge & {
   isOwner: boolean;
@@ -33,13 +33,12 @@ type ChallengeViewModel = Challenge & {
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     FormsModule,
     ReactiveFormsModule,
     ScrollingModule,
-    AppToastComponent,
-    FocusHeaderComponent,
+    FocusPageHeaderComponent,
     LoadMoreButtonComponent,
+    UiSelectComponent,
   ],
   templateUrl: './challenges.html',
   styleUrls: ['./challenges.scss'],
@@ -48,6 +47,7 @@ type ChallengeViewModel = Challenge & {
 export class ChallengesComponent implements OnInit {
   private challengeService = inject(ChallengeService);
   private authService = inject(AuthService);
+  private templateService = inject(TemplateService);
   private fb = inject(FormBuilder);
 
   challenges = signal<Challenge[]>([]);
@@ -70,6 +70,7 @@ export class ChallengesComponent implements OnInit {
   badges = signal<UserBadge[]>([]);
   analytics = signal<ChallengeAnalytics | null>(null);
   loadingInsights = signal(true);
+  userTemplates = signal<UserTemplateVersion[]>([]);
 
   expandedId = signal<number | null>(null);
   progressEditing = signal<number | null>(null);
@@ -95,10 +96,18 @@ export class ChallengesComponent implements OnInit {
     { key: 'general', label: 'General' },
   ];
 
-  readonly sortOptions = [
-    { key: 'recent' as const, label: 'Most Recent' },
-    { key: 'popular' as const, label: 'Most Popular' },
-    { key: 'completed' as const, label: 'Most Completed' },
+  readonly sortOptions: UiSelectOption[] = [
+    { value: 'recent', label: 'Most Recent' },
+    { value: 'popular', label: 'Most Popular' },
+    { value: 'completed', label: 'Most Completed' },
+  ];
+
+  readonly categoryOptions: UiSelectOption[] = [
+    { value: 'sport', label: 'Sport' },
+    { value: 'nutrition', label: 'Nutrition' },
+    { value: 'mindset', label: 'Mindset' },
+    { value: 'growth', label: 'Growth' },
+    { value: 'general', label: 'General' },
   ];
 
   readonly categoryLabelByKey: Partial<Record<string, string>> = {
@@ -124,6 +133,36 @@ export class ChallengesComponent implements OnInit {
     duration_days: [7, [Validators.required, Validators.min(1), Validators.max(365)]],
     target_count: [1, [Validators.required, Validators.min(1), Validators.max(1000)]],
   });
+
+  readonly challengeTemplates: ReadonlyArray<{
+    title: string;
+    description: string;
+    category: ChallengeCategory;
+    duration_days: number;
+    target_count: number;
+  }> = [
+    {
+      title: '14-Day Push-Up Streak',
+      description: 'Complete your daily push-up target and post one update each day.',
+      category: 'sport',
+      duration_days: 14,
+      target_count: 14,
+    },
+    {
+      title: 'Hydration Discipline Week',
+      description: 'Hit your hydration target every day and track consistency in updates.',
+      category: 'nutrition',
+      duration_days: 7,
+      target_count: 7,
+    },
+    {
+      title: 'Morning Journal Reset',
+      description: 'Write a short mindset journal entry each morning before 9 AM.',
+      category: 'mindset',
+      duration_days: 10,
+      target_count: 10,
+    },
+  ];
 
   private readonly visibleChallengesComputed = computed(() => {
     const query = this.searchTerm().trim().toLowerCase();
@@ -163,6 +202,24 @@ export class ChallengesComponent implements OnInit {
   });
 
   readonly hasExpandedCard = computed(() => this.expandedId() !== null);
+
+  readonly overviewStats = computed(() => {
+    const list = this.visibleChallenges();
+    const joined = list.filter((c) => c.isParticipating).length;
+    const completed = list.filter((c) => c.my_participation?.completed).length;
+    const expiringSoon = list.filter((c) => !c.is_expired && c.days_left <= 2).length;
+    const mine = list.filter((c) => c.isOwner).length;
+    const participationRate = list.length ? Math.round((joined / list.length) * 100) : 0;
+
+    return {
+      total: list.length,
+      joined,
+      completed,
+      expiringSoon,
+      mine,
+      participationRate,
+    };
+  });
 
   readonly leaderboardItems = computed(() => {
     const source = this.leaderboardByChallenge();
@@ -235,6 +292,19 @@ export class ChallengesComponent implements OnInit {
     this.loadChallenges();
     this.loadInsights();
     this.loadReminders();
+    this.loadUserTemplates();
+  }
+
+  loadUserTemplates(): void {
+    if (!this.currentUsername) {
+      this.userTemplates.set([]);
+      return;
+    }
+
+    this.templateService.getTemplates('challenge').subscribe({
+      next: (items) => this.userTemplates.set(items),
+      error: () => this.userTemplates.set([]),
+    });
   }
 
   setTab(tab: 'all' | 'mine' | 'joined' | 'create'): void {
@@ -251,8 +321,64 @@ export class ChallengesComponent implements OnInit {
     this.searchTerm.set(value);
   }
 
-  setSort(mode: 'recent' | 'popular' | 'completed'): void {
-    this.sortMode.set(mode);
+  setSort(mode: string): void {
+    if (mode === 'recent' || mode === 'popular' || mode === 'completed') {
+      this.sortMode.set(mode);
+    }
+  }
+
+  applyTemplate(template: {
+    title: string;
+    description: string;
+    category: ChallengeCategory;
+    duration_days: number;
+    target_count: number;
+  }): void {
+    this.createForm.patchValue(template);
+    this.activeTab.set('create');
+  }
+
+  applyUserTemplate(template: UserTemplateVersion): void {
+    const payload = template.payload as Partial<{
+      title: string;
+      description: string;
+      category: ChallengeCategory;
+      duration_days: number;
+      target_count: number;
+    }>;
+
+    this.createForm.patchValue({
+      title: payload.title ?? template.title,
+      description: payload.description ?? '',
+      category: payload.category ?? 'general',
+      duration_days: payload.duration_days ?? 7,
+      target_count: payload.target_count ?? 1,
+    });
+    this.activeTab.set('create');
+  }
+
+  saveDraftAsTemplate(): void {
+    const v = this.createForm.getRawValue();
+    const title = (v.title ?? '').trim();
+    if (!title) {
+      this.showToast('Add a challenge title before saving template.', 'error');
+      return;
+    }
+
+    const key = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 80);
+    this.templateService.saveTemplate('challenge', title, {
+      title,
+      description: v.description ?? '',
+      category: v.category,
+      duration_days: v.duration_days,
+      target_count: v.target_count,
+    }, key).subscribe({
+      next: () => {
+        this.showToast('Template saved.', 'success');
+        this.loadUserTemplates();
+      },
+      error: () => this.showToast('Could not save template.', 'error'),
+    });
   }
 
   loadChallenges(): void {
@@ -611,8 +737,8 @@ export class ChallengesComponent implements OnInit {
     return item.key;
   }
 
-  trackBySortKey(_index: number, item: { key: 'recent' | 'popular' | 'completed' }): string {
-    return item.key;
+  trackBySortKey(_index: number, item: UiSelectOption): string {
+    return item.value;
   }
 
   trackByBadgeId(_index: number, badge: UserBadge): number {

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { of, tap } from 'rxjs';
 import { environment } from '../../environments/environments';
 
 export type Exercise = {
@@ -39,6 +40,9 @@ export type ExerciseSession = {
 
 @Injectable({ providedIn: 'root' })
 export class ExerciseService {
+  private readonly cacheTtlMs = 60000;
+  private readonly responseCache = new Map<string, { expiresAt: number; data: any }>();
+
   constructor(private http: HttpClient) {}
 
   getExercisesByLocation(location: 'home' | 'gym', goal?: 'bulk' | 'cut' | 'maintain') {
@@ -46,9 +50,15 @@ export class ExerciseService {
     if (goal) {
       params = params.set('goal', goal);
     }
-    return this.http.get<ExercisesByCategory>(
-      `${environment.apiUrl}/api/accounts/exercises-by-location/${location}/`,
-      { params }
+    const url = `${environment.apiUrl}/api/exercises-by-location/${location}/`;
+    const cacheKey = this.buildCacheKey(url, params);
+    const cached = this.getFromCache<ExercisesByCategory>(cacheKey);
+    if (cached) {
+      return of(cached);
+    }
+
+    return this.http.get<ExercisesByCategory>(url, { params }).pipe(
+      tap((data) => this.setCache(cacheKey, data))
     );
   }
 
@@ -60,9 +70,15 @@ export class ExerciseService {
     if (category) {
       params = params.set('category', category);
     }
-    return this.http.get<Exercise[]>(
-      `${environment.apiUrl}/api/accounts/exercises/`,
-      { params }
+    const url = `${environment.apiUrl}/api/exercises/`;
+    const cacheKey = this.buildCacheKey(url, params);
+    const cached = this.getFromCache<Exercise[]>(cacheKey);
+    if (cached) {
+      return of(cached);
+    }
+
+    return this.http.get<Exercise[]>(url, { params }).pipe(
+      tap((data) => this.setCache(cacheKey, data))
     );
   }
 
@@ -72,14 +88,14 @@ export class ExerciseService {
       params = params.set('location', location);
     }
     return this.http.get<ExerciseSession[]>(
-      `${environment.apiUrl}/api/accounts/sessions/`,
+      `${environment.apiUrl}/api/sessions/`,
       { params }
     );
   }
 
   getSession(sessionId: number) {
     return this.http.get<ExerciseSession>(
-      `${environment.apiUrl}/api/accounts/sessions/${sessionId}/`
+      `${environment.apiUrl}/api/sessions/${sessionId}/`
     );
   }
 
@@ -93,7 +109,7 @@ export class ExerciseService {
     }>;
   }) {
     return this.http.post<ExerciseSession>(
-      `${environment.apiUrl}/api/accounts/sessions/`,
+      `${environment.apiUrl}/api/sessions/`,
       data
     );
   }
@@ -105,7 +121,7 @@ export class ExerciseService {
     reps_per_set: number;
   }) {
     return this.http.post<CompletedExercise>(
-      `${environment.apiUrl}/api/accounts/completed/`,
+      `${environment.apiUrl}/api/completed/`,
       data
     );
   }
@@ -115,8 +131,27 @@ export class ExerciseService {
       labels: string[];
       values: number[];
     }>(
-      `${environment.apiUrl}/api/accounts/progress/`,
+      `${environment.apiUrl}/api/progress/`,
       { params: location ? { location } : {} }
     );
+  }
+
+  private buildCacheKey(url: string, params: HttpParams): string {
+    const serialized = params.keys().sort().map((key) => `${key}=${params.getAll(key)?.join(',') ?? ''}`).join('&');
+    return `${url}?${serialized}`;
+  }
+
+  private getFromCache<T>(key: string): T | null {
+    const cached = this.responseCache.get(key);
+    if (!cached) return null;
+    if (cached.expiresAt < Date.now()) {
+      this.responseCache.delete(key);
+      return null;
+    }
+    return cached.data as T;
+  }
+
+  private setCache(key: string, data: any): void {
+    this.responseCache.set(key, { expiresAt: Date.now() + this.cacheTtlMs, data });
   }
 }

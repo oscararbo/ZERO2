@@ -3,12 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
-import { ProfileService, Profile, FitnessGoal } from '../../core/profile.service';
+import { AuthLayoutComponent } from '../shared/components/auth-layout/auth-layout';
+import { extractApiErrorMessage } from '../../core/api-envelope';
+import { UiSelectComponent, UiSelectOption } from '../shared/components/ui-select/ui-select.component';
+
+export type FitnessGoal = 'bulk' | 'cut' | 'maintain';
 
 @Component({
   selector: 'app-register-step2',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AuthLayoutComponent, UiSelectComponent],
   templateUrl: './register-step2.html',
   styleUrls: ['./register-step2.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,7 +21,6 @@ export class RegisterStep2Component {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private auth = inject(AuthService);
-  private profiles = inject(ProfileService);
 
   msg = signal('');
   loading = signal(false);
@@ -30,89 +33,110 @@ export class RegisterStep2Component {
     { key: 'challenges', label: 'Challenges' },
   ] as const;
 
+  readonly fitnessGoalOptions: UiSelectOption[] = [
+    { value: 'bulk', label: 'Muscle Gain' },
+    { value: 'cut', label: 'Definition' },
+    { value: 'maintain', label: 'Maintain' },
+  ];
+
   trackByInterestKey(_index: number, interest: (typeof this.interestsList)[number]): string {
     return interest.key;
   }
 
+  // All fields empty by default — no pre-fill from previous profile
   form = this.fb.nonNullable.group({
     fullName: ['', [Validators.required, Validators.minLength(2)]],
-    weeklyGoal: [4, [Validators.required, Validators.min(1), Validators.max(14)]],
-    fitnessGoal: ['bulk' as FitnessGoal, [Validators.required]],
-    weight: [0, [Validators.required, Validators.min(30), Validators.max(300)]],
-    height: [0, [Validators.required, Validators.min(100), Validators.max(250)]],
+    weeklyGoal: [null as unknown as number, [Validators.required, Validators.min(1), Validators.max(14)]],
+    fitnessGoal: ['' as FitnessGoal, [Validators.required]],
+    weight: [null as unknown as number, [Validators.required, Validators.min(30), Validators.max(300)]],
+    height: [null as unknown as number, [Validators.required, Validators.min(100), Validators.max(250)]],
     interests: this.fb.nonNullable.group({
-      sport: [true],
+      sport: [false],
       food: [false],
       mindset: [false],
-      growth: [true],
+      growth: [false],
       challenges: [false],
     }),
   });
 
   constructor() {
-    if (!this.auth.isLogged()) {
-      this.router.navigateByUrl('/login');
-      return;
-    }
-
-    const local = this.profiles.getLocal();
-
-    if (local) {
-      this.form.patchValue({
-        fullName: local.full_name ?? '',
-        weeklyGoal: local.weekly_goal ?? 4,
-        fitnessGoal: (local.fitness_goal ?? 'bulk') as FitnessGoal,
-        weight: local.weight ?? 0,
-        height: local.height ?? 0,
-        interests: {
-          sport: !!local.sport,
-          food: !!local.food,
-          mindset: !!local.mindset,
-          growth: !!local.growth,
-          challenges: !!local.challenges,
-        },
-      });
+    // Redirect to register if step 1 data is missing
+    const step1 = this.getStep1Data();
+    if (!step1) {
+      this.router.navigateByUrl('/register');
     }
   }
 
-  private buildDto(): Profile {
+  private getStep1Data(): { username: string; email: string; password: string } | null {
+    try {
+      const raw = localStorage.getItem('zero_reg_step1');
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  submit() {
+    this.msg.set('');
+    this.form.markAllAsTouched();
+    if (this.form.invalid) {
+      this.msg.set('Please complete all required fields.');
+      return;
+    }
+
+    const interests = this.form.controls.interests.getRawValue();
+    const hasAtLeastOneFocus = Object.values(interests).some(Boolean);
+    if (!hasAtLeastOneFocus) {
+      this.msg.set('Select at least one focus area.');
+      return;
+    }
+
+    const step1 = this.getStep1Data();
+    if (!step1) {
+      this.msg.set('Session expired. Please start registration again.');
+      this.router.navigateByUrl('/register');
+      return;
+    }
+
     const v = this.form.getRawValue();
 
-    return {
+    const payload: Record<string, unknown> = {
+      // Step 1 data
+      username: step1.username,
+      email: step1.email,
+      password: step1.password,
+      // Step 2 data
       full_name: v.fullName,
       weekly_goal: v.weeklyGoal,
       fitness_goal: v.fitnessGoal,
       weight: v.weight,
       height: v.height,
-      sport: v.interests.sport,
-      food: v.interests.food,
-      mindset: v.interests.mindset,
-      growth: v.interests.growth,
-      challenges: v.interests.challenges,
+      macro_calories_target: 0,
+      macro_protein_target: 0,
+      macro_carbs_target: 0,
+      macro_fat_target: 0,
+      sport: interests.sport,
+      food: interests.food,
+      mindset: interests.mindset,
+      growth: interests.growth,
+      challenges: interests.challenges,
     };
-  }
-
-  submit() {
-    this.msg.set('');
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      this.msg.set('Completa los campos.');
-      return;
-    }
 
     this.loading.set(true);
-    const dto = this.buildDto();
 
-    this.profiles.setLocal(dto);
-
-    this.profiles.saveProfile(dto).subscribe({
-      next: () => {
+    this.auth.register(payload).subscribe({
+      next: (res) => {
         this.loading.set(false);
+        // Clean up step 1 temporary data
+        localStorage.removeItem('zero_reg_step1');
+        // Set session with tokens returned by register
+        this.auth.setSession(res.access, res.refresh, res.username);
         this.router.navigateByUrl('/dashboard');
       },
-      error: () => {
+      error: (err) => {
         this.loading.set(false);
-        this.router.navigateByUrl('/dashboard');
+        this.msg.set(extractApiErrorMessage(err, 'Could not create account. Please try again.'));
       },
     });
   }

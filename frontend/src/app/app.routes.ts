@@ -55,5 +55,5 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
 
-  { path: '**', redirectTo: '' }
+  { path: '**', loadComponent: () => import('./pages/not-found/not-found').then((m) => m.NotFoundComponent) }
 ];

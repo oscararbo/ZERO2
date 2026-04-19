@@ -38,40 +38,30 @@ export type MealRecommendation = {
 })
 export class NutritionService {
   private mealDbBase = 'https://www.themealdb.com/api/json/v1/1';
-  private openFoodFactsBase = 'https://world.openfoodfacts.org/cgi/search.pl';
+  private openFoodFactsBase = 'https://world.openfoodfacts.org/api/v2/search';
 
   constructor(private http: HttpClient) {}
 
   getNutritionInfo(foodName: string): Observable<NutritionInfo> {
     const params = {
       search_terms: foodName,
-      search_simple: '1',
-      action: 'process',
-      json: '1',
       page_size: '1',
+      fields: 'nutriments',
+      json: '1',
     };
 
     return this.http.get<any>(this.openFoodFactsBase, { params }).pipe(
       map((response) => {
         const product = response?.products?.[0];
-        const nutriments = product?.nutriments ?? {};
-        const calories = Number(nutriments['energy-kcal_100g'] ?? nutriments.energy_kcal_100g ?? 0);
-        const protein = Number(nutriments.proteins_100g ?? 0);
-        const carbs = Number(nutriments.carbohydrates_100g ?? 0);
-        const fat = Number(nutriments.fat_100g ?? 0);
-
-        if (!calories && !protein && !carbs && !fat) {
-          return this.getFallbackNutrition(foodName);
-        }
-
+        const n = product?.nutriments ?? {};
         return {
-          calories: this.round(calories),
-          protein: this.round(protein),
-          carbs: this.round(carbs),
-          fat: this.round(fat),
+          calories: this.round(Number(n['energy-kcal_100g'] ?? n['energy-kcal'] ?? 0)),
+          protein:  this.round(Number(n.proteins_100g ?? n.proteins ?? 0)),
+          carbs:    this.round(Number(n.carbohydrates_100g ?? n.carbohydrates ?? 0)),
+          fat:      this.round(Number(n.fat_100g ?? n.fat ?? 0)),
         };
       }),
-      catchError(() => of(this.getFallbackNutrition(foodName)))
+      catchError(() => of({ calories: 0, protein: 0, carbs: 0, fat: 0 }))
     );
   }
 
@@ -170,7 +160,7 @@ export class NutritionService {
           fat: this.round(total.fat / divisor),
         };
       }),
-      catchError(() => of({ calories: 260, protein: 14, carbs: 24, fat: 10 }))
+      catchError(() => of({ calories: 0, protein: 0, carbs: 0, fat: 0 }))
     );
   }
 
@@ -197,17 +187,6 @@ export class NutritionService {
     const amount = numeric ? Number(numeric[0]) : 1;
     const unit = measure.replace(/[\d.]/g, '').trim() || 'portion';
     return { amount: this.round(amount), unit };
-  }
-
-  private getFallbackNutrition(foodName: string): NutritionInfo {
-    const name = foodName.toLowerCase();
-    if (name.includes('chicken') || name.includes('egg') || name.includes('tuna') || name.includes('salmon')) {
-      return { calories: 190, protein: 24, carbs: 2, fat: 8 };
-    }
-    if (name.includes('rice') || name.includes('pasta') || name.includes('bread') || name.includes('potato')) {
-      return { calories: 180, protein: 5, carbs: 34, fat: 2 };
-    }
-    return { calories: 140, protein: 6, carbs: 16, fat: 5 };
   }
 
   private round(value: number): number {

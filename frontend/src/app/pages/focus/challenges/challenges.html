@@ -1,18 +1,21 @@
 <section class="page">
-  <app-focus-header title="Challenges" [showBack]="false">
+  <app-focus-page-header
+    title="Challenges"
+    [toastMessage]="toast()?.msg ?? null"
+    [toastType]="toast()?.type ?? 'success'"
+    toastPosition="bottom-right">
     <div class="head-actions" focus-header-actions>
-      <button class="reminders-btn" type="button" (click)="toggleReminders()">
+      <button class="reminders-btn btn btn-outline-light btn-sm" type="button" (click)="toggleReminders()">
         In-App
         <span class="dot" *ngIf="unreadReminders() > 0">{{ unreadReminders() }}</span>
       </button>
-      <a class="btn-back" routerLink="/dashboard">Back</a>
     </div>
-  </app-focus-header>
+  </app-focus-page-header>
 
   <section class="reminders-panel" *ngIf="remindersOpen()">
     <div class="reminders-head">
       <h3>In-App Reminders</h3>
-      <button class="btn-ghost" type="button" (click)="markAllRemindersRead()" [disabled]="unreadReminders() === 0">Mark all read</button>
+      <button class="btn-ghost btn btn-outline-light btn-sm" type="button" (click)="markAllRemindersRead()" [disabled]="unreadReminders() === 0">Mark all read</button>
     </div>
     <div class="reminders-list" *ngIf="reminders().length > 0; else noReminders">
       <cdk-virtual-scroll-viewport class="reminders-viewport" [itemSize]="78">
@@ -40,13 +43,6 @@
       <p class="empty-inline">No reminders right now.</p>
     </ng-template>
   </section>
-
-  <app-toast
-    *ngIf="toast()"
-    [message]="toast()?.msg ?? ''"
-    [type]="toast()?.type ?? 'success'"
-    position="bottom-right">
-  </app-toast>
 
   <main class="content">
 
@@ -96,19 +92,42 @@
       </article>
     </section>
 
+    <section class="overview-strip" *ngIf="activeTab() !== 'create'">
+      <article class="overview-card">
+        <small>Visible challenges</small>
+        <strong>{{ overviewStats().total }}</strong>
+      </article>
+      <article class="overview-card">
+        <small>Joined</small>
+        <strong>{{ overviewStats().joined }}</strong>
+      </article>
+      <article class="overview-card">
+        <small>Completed</small>
+        <strong>{{ overviewStats().completed }}</strong>
+      </article>
+      <article class="overview-card">
+        <small>Expiring soon</small>
+        <strong>{{ overviewStats().expiringSoon }}</strong>
+      </article>
+      <article class="overview-card">
+        <small>Participation</small>
+        <strong>{{ overviewStats().participationRate }}%</strong>
+      </article>
+    </section>
+
     <!-- Tab bar -->
     <div class="tabs">
-      <button class="tab" [class.active]="activeTab() === 'all'" (click)="setTab('all')">All</button>
-      <button class="tab" [class.active]="activeTab() === 'joined'" (click)="setTab('joined')">Joined</button>
-      <button class="tab" [class.active]="activeTab() === 'mine'" (click)="setTab('mine')">My Challenges</button>
-      <button class="tab tab-create" [class.active]="activeTab() === 'create'" (click)="setTab('create')">+ Create</button>
+      <button class="tab btn btn-sm" [class.active]="activeTab() === 'all'" (click)="setTab('all')">All</button>
+      <button class="tab btn btn-sm" [class.active]="activeTab() === 'joined'" (click)="setTab('joined')">Joined</button>
+      <button class="tab btn btn-sm" [class.active]="activeTab() === 'mine'" (click)="setTab('mine')">My Challenges</button>
+      <button class="tab tab-create btn btn-sm" [class.active]="activeTab() === 'create'" (click)="setTab('create')">+ Create</button>
     </div>
 
     <!-- Category filter (not on create tab) -->
     <div class="filter-bar" *ngIf="activeTab() !== 'create'">
       <button
         *ngFor="let cat of categories; trackBy: trackByCategoryKey"
-        class="filter-btn"
+        class="filter-btn btn btn-sm"
         [class.active]="activeFilter() === cat.key"
         (click)="setFilter(cat.key)">
         {{ cat.label }}
@@ -116,15 +135,19 @@
 
       <div class="filter-extras">
         <input
-          class="search-input"
+          class="search-input form-control"
           type="search"
           placeholder="Search challenge..."
           [ngModel]="searchTerm()"
           (ngModelChange)="setSearchTerm($event)" />
 
-        <select class="sort-select" [ngModel]="sortMode()" (ngModelChange)="setSort($event)">
-          <option *ngFor="let option of sortOptions; trackBy: trackBySortKey" [ngValue]="option.key">{{ option.label }}</option>
-        </select>
+        <app-ui-select
+          class="sort-select"
+          ariaLabel="Sort challenges"
+          [options]="sortOptions"
+          [ngModel]="sortMode()"
+          (ngModelChange)="setSort($event)">
+        </app-ui-select>
       </div>
     </div>
 
@@ -133,43 +156,62 @@
       <h2>New Challenge</h2>
       <p class="create-sub">Create a challenge for the community to complete.</p>
 
+      <div class="template-row">
+        <button
+          class="template-pill"
+          type="button"
+          *ngFor="let template of challengeTemplates"
+          (click)="applyTemplate(template)">
+          {{ template.title }}
+        </button>
+      </div>
+
+      <div class="template-row" *ngIf="userTemplates().length > 0">
+        <button
+          class="template-pill template-pill--user"
+          type="button"
+          *ngFor="let template of userTemplates()"
+          (click)="applyUserTemplate(template)">
+          {{ template.title }} · v{{ template.version }}
+        </button>
+      </div>
+
       <div class="field">
         <label>Title *</label>
-        <input type="text" formControlName="title" placeholder="e.g. 7-day push-up streak" />
+        <input class="form-control" type="text" formControlName="title" placeholder="e.g. 7-day push-up streak" />
         <small *ngIf="createForm.get('title')?.errors?.['required'] && createForm.get('title')?.touched">Required</small>
         <small *ngIf="createForm.get('title')?.errors?.['minlength'] && createForm.get('title')?.touched">Min 3 characters</small>
       </div>
 
       <div class="field">
         <label>Description</label>
-        <textarea formControlName="description" placeholder="Describe the challenge rules..." rows="3"></textarea>
+        <textarea class="form-control" formControlName="description" placeholder="Describe the challenge rules..." rows="3"></textarea>
       </div>
 
       <div class="fields-row">
         <div class="field">
           <label>Category</label>
-          <select formControlName="category">
-            <option value="sport">Sport</option>
-            <option value="nutrition">Nutrition</option>
-            <option value="mindset">Mindset</option>
-            <option value="growth">Growth</option>
-            <option value="general">General</option>
-          </select>
+          <app-ui-select
+            ariaLabel="Challenge category"
+            [options]="categoryOptions"
+            formControlName="category">
+          </app-ui-select>
         </div>
 
         <div class="field">
           <label>Duration (days)</label>
-          <input type="number" formControlName="duration_days" min="1" max="365" />
+          <input class="form-control" type="number" formControlName="duration_days" min="1" max="365" />
         </div>
 
         <div class="field">
           <label>Target count</label>
-          <input type="number" formControlName="target_count" min="1" max="1000" />
+          <input class="form-control" type="number" formControlName="target_count" min="1" max="1000" />
         </div>
       </div>
 
       <div class="form-actions">
-        <button class="btn-primary" (click)="submitCreate()" [disabled]="saving()">
+        <button class="btn-ghost" type="button" (click)="saveDraftAsTemplate()">Save as template</button>
+        <button class="btn-primary btn btn-light" (click)="submitCreate()" [disabled]="saving()">
           {{ saving() ? 'Creating...' : 'Create Challenge' }}
         </button>
       </div>
@@ -183,7 +225,7 @@
         <p *ngIf="activeTab() === 'all'">No challenges yet. Be the first to create one!</p>
         <p *ngIf="activeTab() === 'joined'">You haven't joined any challenges yet.</p>
         <p *ngIf="activeTab() === 'mine'">You haven't created any challenges yet.</p>
-        <button class="btn-primary" (click)="setTab('create')">Create a Challenge</button>
+        <button class="btn btn-light" (click)="setTab('create')">Create a Challenge</button>
       </div>
 
       <div class="challenge-list challenge-list-virtual" *ngIf="!loading() && visibleChallenges().length > 0 && !hasExpandedCard()">

@@ -1,0 +1,10 @@
+<app-toast
+  *ngIf="toastMessage"
+  [message]="toastMessage"
+  [type]="toastType"
+  [position]="toastPosition">
+</app-toast>
+
+<app-focus-header [title]="title" [showBack]="showBack">
+  <ng-content select="[focus-header-actions]"></ng-content>
+</app-focus-header>

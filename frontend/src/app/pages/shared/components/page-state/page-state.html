@@ -1,0 +1,3 @@
+<div class="loading loading-state" *ngIf="loading">{{ loadingText }}</div>
+<div class="error-state" *ngIf="!loading && error">{{ error }}</div>
+<div class="empty-state" *ngIf="!loading && !error && empty">{{ emptyText }}</div>

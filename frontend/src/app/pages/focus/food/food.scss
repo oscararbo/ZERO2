@@ -66,7 +66,7 @@ h1 {
 .content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px clamp(16px, 3vw, 44px) 60px;
+  padding: 12px clamp(16px, 3vw, 24px) 56px;
 }
 
 .controls-bar {
@@ -75,6 +75,69 @@ h1 {
   margin-bottom: 32px;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.goal-overview {
+  display: grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.goal-card {
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  padding: 14px;
+  background: rgba(255,255,255,.03);
+}
+
+.goal-card h2,
+.goal-card h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.goal-card p {
+  margin: 0;
+  color: rgba(255,255,255,.72);
+  line-height: 1.5;
+}
+
+.goal-meta {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.goal-meta span {
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.macro-lines {
+  display: grid;
+  gap: 8px;
+}
+
+.macro-lines div {
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,.02);
+}
+
+.macro-lines label {
+  font-size: 12px;
+  opacity: .65;
+}
+
+.macro-lines strong {
+  font-size: 14px;
 }
 
 .refresh-btn {
@@ -318,10 +381,92 @@ h1 {
   }
 }
 
+.shopping-card {
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+}
+
+.shopping-card h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.shopping-card p {
+  margin: 0 0 12px;
+  color: rgba(255,255,255,.68);
+}
+
+.shopping-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.shopping-item {
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255,255,255,.03);
+  display: grid;
+  gap: 4px;
+}
+
+.shopping-item strong {
+  text-transform: capitalize;
+}
+
+.shopping-item span {
+  font-size: 12px;
+  opacity: .72;
+}
+
 .daily-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
+}
+
+.target-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.target-item {
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255,255,255,.03);
+}
+
+.target-item span {
+  display: block;
+  font-size: 12px;
+  color: rgba(255,255,255,.62);
+  margin-bottom: 4px;
+}
+
+.target-item strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.target-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.12);
+  overflow: hidden;
+}
+
+.target-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #9aa0a6, #d0d6db);
 }
 
 // Media Queries
@@ -356,8 +501,16 @@ h1 {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .target-grid {
+    grid-template-columns: 1fr;
+  }
+
   .controls-bar {
     flex-direction: column;
+  }
+
+  .goal-overview {
+    grid-template-columns: 1fr;
   }
 
   .meal-type-toggle {

@@ -1,21 +1,19 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { BackButtonComponent } from '../back-button/back-button.component';
 
 @Component({
   selector: 'app-focus-header',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, BackButtonComponent],
   templateUrl: './focus-header.component.html',
-  styleUrls: ['./focus-header.component.scss'],
+  styleUrl: './focus-header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FocusHeaderComponent {
   @Input({ required: true }) title = '';
   @Input() kicker = 'Focus';
   @Input() brand = 'ZERO';
-  @Input() backLink = '/dashboard';
-  @Input() backLabel = 'Back';
+  @Input() backLink: string | null = '/dashboard';
   @Input() showBack = true;
-  @Input() backClass = 'btn';
 }

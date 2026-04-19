@@ -1,30 +1,58 @@
 <section class="page">
-  <app-toast *ngIf="toast()" [message]="toast()" position="top-right"></app-toast>
-  <app-focus-header title="Mindset"></app-focus-header>
+  <app-focus-page-header title="Mindset" [toastMessage]="toast()"></app-focus-page-header>
 
-  <main class="content">
+  <main class="content container-xl pb-5">
+    <section class="mindset-overview">
+      <article class="card mood-card">
+        <h2>Daily Mood Check</h2>
+        <p>Rate your current emotional state and track trend over the last days.</p>
+        <div class="mood-scale">
+          <button type="button" class="mood-btn" *ngFor="let value of [1,2,3,4,5]" [class.active]="moodToday() === value" (click)="setMood(value)">
+            {{ value }}
+          </button>
+        </div>
+        <div class="mood-actions">
+          <button class="btn-primary btn btn-light" (click)="saveMood()" [disabled]="!moodToday()">Save mood</button>
+          <span class="mood-meta">Average: {{ moodAverage() ?? '--' }} · {{ moodTrendLabel() }}</span>
+        </div>
+      </article>
+
+      <article class="card breathing-card">
+        <h2>Breathing Protocol</h2>
+        <ul class="breathing-list">
+          <li *ngFor="let step of breathingSteps">{{ step }}</li>
+        </ul>
+      </article>
+    </section>
+
     <div class="card">
-      <h2>Daily Inspiration</h2>
+      <h2 class="mb-3">Daily Inspiration</h2>
       <blockquote class="quote">{{ dailyQuote() }}</blockquote>
-      <button class="btn-secondary" (click)="setRandomQuote()">New Quote</button>
+      <button class="btn-secondary btn btn-outline-light" (click)="loadDailyQuote()">New Quote</button>
     </div>
 
     <div class="card">
-      <h2>Meditation</h2>
+      <h2 class="mb-2">Meditation</h2>
       <p>Take a moment to center yourself.</p>
+      <div class="preset-row">
+        <button type="button" class="preset-btn" *ngFor="let preset of meditationPresets" (click)="applyMeditationPreset(preset)">
+          {{ preset }} min
+        </button>
+      </div>
       <div class="meditation-controls">
         <label>Duration (minutes):</label>
         <input
           type="number"
+          class="time-input form-control"
           [ngModel]="meditationTime()"
           (ngModelChange)="setMeditationTime($event)"
           min="1"
           max="60"
-          class="time-input">
-        <button class="btn-primary" (click)="startMeditation()" [disabled]="isMeditating()">
+        >
+        <button class="btn-primary btn btn-light" (click)="startMeditation()" [disabled]="isMeditating()">
           {{ isMeditating() ? 'Meditating...' : 'Start Meditation' }}
         </button>
-        <button class="btn-secondary" (click)="stopMeditation()" [disabled]="!isMeditating()">Stop</button>
+        <button class="btn-secondary btn btn-outline-light" (click)="stopMeditation()" [disabled]="!isMeditating()">Stop</button>
       </div>
       <div class="timer" *ngIf="isMeditating()">
         <div class="time-display">{{ formattedTimeLeft() }}</div>
@@ -42,12 +70,13 @@
       </div>
       <div *ngIf="isAuthenticated">
         <textarea
+          class="journal-textarea form-control"
           [ngModel]="journalEntry()"
           (ngModelChange)="setJournalEntry($event)"
           placeholder="Write your thoughts here..."
           rows="4"
-          class="journal-textarea"></textarea>
-        <button class="btn-primary" (click)="saveJournalEntry()" [disabled]="!journalEntry().trim() || isSaving()">
+        ></textarea>
+        <button class="btn-primary btn btn-light" (click)="saveJournalEntry()" [disabled]="!journalEntry().trim() || isSaving()">
           {{ isSaving() ? 'Saving...' : 'Save Entry' }}
         </button>
       </div>
@@ -68,7 +97,7 @@
 
     <div class="card">
       <h2>Mindfulness Tips</h2>
-      <ul>
+      <ul class="mb-0">
         <li>Practice deep breathing: Inhale for 4 counts, hold for 4, exhale for 4</li>
         <li>Set daily intentions in the morning</li>
         <li>Take regular breaks to stretch and clear your mind</li>

@@ -110,7 +110,7 @@ export type CreateChallengeDTO = {
 
 @Injectable({ providedIn: 'root' })
 export class ChallengeService {
-  private readonly base = `${environment.apiUrl}/api/accounts/challenges`;
+  private readonly base = `${environment.apiUrl}/api/challenges`;
   private readonly cacheTtlMs = 30000;
   private readonly responseCache = new Map<string, { expiresAt: number; data: any }>();
 
@@ -120,7 +120,15 @@ export class ChallengeService {
     let params = new HttpParams();
     if (category) params = params.set('category', category);
     if (mine) params = params.set('mine', 'true');
-    return this.http.get<Challenge[]>(`${this.base}/`, { params });
+
+    const url = `${this.base}/`;
+    const cacheKey = this.buildCacheKey(url, params);
+    const cached = this.getFromCache<Challenge[]>(cacheKey);
+    if (cached) return of(cached);
+
+    return this.http.get<Challenge[]>(url, { params }).pipe(
+      tap((data) => this.setCache(cacheKey, data))
+    );
   }
 
   getChallenge(id: number): Observable<Challenge> {
@@ -128,28 +136,41 @@ export class ChallengeService {
   }
 
   createChallenge(dto: CreateChallengeDTO): Observable<Challenge> {
-    return this.http.post<Challenge>(`${this.base}/`, dto);
+    return this.http.post<Challenge>(`${this.base}/`, dto).pipe(
+      tap(() => this.invalidateChallengeOverviewCaches())
+    );
   }
 
-  deleteChallenge(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.base}/${id}/`);
+  deleteChallenge(id: number): Observable<{ detail: string }> {
+    return this.http.delete<{ detail: string }>(`${this.base}/${id}/`).pipe(
+      tap(() => this.invalidateChallengeOverviewCaches())
+    );
   }
 
   joinChallenge(id: number): Observable<MyParticipation> {
     return this.http.post<MyParticipation>(`${this.base}/${id}/join/`, {}).pipe(
-      tap(() => this.invalidateCachePrefix(`${this.base}/${id}/leaderboard/`))
+      tap(() => {
+        this.invalidateCachePrefix(`${this.base}/${id}/leaderboard/`);
+        this.invalidateChallengeOverviewCaches();
+      })
     );
   }
 
-  leaveChallenge(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.base}/${id}/join/`).pipe(
-      tap(() => this.invalidateCachePrefix(`${this.base}/${id}/leaderboard/`))
+  leaveChallenge(id: number): Observable<{ detail: string }> {
+    return this.http.delete<{ detail: string }>(`${this.base}/${id}/join/`).pipe(
+      tap(() => {
+        this.invalidateCachePrefix(`${this.base}/${id}/leaderboard/`);
+        this.invalidateChallengeOverviewCaches();
+      })
     );
   }
 
   updateProgress(id: number, progress: number, notes?: string): Observable<MyParticipation> {
     return this.http.put<MyParticipation>(`${this.base}/${id}/progress/`, { progress, notes }).pipe(
-      tap(() => this.invalidateCachePrefix(`${this.base}/${id}/leaderboard/`))
+      tap(() => {
+        this.invalidateCachePrefix(`${this.base}/${id}/leaderboard/`);
+        this.invalidateChallengeOverviewCaches();
+      })
     );
   }
 
@@ -187,7 +208,10 @@ export class ChallengeService {
 
   postUpdate(id: number, content: string): Observable<ChallengeUpdate> {
     return this.http.post<ChallengeUpdate>(`${this.base}/${id}/updates/`, { content }).pipe(
-      tap(() => this.invalidateCachePrefix(`${this.base}/${id}/updates/`))
+      tap(() => {
+        this.invalidateCachePrefix(`${this.base}/${id}/updates/`);
+        this.invalidateCachePrefix(`${environment.apiUrl}/api/reminders/`);
+      })
     );
   }
 
@@ -195,7 +219,7 @@ export class ChallengeService {
     let params = new HttpParams();
     if (unreadOnly) params = params.set('unread', 'true');
     params = params.set('page', String(page)).set('page_size', String(pageSize));
-    const url = `${environment.apiUrl}/api/accounts/reminders/`;
+    const url = `${environment.apiUrl}/api/reminders/`;
     const cacheKey = this.buildCacheKey(url, params);
     const cached = this.getFromCache<ReminderResponse>(cacheKey);
     if (cached) return of(cached);
@@ -206,23 +230,37 @@ export class ChallengeService {
   }
 
   markReminderRead(reminderId: number): Observable<InAppReminder> {
-    return this.http.post<InAppReminder>(`${environment.apiUrl}/api/accounts/reminders/${reminderId}/read/`, {}).pipe(
-      tap(() => this.invalidateCachePrefix(`${environment.apiUrl}/api/accounts/reminders/`))
+    return this.http.post<InAppReminder>(`${environment.apiUrl}/api/reminders/${reminderId}/read/`, {}).pipe(
+      tap(() => this.invalidateCachePrefix(`${environment.apiUrl}/api/reminders/`))
     );
   }
 
   markAllRemindersRead(): Observable<{ detail: string }> {
-    return this.http.post<{ detail: string }>(`${environment.apiUrl}/api/accounts/reminders/read-all/`, {}).pipe(
-      tap(() => this.invalidateCachePrefix(`${environment.apiUrl}/api/accounts/reminders/`))
+    return this.http.post<{ detail: string }>(`${environment.apiUrl}/api/reminders/read-all/`, {}).pipe(
+      tap(() => this.invalidateCachePrefix(`${environment.apiUrl}/api/reminders/`))
     );
   }
 
   getBadges(): Observable<UserBadge[]> {
-    return this.http.get<UserBadge[]>(`${environment.apiUrl}/api/accounts/badges/`);
+    const url = `${environment.apiUrl}/api/badges/`;
+    const cacheKey = this.buildCacheKey(url, new HttpParams());
+    const cached = this.getFromCache<UserBadge[]>(cacheKey);
+    if (cached) return of(cached);
+
+    return this.http.get<UserBadge[]>(url).pipe(
+      tap((data) => this.setCache(cacheKey, data))
+    );
   }
 
   getAnalytics(): Observable<ChallengeAnalytics> {
-    return this.http.get<ChallengeAnalytics>(`${this.base}/analytics/`);
+    const url = `${this.base}/analytics/`;
+    const cacheKey = this.buildCacheKey(url, new HttpParams());
+    const cached = this.getFromCache<ChallengeAnalytics>(cacheKey);
+    if (cached) return of(cached);
+
+    return this.http.get<ChallengeAnalytics>(url).pipe(
+      tap((data) => this.setCache(cacheKey, data))
+    );
   }
 
   private buildCacheKey(url: string, params: HttpParams): string {
@@ -251,5 +289,11 @@ export class ChallengeService {
         this.responseCache.delete(key);
       }
     }
+  }
+
+  private invalidateChallengeOverviewCaches(): void {
+    this.invalidateCachePrefix(`${this.base}/`);
+    this.invalidateCachePrefix(`${environment.apiUrl}/api/reminders/`);
+    this.invalidateCachePrefix(`${environment.apiUrl}/api/badges/`);
   }
 }

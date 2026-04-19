@@ -1,37 +1,78 @@
-<section class="auth">
-  <div class="box">
-    <h1>Create your account</h1>
-    <p class="muted">Start building discipline with ZERO.</p>
+<app-auth-layout title="Create your account" subtitle="Start building discipline with ZERO." maxWidth="420px">
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <label>
-        <span>Username</span>
-        <input type="text" formControlName="username" autocomplete="username" />
-        <small class="error" *ngIf="f.username.touched && f.username.invalid">Min 3 characters</small>
-      </label>
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label class="field__label" for="reg-username">Username</label>
+        <input
+          id="reg-username"
+          class="form-control"
+          type="text"
+          formControlName="username"
+          autocomplete="username"
+          placeholder="Choose a username"
+          [class.is-invalid]="f.username.touched && (f.username.invalid || usernameError())"
+          [class.is-valid]="f.username.touched && !f.username.invalid && usernameAvailable() === true"
+          (blur)="checkUsername()"
+        />
+        <div class="field__error" [class.field__error--visible]="f.username.touched && f.username.invalid">
+          {{ f.username.errors?.['minlength'] ? 'Minimum 3 characters' : 'Required' }}
+        </div>
+        <div class="field__error field__error--avail" [class.field__error--visible]="usernameError()">
+          {{ usernameError() }}
+        </div>
+      </div>
 
-      <label>
-        <span>Email</span>
-        <input type="email" formControlName="email" autocomplete="email" />
-        <small class="error" *ngIf="f.email.touched && f.email.invalid">Enter a valid email</small>
-      </label>
+      <div class="field">
+        <label class="field__label" for="reg-email">Email</label>
+        <input
+          id="reg-email"
+          class="form-control"
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          placeholder="you@email.com"
+          [class.is-invalid]="f.email.touched && (f.email.invalid || emailError())"
+          [class.is-valid]="f.email.touched && !f.email.invalid && emailAvailable() === true"
+          (blur)="checkEmail()"
+        />
+        <div class="field__error" [class.field__error--visible]="f.email.touched && f.email.invalid">
+          Enter a valid email
+        </div>
+        <div class="field__error field__error--avail" [class.field__error--visible]="emailError()">
+          {{ emailError() }}
+        </div>
+      </div>
 
-      <label>
-        <span>Password</span>
-        <input type="password" formControlName="password" autocomplete="new-password" />
-        <small class="error" *ngIf="f.password.touched && f.password.invalid">Min 6 characters</small>
-      </label>
+      <div class="field">
+        <label class="field__label" for="reg-password">Password</label>
+        <div class="input-wrap">
+          <input
+            id="reg-password"
+            class="form-control"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            autocomplete="new-password"
+            placeholder="Minimum 6 characters"
+            [class.is-invalid]="f.password.touched && f.password.invalid"
+          />
+          <button type="button" class="eye-btn" (click)="togglePasswordVisibility()" [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">
+            <i [class]="showPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+          </button>
+        </div>
+        <div class="field__error" [class.field__error--visible]="f.password.touched && f.password.invalid">
+          Minimum 6 characters
+        </div>
+      </div>
 
-      <small class="msg" *ngIf="msg()">{{ msg() }}</small>
-
-      <button class="btn" type="submit" [disabled]="loading()">
+      <button class="btn btn-light w-100 submit-btn" type="submit" [disabled]="loading()">
         {{ loading() ? 'Creating...' : 'Continue' }}
       </button>
+
+      <div class="form-msg" [class.form-msg--visible]="!!msg()">{{ msg() }}</div>
 
       <p class="bottom">
         Already have an account?
         <a routerLink="/login">Login</a>
       </p>
     </form>
-  </div>
-</section>
+  </app-auth-layout>

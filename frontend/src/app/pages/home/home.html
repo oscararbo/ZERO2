@@ -6,6 +6,7 @@
       </div>
 
       <nav class="nav" aria-label="Main navigation">
+        <a class="nav__link" href="#features">Features</a>
         <a class="nav__link" href="#topics">Topics</a>
         <a class="nav__link" href="#about">About</a>
         <a class="nav__link" href="#community">Community</a>
@@ -22,7 +23,18 @@
     <div class="hero">
       <div class="hero__left">
         <h1 class="title">Achieve your<br />full potential</h1>
-        <p class="subtitle">Start your journey of self-improvement today</p>
+        <p class="subtitle">Start your journey of self-improvement today with workouts, nutrition, mindset and goals in one place.</p>
+
+        <div class="hero__cta">
+          <a class="btn btn--primary" routerLink="/register">Start Now</a>
+          <a class="btn btn--ghost" routerLink="/login">I already have an account</a>
+        </div>
+
+        <div class="hero__meta" aria-label="Quick benefits">
+          <span class="meta-pill">Personalized plan</span>
+          <span class="meta-pill">Progress tracking</span>
+          <span class="meta-pill">Daily consistency</span>
+        </div>
       </div>
 
       <div class="hero__right">
@@ -39,41 +51,156 @@
       </div>
     </div>
 
-    <div class="cards">
-      <article class="card">
-        <h3>Discipline</h3>
-        <p>Push yourself every day</p>
-      </article>
-
-      <article class="card">
-        <h3>Health</h3>
-        <p>Fuel your body properly</p>
-      </article>
-
-      <article class="card">
-        <h3>Mindset</h3>
-        <p>Cultivate positive thoughts</p>
-      </article>
-
-      <article class="card">
-        <h3>Goals</h3>
-        <p>Aim for continued growth</p>
+    <div class="cards row row-cols-1 row-cols-md-2 row-cols-xl-4 g-3">
+      <article class="card col" *ngFor="let pillar of pillars">
+        <h3>{{ pillar.title }}</h3>
+        <p>{{ pillar.description }}</p>
       </article>
     </div>
+
+    <section class="highlights row row-cols-1 row-cols-lg-3 g-3" aria-label="What you can do in ZERO">
+      <article class="highlight-card col" *ngFor="let item of highlights">
+        <h4>{{ item.title }}</h4>
+        <p>{{ item.description }}</p>
+      </article>
+    </section>
+
+    <section id="features" class="stats-band" aria-label="ZERO performance stats">
+      <article class="stat-box" *ngFor="let stat of stats">
+        <span class="stat-number">{{ stat.value }}</span>
+        <span class="stat-label">{{ stat.label }}</span>
+        <small>{{ stat.detail }}</small>
+      </article>
+    </section>
+
+    <section class="flow" aria-label="How ZERO works">
+      <div class="flow__head">
+        <h2>How ZERO Works</h2>
+        <p>Simple execution loop: define your focus, act every day, measure results and adapt.</p>
+      </div>
+      <div class="flow__grid row row-cols-1 row-cols-lg-4 g-3">
+        <article class="flow-card col" *ngFor="let stepItem of flowSteps">
+          <span class="step">{{ stepItem.step }}</span>
+          <h4>{{ stepItem.title }}</h4>
+          <p>{{ stepItem.description }}</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="split-preview" aria-label="Weekly plan preview">
+      <article class="preview-card">
+        <h3>Weekly Momentum Plan</h3>
+        <ul class="preview-list">
+          <li><strong>Mon:</strong> Upper body + recovery walk</li>
+          <li><strong>Tue:</strong> Nutrition focus + hydration target</li>
+          <li><strong>Wed:</strong> Lower body + mobility</li>
+          <li><strong>Thu:</strong> Mindset journal + breathing</li>
+          <li><strong>Fri:</strong> Full body + progress review</li>
+        </ul>
+      </article>
+      <article class="preview-card preview-card--light">
+        <h3>What You Keep Visible</h3>
+        <p>One dashboard, one weekly target, one place to evaluate your habits and your output.</p>
+        <div class="preview-tags">
+          <span>Sessions done</span>
+          <span>Calories & macros</span>
+          <span>Challenge progress</span>
+          <span>Journal consistency</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="testimonials row row-cols-1 row-cols-lg-3 g-3" aria-label="User outcomes">
+      <article class="quote-card col" *ngFor="let testimony of testimonials">
+        <p>{{ testimony.quote }}</p>
+        <small>{{ testimony.author }}</small>
+      </article>
+    </section>
 
     <section id="topics" class="section">
       <h2>Topics</h2>
       <p>Organize your training, nutrition, mindset and habits in one simple platform.</p>
+      <div class="section-grid row row-cols-1 row-cols-lg-2 g-3">
+        <app-info-card
+          class="col"
+          *ngFor="let topic of topics"
+          cardClass="section-card"
+          [title]="topic.title"
+          [description]="topic.description"
+          [bullets]="topic.bullets">
+        </app-info-card>
+      </div>
     </section>
 
     <section id="about" class="section">
       <h2>About ZERO</h2>
       <p>ZERO is a personal growth platform focused on discipline, consistency and long-term progress.</p>
+      <div class="about-layout row row-cols-1 row-cols-lg-3 g-3">
+        <app-info-card
+          class="col"
+          *ngFor="let aboutItem of aboutCards"
+          cardClass="about-card"
+          [title]="aboutItem.title"
+          [description]="aboutItem.description"
+          [bullets]="aboutItem.bullets">
+        </app-info-card>
+      </div>
     </section>
 
     <section id="community" class="section">
       <h2>Community</h2>
       <p>Join people who share your goals, challenges and commitment to self-improvement.</p>
+      <div class="community-layout row row-cols-1 row-cols-lg-3 g-3">
+        <app-info-card
+          class="col"
+          *ngFor="let community of communityCards"
+          cardClass="community-card"
+          [title]="community.title"
+          [description]="community.description">
+        </app-info-card>
+      </div>
+      <div class="community-cta">
+        <p>Start with one challenge this week and use your dashboard as the weekly control panel.</p>
+        <a class="btn btn--primary" routerLink="/register">Join the community</a>
+      </div>
+
+      <article class="community-showcase" aria-live="polite">
+        <div>
+          <div class="community-showcase__kicker">Featured Challenge</div>
+          <h3>{{ activeCommunityItem().title }}</h3>
+          <p class="community-showcase__subtitle">{{ activeCommunityItem().subtitle }}</p>
+          <p>{{ activeCommunityItem().detail }}</p>
+          <span class="community-showcase__metric">{{ activeCommunityItem().metric }}</span>
+        </div>
+        <div class="community-showcase__controls">
+          <button type="button" class="btn btn--ghost" (click)="prevCommunity()" aria-label="Previous challenge">Prev</button>
+          <button type="button" class="btn btn--ghost" (click)="nextCommunity()" aria-label="Next challenge">Next</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="faq" aria-label="Common questions">
+      <h2>FAQ</h2>
+      <div class="faq-grid">
+        <article class="faq-item" *ngFor="let item of faqItems(); let i = index" [class.faq-item--open]="item.open">
+          <button type="button" class="faq-toggle" (click)="toggleFaq(i)" [attr.aria-expanded]="item.open">
+            <span>{{ item.question }}</span>
+            <span class="faq-toggle__icon">{{ item.open ? '−' : '+' }}</span>
+          </button>
+          <p *ngIf="item.open">{{ item.answer }}</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="final-cta" aria-label="Get started">
+      <div>
+        <h2>Build your next 30 days with intention</h2>
+        <p>Start today and convert motivation into a repeatable system.</p>
+      </div>
+      <div class="final-cta__actions">
+        <a class="btn btn--primary" routerLink="/register">Create account</a>
+        <a class="btn btn--ghost" routerLink="/login">Sign in</a>
+      </div>
     </section>
   </main>
 </section>

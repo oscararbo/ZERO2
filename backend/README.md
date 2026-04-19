@@ -1,111 +1,125 @@
-# Backend - ZERO
+# Backend — ZERO
 
-## Que contiene esta carpeta
 API REST del proyecto ZERO, implementada con Django + Django REST Framework.
 
-El backend es responsable de:
-- Autenticacion y autorizacion.
-- Perfil de usuario y preferencias.
-- Catalogo de ejercicios y sesiones.
-- Tracking de progreso.
-- Journal personal.
-- Sistema de challenges, leaderboard, updates, badges y reminders.
+## Responsabilidades
 
-## Stack tecnico
-- Python
-- Django
+- Autenticación y autorización JWT con refresh automático
+- Perfil de usuario, métricas corporales y analytics por área de interés
+- Catálogo de ejercicios, sesiones y tracking de progreso
+- Journal personal y registro de estado de ánimo
+- Plantillas versionadas de usuario
+- Sistema de challenges: leaderboard, updates, badges y in-app reminders
+
+## Stack
+
+- Python 3.10+
+- Django (latest)
 - Django REST Framework
-- JWT para auth
-- SQLite en desarrollo local
+- djangorestframework-simplejwt
+- django-cors-headers
+- SQLite (desarrollo) → PostgreSQL (producción recomendado)
 
-## Estructura del backend
+## Inicio rápido
+
+```bash
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
+
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+
+Carga inicial de ejercicios:
+```bash
+python create_exercises.py
+python populate_exercises.py
+```
+
+## Estructura
 
 ```text
 backend/
-|- manage.py
-|- pyproject.toml
-|- db.sqlite3
-|- create_exercises.py
-|- populate_exercises.py
-|- config/
-|  |- settings.py
-|  |- urls.py
-|  |- asgi.py
-|  `- wsgi.py
-`- accounts/
-   |- admin.py
-   |- apps.py
-   |- models.py
-   |- serializers.py
-   |- urls.py
-   |- views.py
-   |- tests.py
-   |- test_api.py
-   `- migrations/
+├── manage.py
+├── pyproject.toml
+├── requirements.txt
+├── config/                  # settings, urls, wsgi/asgi
+├── api_compat/              # módulo de borde: enruta todo bajo /api/
+├── common/
+│   └── api/
+│       ├── responses.py     # success_response / error_response
+│       ├── pagination.py    # parse_pagination / paginated_response
+│       └── exceptions.py    # custom_exception_handler → formato { ok, message, errors }
+├── core_domain/             # modelos y serializers centralizados
+│   ├── models/              # profile, exercise, journal, templates, challenges
+│   └── serializers/
+└── apps/
+    ├── account_auth/        # register, login, check-username/email, health
+    ├── profiles/            # perfil + insights analytics por área
+    ├── workouts/            # ejercicios, sesiones, progreso
+    ├── mindset/             # journal, mood, templates de usuario
+    └── challenges/          # challenges, leaderboard, badges, reminders
 ```
 
-## Capas y responsabilidades
+## Formato de respuesta
 
-### 1) Configuracion global
-- `config/settings.py`: apps, middlewares, DB, auth, CORS, etc.
-- `config/urls.py`: enrutado raiz y prefijo API.
-- `asgi.py` / `wsgi.py`: entrypoints para runtime.
+Todas las respuestas siguen el mismo envelope:
 
-### 2) Dominio `accounts`
-- `models.py`: entidades persistentes.
-- `serializers.py`: validacion y transformacion DTO <-> modelo.
-- `views.py`: endpoints y reglas de negocio.
-- `urls.py`: rutas de la app.
+```json
+// Éxito
+{ "ok": true, "data": { ... } }
 
-### 3) Datos seed
-- `create_exercises.py`, `populate_exercises.py`: carga inicial de ejercicios.
+// Error
+{ "ok": false, "message": "...", "status_code": 400, "errors": { ... } }
+```
 
-## Flujo de una request
-1. Frontend llama `/api/accounts/...`.
-2. DRF aplica autenticacion/permisos.
-3. Vista procesa input y usa modelos.
-4. Serializer devuelve respuesta JSON.
+## Seguridad implementada
 
-## Modulos funcionales principales
-- Auth: register/login y sesiones JWT.
-- Profile: datos base del usuario y objetivo fitness.
-- Exercises/Sessions: plan y ejecucion de entrenamientos.
-- Progress: agregados para dashboard.
-- Journal: entradas personales.
-- Challenges: alta/baja, progreso, updates, leaderboard, analytics.
-- Rewards: badges y in-app reminders.
+- `IsAuthenticated` por defecto; endpoints públicos declaran `AllowAny` explícitamente
+- JWT con refresh endpoint (`/api/token/refresh/`)
+- Throttling por scope `auth` en register/login/check
+- Validaciones de registro: email único, username único (case-insensitive), longitud mínima de contraseña
+- Soporte de configuración por variables de entorno (`SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`)
+- Cabeceras de seguridad: `X_FRAME_OPTIONS`, `SECURE_CONTENT_TYPE_NOSNIFF`, `SECURE_REFERRER_POLICY`
 
-## Comandos utiles
+## Variables de entorno
+
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `DJANGO_SECRET_KEY` | insecure-dev-key | Clave secreta |
+| `DJANGO_DEBUG` | `true` | Modo debug |
+| `DJANGO_ALLOWED_HOSTS` | `127.0.0.1,localhost` | Hosts permitidos (CSV) |
+| `APP_VERSION` | `dev` | Versión reportada en `/api/health/` y `/api/meta/` |
+
+## Tests
 
 ```bash
-cd backend
-python manage.py migrate
-python manage.py runserver
-python manage.py test
-python manage.py test accounts.test_api
+python manage.py test                          # todos
+python manage.py test apps.profiles.tests_api  # módulo específico
 ```
 
-## Practicas recomendadas
-- Mantener logica de validacion en serializers cuando aplique.
-- Mantener consultas optimizadas en vistas (select_related/prefetch/annotate).
-- Cubrir endpoints criticos con tests de API.
-- Evitar romper contratos JSON usados por frontend.
+## Prácticas de desarrollo
 
-## Entorno y configuracion
-- Desarrollo local: SQLite.
-- Produccion: usar DB gestionada + variables de entorno para secretos.
-- No commitear `.env` ni bases locales.
+- La lógica de negocio no trivial vive en `apps/*/services/` o `apps/*/services.py`, no en las vistas
+- Las vistas solo coordinan request → service → response
+- Los endpoints retornan `success_response(data)` o `error_response(message)`
+- Las consultas usan `select_related` / `prefetch_related` / `annotate` donde aplica
+- Nuevas entidades deben agregarse en `core_domain/models/` y `core_domain/serializers/`
 
-## Troubleshooting rapido
+## Troubleshooting
 
-### Error de migraciones
 ```bash
-python manage.py makemigrations
-python manage.py migrate
+# Migraciones pendientes
+python manage.py makemigrations && python manage.py migrate
+
+# Verificar configuración
+python manage.py check
+
+# Shell interactivo
+python manage.py shell
 ```
 
-### Frontend falla por CORS/auth
-Revisar `settings.py` (CORS + auth classes) y cabecera JWT en requests.
-
-### Datos iniciales vacios
-Ejecutar scripts de poblado (`create_exercises.py` / `populate_exercises.py`) segun el flujo del proyecto.
