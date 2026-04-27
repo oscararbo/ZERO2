@@ -29,6 +29,7 @@ export class GrowthComponent implements OnInit {
   private http = inject(HttpClient);
 
   dailyQuote = signal<string>('');
+  quoteLoading = signal<boolean>(false);
   newGoal = signal<string>('');
   goals = signal<GrowthGoal[]>([]);
   journalEntry = signal<string>('');
@@ -81,6 +82,13 @@ export class GrowthComponent implements OnInit {
   }
 
   private readonly QUOTE_CACHE_KEY = 'zero_daily_quote_growth';
+  private readonly fallbackQuotes = [
+    'Progress is built in quiet repetitions, not rare perfect days. — ZERO',
+    'Success is the sum of small efforts repeated day in and day out. — Robert Collier',
+    'Do not count the days, make the days count. — Muhammad Ali',
+    'Growth starts where excuses end. — ZERO',
+    'Your future depends on what you do consistently today. — ZERO',
+  ];
 
   loadDailyQuote(): void {
     const today = new Date().toISOString().slice(0, 10);
@@ -88,20 +96,46 @@ export class GrowthComponent implements OnInit {
       const cached = localStorage.getItem(this.QUOTE_CACHE_KEY);
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (parsed.date === today) { this.dailyQuote.set(parsed.text); return; }
+        if (parsed.date === today) {
+          this.dailyQuote.set(parsed.text);
+          this.quoteLoading.set(false);
+          return;
+        }
       }
     } catch { /* ignore */ }
+
+    this.quoteLoading.set(true);
     this.http.get<any[]>('https://api.quotable.io/quotes/random?tags=success|personal-development&limit=1').subscribe({
       next: (res) => {
         const q = Array.isArray(res) ? res[0] : res;
         const text = q?.content ? `${q.content}${q.author ? ' — ' + q.author : ''}` : '';
         if (text) {
-          this.dailyQuote.set(text);
-          try { localStorage.setItem(this.QUOTE_CACHE_KEY, JSON.stringify({ date: today, text })); } catch { /* ignore */ }
+          this.setDailyQuote(text, today);
+          this.quoteLoading.set(false);
+          return;
         }
+        this.setDailyQuote(this.pickFallbackQuote(today), today);
+        this.quoteLoading.set(false);
       },
-      error: () => {},
+      error: () => {
+        this.setDailyQuote(this.pickFallbackQuote(today), today);
+        this.quoteLoading.set(false);
+      },
     });
+  }
+
+  private setDailyQuote(text: string, date: string): void {
+    this.dailyQuote.set(text);
+    try {
+      localStorage.setItem(this.QUOTE_CACHE_KEY, JSON.stringify({ date, text }));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  private pickFallbackQuote(seedDate: string): string {
+    const hash = seedDate.split('-').reduce((acc, part) => acc + Number(part), 0);
+    return this.fallbackQuotes[hash % this.fallbackQuotes.length];
   }
 
   loadUserTemplates(): void {

@@ -160,6 +160,12 @@ h1 {
   text-align: center;
   margin-bottom: 2rem;
 
+  .quote-loading {
+    margin: 0 0 8px;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 13px;
+  }
+
   blockquote {
     font-style: italic;
     font-size: 1.2rem;

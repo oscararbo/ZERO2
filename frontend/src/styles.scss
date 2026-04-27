@@ -203,6 +203,28 @@ app-auth-layout form > * + * {
   box-shadow: 0 0 0 0.2rem rgba(255, 80, 80, 0.14);
 }
 
+.form-control.is-invalid,
+.form-select.is-invalid {
+  background-image: none;
+  padding-right: 0.75rem;
+}
+
+.input--required-invalid,
+.input--required-invalid.form-control,
+.input--required-invalid.form-select {
+  border-color: rgba(255, 80, 80, 0.75) !important;
+  box-shadow: 0 0 0 0.18rem rgba(255, 80, 80, 0.18) !important;
+  background-image: none !important;
+}
+
+.field__required-msg {
+  display: none;
+  font-size: 12px;
+  color: #ff8a8a;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
 .form-check-input {
   border-color: rgba(255, 255, 255, 0.35);
   background-color: rgba(0, 0, 0, 0.35);

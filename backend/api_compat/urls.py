@@ -6,4 +6,5 @@ urlpatterns = [
     path('api/', include('apps.workouts.urls')),
     path('api/', include('apps.mindset.urls')),
     path('api/', include('apps.challenges.urls')),
+    path('api/', include('apps.admin_panel.urls')),
 ]

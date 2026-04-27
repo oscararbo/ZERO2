@@ -19,6 +19,14 @@ SPA cliente de ZERO construida con Angular 21 standalone, Signals, OnPush y SCSS
 - SCSS
 - Chart.js (gráfica de progreso)
 
+## Cambios recientes
+
+- Flujo de registro en 2 pasos validado: `/register` almacena step1 localmente y navega a `/register-step2` sin requerir sesión previa.
+- Ajuste visual en formularios de registro: menos separación entre campos y errores.
+- Mindset y Growth: citas diarias robustas con fallback local cuando falla el servicio externo.
+- Botón `New Quote` en Mindset/Growth con recarga forzada (no bloqueado por caché del día).
+- Admin: skeletons adicionales (comparación, top usuarios, alertas), alertas reabribles y layout más responsive.
+
 ## Inicio rápido
 
 ```bash
@@ -34,8 +42,10 @@ npm test         # tests unitarios (Karma/Jasmine)
 ```text
 frontend/src/app/
 ├── app.config.ts           # providers globales: router, http, interceptores
-├── app.routes.ts           # rutas con lazy loading y authGuard
+├── app.routes.ts           # rutas con lazy loading, authGuard y adminGuard
 ├── core/
+│   ├── admin.service.ts    # acceso a /api/admin/access y /api/admin/stats
+│   ├── admin.guard.ts      # restringe la ruta /admin a usuarios staff
 │   ├── auth.service.ts     # tokens JWT, login/logout/refresh, persistencia
 │   ├── auth.guard.ts       # redirige a /login si no hay sesión
 │   ├── auth.interceptor.ts # añade Bearer token; renueva con refresh ante 401
@@ -52,6 +62,7 @@ frontend/src/app/
     ├── dashboard/
     ├── home/
     ├── login/
+    ├── admin/              # panel staff con KPIs globales y tendencias
     ├── not-found/
     ├── register/
     ├── register-step2/
@@ -101,6 +112,11 @@ frontend/src/app/
 - Desenvuelve `{ ok: true, data: ... }` de todas las respuestas exitosas
 - Normaliza errores `{ ok: false, message, errors }` a instancias manejables
 
+### `AdminService`
+- `hasAccess()` valida permisos staff contra `/api/admin/access/`
+- `getStats(filters)` consume `/api/admin/stats/` con filtros por `days` o `start/end`
+- `exportStatsCsv(filters)` descarga CSV desde `/api/admin/stats/export/`
+
 ### `ProfileService`
 - `getLocal(maxAgeMs)` — devuelve perfil cacheado si no supera el TTL (10 min por defecto)
 - `getProfileInsights()` — llama a `/api/profile/insights/` con datos reales por área de interés
@@ -138,15 +154,17 @@ ngOnInit() {
 | `/` | `HomeComponent` | — |
 | `/login` | `LoginComponent` | — |
 | `/register` | `RegisterComponent` | — |
-| `/register-step2` | `RegisterStep2Component` | `authGuard` |
-| `/dashboard` | `DashboardComponent` | `authGuard` |
-| `/profile` | `ProfileComponent` | `authGuard` |
-| `/profile/edit` | `ProfileEditComponent` | `authGuard` |
-| `/sport` | `SportComponent` | `authGuard` |
-| `/food` | `FoodComponent` | `authGuard` |
-| `/mindset` | `MindsetComponent` | `authGuard` |
-| `/growth` | `GrowthComponent` | `authGuard` |
-| `/challenges` | `ChallengesComponent` | `authGuard` |
+| `/register-step2` | `RegisterStep2Component` | `nonAdminGuard` |
+| `/dashboard` | `DashboardComponent` | `authGuard + nonAdminGuard` |
+| `/admin` | `AdminComponent` | `authGuard + adminGuard` |
+|  |  | Incluye: filtros rápidos/personalizados, export CSV, tabla top usuarios, alertas automáticas |
+| `/profile` | `ProfileComponent` | `authGuard + nonAdminGuard` |
+| `/profile/edit` | `ProfileEditComponent` | `authGuard + nonAdminGuard` |
+| `/sport` | `SportComponent` | `authGuard + nonAdminGuard` |
+| `/food` | `FoodComponent` | `authGuard + nonAdminGuard` |
+| `/mindset` | `MindsetComponent` | `authGuard + nonAdminGuard` |
+| `/growth` | `GrowthComponent` | `authGuard + nonAdminGuard` |
+| `/challenges` | `ChallengesComponent` | `authGuard + nonAdminGuard` |
 | `**` | `NotFoundComponent` | — |
 
 ## Prácticas de desarrollo

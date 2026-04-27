@@ -1,4 +1,4 @@
-﻿<section class="dash">
+<section class="dash">
   <header class="top">
     <div class="brand">ZΞRO</div>
 
@@ -14,6 +14,7 @@
       </button>
 
       <div class="menu-panel" *ngIf="menuOpen()">
+        <button class="menu-item" type="button" *ngIf="isAdmin()" (click)="goAdmin()">Admin panel</button>
         <button class="menu-item" type="button" (click)="goProfile()">Edit profile</button>
         <button class="menu-item danger" type="button" (click)="logout()">Logout</button>
       </div>
@@ -23,7 +24,7 @@
   <main class="content">
     <p class="msg" *ngIf="loadingProfile()">Loading your profile...</p>
 
-    <div class="grid" *ngIf="!loadingProfile()">
+    <div class="grid" [class.grid-loading]="loadingProfile()">
 
       <article class="card kpi">
         <div class="card-title">Weekly Sessions</div>
@@ -58,11 +59,12 @@
         </ul>
       </article>
 
-      <article class="card chart" #chartSection>
+      <article class="card chart">
         <div class="card-title">Weekly Progress</div>
         <div class="chart-box">
           <canvas #progressCanvas id="progressCanvas"></canvas>
         </div>
+        <p class="chart-empty-note" *ngIf="chartReady() && !chartHasData()">No data yet this week.</p>
       </article>
     </div>
   </main>

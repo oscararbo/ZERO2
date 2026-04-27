@@ -7,7 +7,7 @@ Aplicación full-stack para seguimiento de fitness, nutrición y bienestar menta
 | Capa | Tecnología |
 |------|-----------|
 | Backend | Django + Django REST Framework + SimpleJWT |
-| Frontend | Angular 17+ (standalone, signals) + TypeScript + SCSS |
+| Frontend | Angular 21 (standalone, signals) + TypeScript + SCSS |
 | Base de datos | SQLite (desarrollo) |
 
 ## Características principales
@@ -19,6 +19,15 @@ Aplicación full-stack para seguimiento de fitness, nutrición y bienestar menta
 - **Growth** — plantillas de crecimiento personal y templates versionados
 - **Challenges** — retos con leaderboard, updates, badges y reminders en-app
 - **Profile** — datos personales, métricas corporales, analytics por área de interés (datos reales del servidor)
+- **Admin panel (staff)** — KPIs globales, comparación por rango, cohortes, export CSV, historial de alertas con resolver/reabrir y skeletons durante carga
+
+## Novedades recientes
+
+- Registro en 2 pasos corregido: `/register` -> `/register-step2` sin redirección accidental a login.
+- Formularios `register` y `register-step2` con espaciado compacto entre inputs y mensajes de error.
+- Mindset (`Daily Inspiration`) y Growth (`Daily Growth Quote`) ahora tienen fallback local + caché diaria + recarga forzada con `New Quote`.
+- Panel admin responsive en móvil/tablet (chips, KPIs, controles, tablas y metadatos de alertas).
+- Skeletons añadidos para KPIs, comparación y bloques de top usuarios/alertas mientras carga.
 
 ## Inicio rápido
 

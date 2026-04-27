@@ -1,0 +1,316 @@
+﻿<section class="admin-page">
+  <header class="top">
+    <div>
+      <p class="eyebrow">Administración</p>
+      <h1>Panel global de la aplicación</h1>
+      <p class="sub">Métricas agregadas de usuarios, actividad, mindset y challenges.</p>
+    </div>
+    <button type="button" class="logout-btn" (click)="logout()">Cerrar sesión</button>
+  </header>
+
+  <section class="controls card">
+    <div class="control-group">
+      <p class="control-label">Rango rápido</p>
+      <div class="chips">
+        <button type="button" class="chip" [class.active]="rangeMode() === 'preset' && selectedDays() === 7" (click)="applyPresetDays(7)">7 días</button>
+        <button type="button" class="chip" [class.active]="rangeMode() === 'preset' && selectedDays() === 30" (click)="applyPresetDays(30)">30 días</button>
+        <button type="button" class="chip" [class.active]="rangeMode() === 'preset' && selectedDays() === 90" (click)="applyPresetDays(90)">90 días</button>
+      </div>
+    </div>
+
+    <div class="control-group custom-range">
+      <p class="control-label">Rango personalizado</p>
+      <input type="date" [ngModel]="customStart()" (ngModelChange)="customStart.set($event)" [attr.max]="today" />
+      <input type="date" [ngModel]="customEnd()" (ngModelChange)="customEnd.set($event)" [attr.max]="today" />
+      <button type="button" class="retry" (click)="applyCustomRange()">Aplicar</button>
+    </div>
+    <p class="state error date-error" *ngIf="dateError()">{{ dateError() }}</p>
+
+    <div class="control-group limit-actions">
+      <p class="control-label">Top usuarios</p>
+      <input type="number" min="3" max="50" [ngModel]="topLimitInput()" (ngModelChange)="topLimitInput.set(+$event || 10)" />
+      <button type="button" class="retry" (click)="applyTopLimit()">Actualizar top</button>
+      <button type="button" class="retry" [disabled]="exporting()" (click)="exportCsv()">
+        {{ exporting() ? 'Exportando...' : 'Exportar CSV' }}
+      </button>
+    </div>
+  </section>
+
+  <p class="state range-active">
+    Rango activo: {{ activeRangeLabel() }}
+  </p>
+
+  <p class="state" *ngIf="loading()">Cargando estadísticas...</p>
+  <p class="state error" *ngIf="error()">{{ error() }}</p>
+
+  <button class="retry" type="button" *ngIf="error()" (click)="retry()">Reintentar</button>
+
+  <!-- Charts always rendered so ViewChild refs are always in DOM -->
+  <section class="grid-2 charts-row">
+    <article class="card chart-card">
+      <h2>Altas de usuarios ({{ activeRangeLabel() }})</h2>
+      <p class="chart-empty" *ngIf="loading()">Cargando...</p>
+      <div class="chart-wrap">
+        <canvas #userTrendChart></canvas>
+      </div>
+    </article>
+    <article class="card chart-card">
+      <h2>Sesiones registradas ({{ activeRangeLabel() }})</h2>
+      <p class="chart-empty" *ngIf="loading()">Cargando...</p>
+      <div class="chart-wrap">
+        <canvas #sessionTrendChart></canvas>
+      </div>
+    </article>
+  </section>
+
+  <section class="grid-2 charts-row">
+    <article class="card chart-card">
+      <h2>Distribución de intereses</h2>
+      <p class="chart-empty" *ngIf="loading()">Cargando...</p>
+      <div class="chart-wrap chart-wrap--sm">
+        <canvas #interestsChart></canvas>
+      </div>
+    </article>
+    <article class="card chart-card">
+      <h2>Objetivos fitness</h2>
+      <p class="chart-empty" *ngIf="loading()">Cargando...</p>
+      <div class="chart-wrap chart-wrap--sm">
+        <canvas #goalsChart></canvas>
+      </div>
+    </article>
+  </section>
+
+  <section class="kpis kpis--skeleton" *ngIf="loading()">
+    <article class="kpi" *ngFor="let _ of skeletonKpis">
+      <div class="sk sk-label"></div>
+      <div class="sk sk-value"></div>
+      <div class="sk sk-delta"></div>
+    </article>
+  </section>
+
+  <section class="card comparison-card comparison-card--skeleton" *ngIf="loading()">
+    <div class="sk sk-title"></div>
+    <div class="sk sk-subtitle"></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Métrica</th><th>Actual</th><th>Anterior</th><th>Δ %</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let _ of skeletonComparisonRows">
+            <td><div class="sk sk-cell sk-cell--metric"></div></td>
+            <td><div class="sk sk-cell"></div></td>
+            <td><div class="sk sk-cell"></div></td>
+            <td><div class="sk sk-cell sk-cell--delta"></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="grid-2" *ngIf="loading()">
+    <article class="card card--skeleton">
+      <div class="sk sk-title"></div>
+      <div class="skeleton-list">
+        <div class="sk sk-row" *ngFor="let _ of skeletonTopRows"></div>
+      </div>
+    </article>
+
+    <article class="card card--skeleton">
+      <div class="sk sk-title"></div>
+      <div class="skeleton-list">
+        <div class="sk sk-row sk-row--alert" *ngFor="let _ of skeletonAlertsRows"></div>
+      </div>
+    </article>
+  </section>
+
+  <ng-container *ngIf="stats() as data">
+    <section class="kpis">
+      <article class="kpi" *ngFor="let item of kpis()">
+        <p class="label">{{ item.label }}</p>
+        <p class="value">{{ item.value }}</p>
+        <span
+          class="delta"
+          [class.positive]="item.delta !== null && item.delta > 0"
+          [class.negative]="item.delta !== null && item.delta < 0"
+          [class.neutral]="item.delta === null || item.delta === 0"
+        >
+          <ng-container *ngIf="item.delta !== null">
+            {{ item.delta > 0 ? '▲' : item.delta < 0 ? '▼' : '━' }} {{ item.delta | number:'1.1-1' }}%
+          </ng-container>
+          <ng-container *ngIf="item.delta === null">━</ng-container>
+        </span>
+      </article>
+    </section>
+
+    <section class="card comparison-card">
+      <h2>Comparación vs periodo anterior</h2>
+      <p class="prior-label">
+        Periodo actual: {{ data.meta.range.start | date:'dd/MM/yy' }} – {{ data.meta.range.end | date:'dd/MM/yy' }}
+        · Periodo anterior: {{ data.meta.prior_range.start | date:'dd/MM/yy' }} – {{ data.meta.prior_range.end | date:'dd/MM/yy' }}
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Métrica</th><th>Actual</th><th>Anterior</th><th>Δ %</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of comparisonRows()">
+              <td>{{ row.label }}</td>
+              <td>{{ row.current }}</td>
+              <td>{{ row.previous }}</td>
+              <td>
+                <span
+                  *ngIf="row.delta !== null; else noDelta"
+                  class="delta-cell"
+                  [class.positive]="row.delta > 0"
+                  [class.negative]="row.delta < 0"
+                >
+                  {{ row.delta > 0 ? '▲' : '▼' }} {{ row.delta | number:'1.1-1' }}%
+                </span>
+                <ng-template #noDelta><span class="delta-cell neutral">━</span></ng-template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card cohorts-card" *ngIf="cohortRows() as cohorts">
+      <h2>Segmentación por cohortes</h2>
+      <div class="cohort-summary">
+        <span>Total activos: <strong>{{ cohorts.summary.total_active }}</strong></span>
+        <span>Nuevos: <strong>{{ cohorts.summary.new_count }}</strong></span>
+        <span>Recurrentes: <strong>{{ cohorts.summary.returning_count }}</strong></span>
+      </div>
+      <div class="grid-2 cohort-grid">
+        <article class="cohort-block">
+          <h3>Nuevos usuarios</h3>
+          <ul class="cohort-stats">
+            <li><span>Sesiones</span><strong>{{ cohorts.new.sessions }}</strong></li>
+            <li><span>Journal</span><strong>{{ cohorts.new.journal_entries }}</strong></li>
+            <li><span>Mood</span><strong>{{ cohorts.new.mood_entries }}</strong></li>
+          </ul>
+          <p class="cohort-interests-title">Intereses</p>
+          <ul class="cohort-interests">
+            <li *ngFor="let entry of [['Sport', cohorts.new.interests.sport], ['Food', cohorts.new.interests.food], ['Mindset', cohorts.new.interests.mindset], ['Growth', cohorts.new.interests.growth], ['Challenges', cohorts.new.interests.challenges]]">
+              <span>{{ entry[0] }}</span><strong>{{ entry[1] }}</strong>
+            </li>
+          </ul>
+        </article>
+        <article class="cohort-block">
+          <h3>Usuarios recurrentes</h3>
+          <ul class="cohort-stats">
+            <li><span>Sesiones</span><strong>{{ cohorts.returning.sessions }}</strong></li>
+            <li><span>Journal</span><strong>{{ cohorts.returning.journal_entries }}</strong></li>
+            <li><span>Mood</span><strong>{{ cohorts.returning.mood_entries }}</strong></li>
+          </ul>
+          <p class="cohort-interests-title">Intereses</p>
+          <ul class="cohort-interests">
+            <li *ngFor="let entry of [['Sport', cohorts.returning.interests.sport], ['Food', cohorts.returning.interests.food], ['Mindset', cohorts.returning.interests.mindset], ['Growth', cohorts.returning.interests.growth], ['Challenges', cohorts.returning.interests.challenges]]">
+              <span>{{ entry[0] }}</span><strong>{{ entry[1] }}</strong>
+            </li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <article class="card">
+        <h2>Top usuarios por actividad</h2>
+        <div class="table-wrap" *ngIf="topUsers().length; else noTopUsers">
+          <table>
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Sesiones</th>
+                <th>Ejercicios</th>
+                <th>Challenges</th>
+                <th>Journal</th>
+                <th>Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of topUsers()">
+                <td>{{ user.username }}</td>
+                <td>{{ user.sessions }}</td>
+                <td>{{ user.completed_exercises }}</td>
+                <td>{{ user.challenges_completed }}</td>
+                <td>{{ user.journal_entries }}</td>
+                <td><strong>{{ user.score }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noTopUsers>
+          <p class="empty">No hay actividad suficiente para construir ranking en este rango.</p>
+        </ng-template>
+      </article>
+
+      <article class="card">
+        <h2>Alertas generadas en el rango</h2>
+        <div class="alerts" *ngIf="alerts().length; else noAlerts">
+          <div class="alert" *ngFor="let alert of alerts()" [class.warning]="alert.severity === 'warning'" [class.critical]="alert.severity === 'critical'">
+            <p class="alert-head">
+              <span>{{ alert.type }}</span>
+              <strong>{{ alert.severity }}</strong>
+            </p>
+            <p class="alert-msg">{{ alert.message }}</p>
+          </div>
+        </div>
+        <ng-template #noAlerts>
+          <p class="empty">Sin alertas críticas en el rango actual.</p>
+        </ng-template>
+      </article>
+    </section>
+
+    <p class="foot">
+      Rango: {{ data.meta.range.start | date:'dd/MM/yyyy' }} - {{ data.meta.range.end | date:'dd/MM/yyyy' }}
+      · Generado: {{ data.generated_at | date:'dd/MM/yyyy HH:mm' }}
+    </p>
+  </ng-container>
+
+  <section class="card historical-alerts">
+    <div class="ha-header">
+      <h2>Historial de alertas</h2>
+      <div class="chips">
+        <button type="button" class="chip" [class.active]="alertsFilter() === 'all'" (click)="setAlertsFilter('all')">Todas</button>
+        <button type="button" class="chip" [class.active]="alertsFilter() === 'open'" (click)="setAlertsFilter('open')">Abiertas</button>
+        <button type="button" class="chip" [class.active]="alertsFilter() === 'resolved'" (click)="setAlertsFilter('resolved')">Resueltas</button>
+      </div>
+    </div>
+
+    <p class="state" *ngIf="alertsLoading()">Cargando historial...</p>
+
+    <div *ngIf="!alertsLoading()">
+      <div *ngIf="filteredPersistedAlerts().length; else noHistory" class="ha-list">
+        <div
+          class="ha-item"
+          *ngFor="let alert of filteredPersistedAlerts()"
+          [class.open]="alert.status === 'open'"
+          [class.resolved]="alert.status === 'resolved'"
+          [class.warning]="alert.severity === 'warning'"
+          [class.critical]="alert.severity === 'critical'"
+        >
+          <div class="ha-meta">
+            <span class="ha-type">{{ alert.type }}</span>
+            <span class="ha-sev">{{ alert.severity }}</span>
+            <span class="ha-status" [class.open]="alert.status === 'open'" [class.resolved]="alert.status === 'resolved'">{{ alert.status }}</span>
+            <span class="ha-date">{{ alert.created_at | date:'dd/MM/yy HH:mm' }}</span>
+            <span class="ha-resolved-at">{{ alert.resolved_at ? (alert.resolved_at | date:'dd/MM/yy HH:mm') : 'Sin resolver' }}</span>
+          </div>
+          <p class="ha-msg">{{ alert.message }}</p>
+          <div class="ha-footer" *ngIf="alert.status === 'open'">
+            <button type="button" class="resolve-btn" (click)="resolveAlert(alert.id)">Marcar resuelta</button>
+          </div>
+          <div class="ha-footer" *ngIf="alert.status === 'resolved'">
+            <button type="button" class="reopen-btn" (click)="reopenAlert(alert.id)">Volver a abrir</button>
+          </div>
+        </div>
+      </div>
+      <ng-template #noHistory>
+        <p class="empty">No hay alertas en el historial para el filtro seleccionado.</p>
+      </ng-template>
+    </div>
+  </section>
+</section>

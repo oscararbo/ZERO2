@@ -58,7 +58,7 @@ export class ProfileEditComponent implements OnInit {
 
   readonly messageIsError = computed(() => {
     const text = this.msg().toLowerCase();
-    return text.includes('no se pudo') || text.includes('could not') || text.includes('error');
+    return text.includes('could not') || text.includes('error');
   });
 
   ngOnInit() {
@@ -85,14 +85,14 @@ export class ProfileEditComponent implements OnInit {
     this.msg.set('');
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.msg.set('Completa todos los campos correctamente.');
+      this.msg.set('Please complete all fields correctly.');
       return;
     }
 
     const dto = this.buildDto();
 
     if (this.isUnchanged(dto)) {
-      this.msg.set('No hay cambios para guardar.');
+      this.msg.set('There are no changes to save.');
       return;
     }
 
@@ -102,7 +102,7 @@ export class ProfileEditComponent implements OnInit {
     this.profiles.saveProfile(dto).subscribe({
       next: (saved) => {
         this.loading.set(false);
-        this.msg.set('Perfil actualizado exitosamente.');
+        this.msg.set('Profile updated successfully.');
         this.profiles.setLocal(saved);
         this.setInitialSnapshot(saved);
         this.form.markAsPristine();
@@ -110,7 +110,7 @@ export class ProfileEditComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
-        this.msg.set(extractApiErrorMessage(err, 'No se pudo guardar el perfil.'));
+        this.msg.set(extractApiErrorMessage(err, 'Could not save profile.'));
       }
     });
   }

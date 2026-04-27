@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'apps.workouts',
     'apps.mindset',
     'apps.challenges',
+    'apps.admin_panel',
 ]
 
 

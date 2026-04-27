@@ -4,26 +4,27 @@
 
 form {
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .field {
   display: grid;
-  gap: 0;
+  gap: 2px;
 }
 
 .field__label {
   display: block;
   font-size: 13px;
   color: rgba(255,255,255,0.75);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .field__error {
-  height: 18px;
   font-size: 12px;
   color: #ff8a8a;
-  margin-top: 4px;
+  margin-top: 2px;
+  line-height: 1.15;
+  min-height: 14px;
   visibility: hidden;
 }
 
@@ -62,7 +63,7 @@ form {
 }
 
 .submit-btn {
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .form-msg {
@@ -86,7 +87,7 @@ form {
 }
 
 .bottom {
-  margin-top: 4px;
+  margin-top: 2px;
   color: #bdbdbd;
   font-size: 13px;
   text-align: center;
@@ -98,62 +99,4 @@ a {
   transition: color .16s ease;
 
   &:hover { color: #fff; }
-}
-
-
-.input-wrap {
-  position: relative;
-}
-
-.input-wrap input {
-  padding-right: 66px;
-}
-
-.toggle {
-  position: absolute;
-  top: 50%;
-  right: 8px;
-  transform: translateY(-50%);
-  height: 30px;
-  padding: 0 10px;
-  font-size: 12px;
-}
-
-.error {
-  display: block;
-  margin-top: 6px;
-  color: rgba(255,255,255,0.65);
-  font-size: 12px;
-}
-
-.msg {
-  display: block;
-  color: rgba(255,255,255,0.85);
-  font-size: 13px;
-}
-
-.btn {
-  height: 44px;
-}
-
-.btn:disabled {
-  opacity: 0.7;
-  cursor: default;
-}
-
-.bottom {
-  margin: 6px 0 0;
-  color: rgba(255,255,255,0.7);
-  font-size: 13px;
-}
-
-a {
-  color: #fff;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(255,255,255,0.25);
-  transition: border-color .16s ease, color .16s ease;
-}
-
-a:hover {
-  border-color: rgba(255,255,255,0.6);
 }

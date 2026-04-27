@@ -27,8 +27,8 @@
 
     <div class="card">
       <h2 class="mb-3">Daily Inspiration</h2>
+      <p class="quote-loading" *ngIf="quoteLoading()">Loading quote...</p>
       <blockquote class="quote">{{ dailyQuote() }}</blockquote>
-      <button class="btn-secondary btn btn-outline-light" (click)="loadDailyQuote()">New Quote</button>
     </div>
 
     <div class="card">
