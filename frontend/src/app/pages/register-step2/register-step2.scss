@@ -2,25 +2,26 @@
   display: block;
 }
 
-form { display: grid; gap: 14px; }
+form { display: grid; gap: 10px; }
 
 .field {
   display: grid;
-  gap: 0;
+  gap: 2px;
 }
 
 .field__label {
   display: block;
   font-size: 13px;
   color: rgba(255,255,255,0.75);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .field__error {
-  height: 18px;
   font-size: 12px;
   color: #ff8a8a;
-  margin-top: 4px;
+  margin-top: 2px;
+  line-height: 1.15;
+  min-height: 14px;
   visibility: hidden;
 }
 
@@ -31,12 +32,12 @@ form { display: grid; gap: 14px; }
 .measurements {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
 @media (max-width: 640px) {
   .measurements { grid-template-columns: 1fr; }
-  form { gap: 12px; }
+  form { gap: 10px; }
 }
 
 select option {
@@ -47,15 +48,15 @@ select option {
 .group {
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 14px;
-  padding: 14px 12px;
+  padding: 12px 12px;
   background: rgba(0,0,0,0.22);
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .hint {
   display: block;
-  margin-top: 2px;
+  margin-top: 1px;
   font-size: 12px;
   color: rgba(255,255,255,.56);
 }
@@ -72,7 +73,7 @@ select option {
   gap: 10px;
   cursor: pointer;
   font-size: 14px;
-  padding: 4px 6px;
+  padding: 3px 6px;
   border-radius: 8px;
   transition: background .16s ease;
 

@@ -14,10 +14,10 @@
           [class.is-valid]="f.username.touched && !f.username.invalid && usernameAvailable() === true"
           (blur)="checkUsername()"
         />
-        <div class="field__error" [class.field__error--visible]="f.username.touched && f.username.invalid">
+        <div class="field__error field__error--visible" *ngIf="f.username.touched && f.username.invalid">
           {{ f.username.errors?.['minlength'] ? 'Minimum 3 characters' : 'Required' }}
         </div>
-        <div class="field__error field__error--avail" [class.field__error--visible]="usernameError()">
+        <div class="field__error field__error--avail field__error--visible" *ngIf="!f.username.invalid && usernameError()">
           {{ usernameError() }}
         </div>
       </div>
@@ -35,10 +35,10 @@
           [class.is-valid]="f.email.touched && !f.email.invalid && emailAvailable() === true"
           (blur)="checkEmail()"
         />
-        <div class="field__error" [class.field__error--visible]="f.email.touched && f.email.invalid">
+        <div class="field__error field__error--visible" *ngIf="f.email.touched && f.email.invalid">
           Enter a valid email
         </div>
-        <div class="field__error field__error--avail" [class.field__error--visible]="emailError()">
+        <div class="field__error field__error--avail field__error--visible" *ngIf="!f.email.invalid && emailError()">
           {{ emailError() }}
         </div>
       </div>
@@ -59,7 +59,7 @@
             <i [class]="showPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
           </button>
         </div>
-        <div class="field__error" [class.field__error--visible]="f.password.touched && f.password.invalid">
+        <div class="field__error field__error--visible" *ngIf="f.password.touched && f.password.invalid">
           Minimum 6 characters
         </div>
       </div>

@@ -39,7 +39,7 @@ export class LoginComponent {
     this.msg.set('');
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.msg.set('Completa usuario y contraseña.');
+      this.msg.set('Please enter username and password.');
       return;
     }
 
@@ -51,14 +51,15 @@ export class LoginComponent {
         this.loading.set(false);
         const token = res?.access || res?.token;
         const refresh = res?.refresh ?? null;
+        const isStaff = !!(res as any)?.is_staff;
         if (token) {
-          this.auth.setSession(token, refresh, dto.username);
+          this.auth.setSession(token, refresh, dto.username, isStaff);
         }
-        this.router.navigateByUrl('/dashboard');
+        this.router.navigateByUrl(isStaff ? '/admin' : '/dashboard');
       },
       error: () => {
         this.loading.set(false);
-        this.msg.set('Credenciales incorrectas.');
+        this.msg.set('Invalid credentials.');
       },
     });
   }

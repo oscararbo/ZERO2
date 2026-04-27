@@ -23,8 +23,8 @@
 
     <div class="card quote-card">
       <h2>Daily Growth Quote</h2>
+      <p class="quote-loading" *ngIf="quoteLoading()">Loading quote...</p>
       <blockquote>{{ dailyQuote() }}</blockquote>
-      <button class="btn-secondary btn btn-outline-light" (click)="loadDailyQuote()">New Quote</button>
     </div>
 
     <div class="card goals-card">

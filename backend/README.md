@@ -62,8 +62,16 @@ backend/
     ├── profiles/            # perfil + insights analytics por área
     ├── workouts/            # ejercicios, sesiones, progreso
     ├── mindset/             # journal, mood, templates de usuario
-    └── challenges/          # challenges, leaderboard, badges, reminders
+    ├── challenges/          # challenges, leaderboard, badges, reminders
+    └── admin_panel/         # métricas globales para staff (/api/admin/*)
 ```
+
+## Endpoints admin (staff)
+
+- `GET /api/admin/access/` — valida si el usuario autenticado tiene rol staff
+- `GET /api/admin/stats/?days=30&top=10` — dashboard agregado con métricas, trends, top usuarios y alertas automáticas
+- `GET /api/admin/stats/?start=YYYY-MM-DD&end=YYYY-MM-DD&top=10` — mismo dashboard usando rango personalizado
+- `GET /api/admin/stats/export/?days=30&top=10` — exportación CSV del estado actual del panel
 
 ## Formato de respuesta
 
@@ -80,6 +88,7 @@ Todas las respuestas siguen el mismo envelope:
 ## Seguridad implementada
 
 - `IsAuthenticated` por defecto; endpoints públicos declaran `AllowAny` explícitamente
+- Endpoints de administración bajo `/api/admin/*` protegidos con `IsAdminUser` (solo staff)
 - JWT con refresh endpoint (`/api/token/refresh/`)
 - Throttling por scope `auth` en register/login/check
 - Validaciones de registro: email único, username único (case-insensitive), longitud mínima de contraseña

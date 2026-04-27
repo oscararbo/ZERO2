@@ -151,7 +151,7 @@ export class HomeComponent {
     {
       question: 'Do I need to train every day?',
       answer: 'No. ZERO is built for consistency, not perfection. You define your weekly goal and track real progress.',
-      open: true,
+      open: false,
     },
     {
       question: 'Can I focus only on one area?',
@@ -178,7 +178,7 @@ export class HomeComponent {
     this.faqItems.update((items) =>
       items.map((item, itemIndex) => ({
         ...item,
-        open: itemIndex === index ? !item.open : false,
+        open: itemIndex === index ? !item.open : item.open,
       }))
     );
   }

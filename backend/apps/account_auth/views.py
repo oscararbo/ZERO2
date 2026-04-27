@@ -145,7 +145,11 @@ class LoginView(APIView):
             return error_response('Usuario o contrasena invalidos.', status_code=status.HTTP_401_UNAUTHORIZED)
 
         refresh = RefreshToken.for_user(user)
-        return success_response({'access': str(refresh.access_token), 'refresh': str(refresh)})
+        return success_response({
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'is_staff': user.is_staff,
+        })
 
 
 class HealthView(APIView):

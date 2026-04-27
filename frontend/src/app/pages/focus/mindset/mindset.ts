@@ -23,6 +23,7 @@ export class MindsetComponent implements OnInit {
   private http = inject(HttpClient);
 
   dailyQuote = signal<string>('');
+  quoteLoading = signal<boolean>(false);
   meditationTime = signal<number>(5);
   isMeditating = signal<boolean>(false);
   timeLeft = signal<number>(0);
@@ -85,6 +86,13 @@ export class MindsetComponent implements OnInit {
 
   private intervalId: any;
   private readonly QUOTE_CACHE_KEY = 'zero_daily_quote_mindset';
+  private readonly fallbackQuotes = [
+    'Small progress each day compounds into meaningful change. — ZERO',
+    'Discipline is choosing what you want most over what you want now. — Abraham Lincoln',
+    'You do not rise to the level of your goals. You fall to the level of your systems. — James Clear',
+    'Consistency beats intensity when intensity is rare. — ZERO',
+    'What you repeat daily becomes your identity. — ZERO',
+  ];
 
   ngOnInit(): void {
     this.loadDailyQuote();
@@ -104,20 +112,46 @@ export class MindsetComponent implements OnInit {
       const cached = localStorage.getItem(this.QUOTE_CACHE_KEY);
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (parsed.date === today) { this.dailyQuote.set(parsed.text); return; }
+        if (parsed.date === today) {
+          this.dailyQuote.set(parsed.text);
+          this.quoteLoading.set(false);
+          return;
+        }
       }
     } catch { /* ignore */ }
+
+    this.quoteLoading.set(true);
     this.http.get<any[]>('https://api.quotable.io/quotes/random?tags=inspirational|motivational&limit=1').subscribe({
       next: (res) => {
         const q = Array.isArray(res) ? res[0] : res;
         const text = q?.content ? `${q.content}${q.author ? ' — ' + q.author : ''}` : '';
         if (text) {
-          this.dailyQuote.set(text);
-          try { localStorage.setItem(this.QUOTE_CACHE_KEY, JSON.stringify({ date: today, text })); } catch { /* ignore */ }
+          this.setDailyQuote(text, today);
+          this.quoteLoading.set(false);
+          return;
         }
+        this.setDailyQuote(this.pickFallbackQuote(today), today);
+        this.quoteLoading.set(false);
       },
-      error: () => {},
+      error: () => {
+        this.setDailyQuote(this.pickFallbackQuote(today), today);
+        this.quoteLoading.set(false);
+      },
     });
+  }
+
+  private setDailyQuote(text: string, date: string): void {
+    this.dailyQuote.set(text);
+    try {
+      localStorage.setItem(this.QUOTE_CACHE_KEY, JSON.stringify({ date, text }));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  private pickFallbackQuote(seedDate: string): string {
+    const hash = seedDate.split('-').reduce((acc, part) => acc + Number(part), 0);
+    return this.fallbackQuotes[hash % this.fallbackQuotes.length];
   }
 
   setMeditationTime(value: number | string): void {

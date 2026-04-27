@@ -2,6 +2,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestro
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
+import { AdminService } from '../../core/admin.service';
 import { ProfileService, Profile } from '../../core/profile.service';
 import { ProgressService } from '../../core/progress.service';
 import { ExerciseService } from '../../core/exercise.service';
@@ -18,15 +19,16 @@ import type { Chart } from 'chart.js/auto';
 })
 export class DashboardComponent implements AfterViewInit, OnDestroy {
   private auth = inject(AuthService);
+  private admin = inject(AdminService);
   private router = inject(Router);
   private profiles = inject(ProfileService);
   private progress = inject(ProgressService);
   private exercises = inject(ExerciseService);
 
   @ViewChild('progressCanvas') progressCanvasRef?: ElementRef<HTMLCanvasElement>;
-  @ViewChild('chartSection') chartSectionRef?: ElementRef<HTMLElement>;
 
   menuOpen = signal(false);
+  isAdmin = signal(false);
 
   name = signal('User');
   weeklyGoal = signal(3);
@@ -36,8 +38,8 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
   fitnessGoal = signal('bulk');
 
   focus = signal<{ label: string; link: string }[]>([]);
-  chartVisible = signal(false);
   chartReady = signal(false);
+  chartHasData = signal(false);
 
   readonly goalLabel = computed(() => {
     const g = this.fitnessGoal();
@@ -53,11 +55,52 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
   });
 
   private chart = signal<Chart | null>(null);
-  private chartObserver: IntersectionObserver | null = null;
   private loadingChart = false;
+  private pendingChartRetry: number | null = null;
+  private chartRetryCount = 0;
+
+  private getFallbackProgressData(): { labels: string[]; values: number[] } {
+    const labels = this.getLast7DayLabels();
+    return { labels, values: labels.map(() => 0) };
+  }
+
+  private getLast7DayLabels(): string[] {
+    const fmt = new Intl.DateTimeFormat('en-US', { weekday: 'short' });
+    const today = new Date();
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (6 - i));
+      const label = fmt.format(d).replace('.', '');
+      return label.charAt(0).toUpperCase() + label.slice(1);
+    });
+  }
+
+  private normalizeProgressData(data: { labels?: string[]; values?: number[] } | null | undefined) {
+    const fallback = this.getFallbackProgressData();
+    if (!data || !Array.isArray(data.labels) || !Array.isArray(data.values)) {
+      return fallback;
+    }
+
+    const limit = Math.min(data.labels.length, data.values.length);
+    if (limit === 0) {
+      return fallback;
+    }
+
+    const labels = data.labels.slice(0, limit);
+    const values = data.values.slice(0, limit).map((v) => (Number.isFinite(Number(v)) ? Number(v) : 0));
+    return { labels, values };
+  }
 
   ngAfterViewInit() {
-    this.observeChartVisibility();
+    this.refreshChart();
+    const staffCandidate = this.auth.isStaff();
+    this.isAdmin.set(staffCandidate);
+    if (staffCandidate) {
+      this.admin.hasAccess().subscribe({
+        next: (isAdmin) => this.isAdmin.set(isAdmin),
+        error: () => this.isAdmin.set(false),
+      });
+    }
 
     const local = this.profiles.getLocal();
     if (local) this.applyProfile(local);
@@ -77,9 +120,28 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.chartObserver?.disconnect();
+    this.clearChartRetry();
     this.destroyChart();
   }
+  private clearChartRetry(): void {
+    if (this.pendingChartRetry !== null) {
+      window.clearTimeout(this.pendingChartRetry);
+      this.pendingChartRetry = null;
+    }
+  }
+
+  private queueChartRetry(): void {
+    if (this.pendingChartRetry !== null || this.chart() || this.chartRetryCount >= 30) {
+      return;
+    }
+
+    this.chartRetryCount += 1;
+    this.pendingChartRetry = window.setTimeout(() => {
+      this.pendingChartRetry = null;
+      this.refreshChart();
+    }, 50);
+  }
+
 
   toggleMenu() { this.menuOpen.set(!this.menuOpen()); }
   closeMenu() { this.menuOpen.set(false); }
@@ -87,6 +149,11 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
   goProfile() {
     this.closeMenu();
     this.router.navigateByUrl('/profile');
+  }
+
+  goAdmin() {
+    this.closeMenu();
+    this.router.navigateByUrl('/admin');
   }
 
   logout() {
@@ -141,18 +208,20 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
 
       const chartModule = await import('chart.js/auto');
       const ChartClass = chartModule.Chart;
+      const fallback = this.getFallbackProgressData();
 
       const nextChart = new ChartClass(ctx, {
         type: 'bar',
         data: {
-          labels: ['', '', '', '', '', '', ''],
+          labels: fallback.labels,
           datasets: [{
             label: 'Exercises',
-            data: [0, 0, 0, 0, 0, 0, 0],
+            data: fallback.values,
             backgroundColor: 'rgba(154,160,166,0.7)',
             hoverBackgroundColor: '#fff',
             borderRadius: 8,
             borderSkipped: false,
+            minBarLength: 2,
           }],
         },
         options: {
@@ -185,46 +254,43 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
 
       this.chart.set(nextChart);
       this.chartReady.set(true);
+      this.chartHasData.set(false);
     } finally {
       this.loadingChart = false;
     }
   }
 
   private refreshChart() {
-    this.progress.getProgress().subscribe({
-      next: async (data) => {
-        if (!this.chartVisible()) return;
-        await this.ensureChart();
-        const chart = this.chart();
-        if (!chart) return;
-        chart.data.labels = data.labels;
-        chart.data.datasets[0].data = data.values;
-        chart.update();
-      },
-      error: () => {},
+    const canvas = this.progressCanvasRef?.nativeElement;
+    if (!this.chart() && !canvas) {
+      this.queueChartRetry();
+      return;
+    }
+
+    this.clearChartRetry();
+    this.chartRetryCount = 0;
+
+    this.ensureChart().then(() => {
+      const chart = this.chart();
+      if (!chart) return;
+
+      this.progress.getProgress().subscribe({
+        next: (data) => {
+          const normalized = this.normalizeProgressData(data);
+          this.chartHasData.set(normalized.values.some((v) => v > 0));
+          chart.data.labels = normalized.labels;
+          chart.data.datasets[0].data = normalized.values;
+          chart.update();
+        },
+        error: () => {
+          const fallback = this.getFallbackProgressData();
+          this.chartHasData.set(false);
+          chart.data.labels = fallback.labels;
+          chart.data.datasets[0].data = fallback.values;
+          chart.update();
+        },
+      });
     });
-  }
-
-  private observeChartVisibility(): void {
-    const target = this.chartSectionRef?.nativeElement;
-    if (!target) return;
-
-    this.chartObserver = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (!entry?.isIntersecting) return;
-
-        this.chartVisible.set(true);
-        this.refreshChart();
-        this.chartObserver?.disconnect();
-      },
-      {
-        root: null,
-        threshold: 0.2,
-      }
-    );
-
-    this.chartObserver.observe(target);
   }
 
   private destroyChart() {

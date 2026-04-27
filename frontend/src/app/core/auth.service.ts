@@ -11,6 +11,7 @@ type AvailabilityResponse = { available: boolean; reason?: string };
 
 type JwtPayload = {
   exp?: number;
+  is_staff?: boolean;
 };
 
 @Injectable({ providedIn: 'root' })
@@ -70,12 +71,30 @@ export class AuthService {
     return this.http.get<AvailabilityResponse>(`${environment.apiUrl}/api/check-email/`, { params: { email } });
   }
 
-  setSession(accessToken: string, refreshToken: string | null, username: string) {
+  setSession(accessToken: string, refreshToken: string | null, username: string, isStaff = false) {
     localStorage.setItem(this.accessTokenKey, accessToken);
     if (refreshToken) {
       localStorage.setItem(this.refreshTokenKey, refreshToken);
     }
-    localStorage.setItem(this.userKey, JSON.stringify({ username }));
+    localStorage.setItem(this.userKey, JSON.stringify({ username, is_staff: isStaff }));
+  }
+
+  isStaff(): boolean {
+    const raw = localStorage.getItem(this.userKey);
+    if (raw) {
+      try {
+        if (JSON.parse(raw)?.is_staff === true) {
+          return true;
+        }
+      } catch {
+        // Fall back to token payload below.
+      }
+    }
+
+    const access = this.accessToken;
+    if (!access) return false;
+    const payload = this.decodeTokenPayload(access);
+    return payload?.is_staff === true;
   }
 
   setToken(token: string, username: string) {
