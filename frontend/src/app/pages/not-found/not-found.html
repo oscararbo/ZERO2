@@ -1,0 +1,28 @@
+<section class="not-found-shell">
+  <div class="aurora aurora-one"></div>
+  <div class="aurora aurora-two"></div>
+
+  <div class="not-found-card">
+    <p class="eyebrow">ZERO / ROUTING</p>
+    <h1>404</h1>
+    <h2>Esa ruta no existe</h2>
+    <p class="description">
+      La página a la que intentaste entrar no está disponible. Puede que la URL esté mal escrita,
+      que el enlace sea antiguo o que la navegación te haya enviado a un destino inválido.
+    </p>
+
+    <div class="actions">
+      <button type="button" class="home-button" (click)="goHome()">Volver al home</button>
+      <a routerLink="/dashboard" class="ghost-link">Ir al dashboard</a>
+    </div>
+
+    <div class="signal-grid" aria-hidden="true">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+</section>

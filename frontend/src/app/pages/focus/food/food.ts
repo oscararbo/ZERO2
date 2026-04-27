@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NutritionService, Recipe, MealRecommendation } from '../../../core/nutrition.service';
 import { ProfileService, FitnessGoal } from '../../../core/profile.service';
-import { FocusHeaderComponent } from '../../shared/components/focus-header/focus-header.component';
+import { FocusPageHeaderComponent } from '../../shared/components/focus-page-header/focus-page-header';
+import { PageStateComponent } from '../../shared/components/page-state/page-state';
 
 @Component({
   selector: 'app-food',
   standalone: true,
-  imports: [CommonModule, FormsModule, FocusHeaderComponent],
+  imports: [CommonModule, FormsModule, FocusPageHeaderComponent, PageStateComponent],
   templateUrl: './food.html',
   styleUrls: ['./food.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,8 +22,35 @@ export class FoodComponent implements OnInit {
   loadingMeals = signal(false);
   mealError = signal('');
   fitnessGoal = signal<FitnessGoal>('bulk');
+  macroTargets = signal({ calories: 0, protein: 0, carbs: 0, fat: 0 });
 
   selectedMealView = signal<'all' | 'breakfast' | 'lunch' | 'dinner' | 'snack'>('all');
+
+  readonly goalGuidance = computed(() => {
+    const goal = this.fitnessGoal();
+    if (goal === 'bulk') {
+      return {
+        title: 'Muscle Gain Strategy',
+        guidance: 'Prioritize protein quality, pre/post workout carbs and a small calorie surplus.',
+        calories: '2,600 - 3,100',
+        protein: '1.8 - 2.2 g/kg',
+      };
+    }
+    if (goal === 'cut') {
+      return {
+        title: 'Definition Strategy',
+        guidance: 'Keep protein high, distribute carbs around training and maintain a controlled deficit.',
+        calories: '1,900 - 2,400',
+        protein: '2.0 - 2.4 g/kg',
+      };
+    }
+    return {
+      title: 'Maintenance Strategy',
+      guidance: 'Sustain body composition with balanced macros and meal consistency.',
+      calories: '2,200 - 2,700',
+      protein: '1.6 - 2.0 g/kg',
+    };
+  });
 
   readonly filteredMeals = computed(() => {
     const selected = this.selectedMealView();
@@ -67,10 +95,76 @@ export class FoodComponent implements OnInit {
     );
   });
 
+  readonly macroDistribution = computed(() => {
+    const daily = this.dailyNutrition();
+    const caloriesFromMacros = (daily.protein * 4) + (daily.carbs * 4) + (daily.fat * 9);
+    if (caloriesFromMacros <= 0) {
+      return { protein: 0, carbs: 0, fat: 0 };
+    }
+
+    return {
+      protein: this.toPercent((daily.protein * 4) / caloriesFromMacros),
+      carbs: this.toPercent((daily.carbs * 4) / caloriesFromMacros),
+      fat: this.toPercent((daily.fat * 9) / caloriesFromMacros),
+    };
+  });
+
+  readonly shoppingList = computed(() => {
+    const bucket = new Map<string, { name: string; unit: string; amount: number }>();
+
+    for (const meal of this.displayMeals()) {
+      for (const ingredient of meal.recipe.ingredients) {
+        const key = `${ingredient.name.toLowerCase()}__${ingredient.unit.toLowerCase()}`;
+        const current = bucket.get(key);
+        if (current) {
+          current.amount += ingredient.amount;
+        } else {
+          bucket.set(key, {
+            name: ingredient.name,
+            unit: ingredient.unit,
+            amount: ingredient.amount,
+          });
+        }
+      }
+    }
+
+    return Array.from(bucket.values()).sort((a, b) => a.name.localeCompare(b.name));
+  });
+
+  readonly targetProgress = computed(() => {
+    const totals = this.dailyNutrition();
+    const targets = this.macroTargets();
+
+    const ratio = (value: number, target: number) => {
+      if (!target || target <= 0) return null;
+      return Math.min(200, Math.round((value / target) * 100));
+    };
+
+    return {
+      calories: ratio(totals.calories, targets.calories),
+      protein: ratio(totals.protein, targets.protein),
+      carbs: ratio(totals.carbs, targets.carbs),
+      fat: ratio(totals.fat, targets.fat),
+    };
+  });
+
+  readonly hasMacroTargets = computed(() => {
+    const t = this.macroTargets();
+    return t.calories > 0 || t.protein > 0 || t.carbs > 0 || t.fat > 0;
+  });
+
   ngOnInit(): void {
     const profile = this.profileService.getLocal();
     if (profile?.fitness_goal) {
       this.fitnessGoal.set(profile.fitness_goal);
+    }
+    if (profile) {
+      this.macroTargets.set({
+        calories: profile.macro_calories_target ?? 0,
+        protein: profile.macro_protein_target ?? 0,
+        carbs: profile.macro_carbs_target ?? 0,
+        fat: profile.macro_fat_target ?? 0,
+      });
     }
     this.loadMealRecommendations();
   }

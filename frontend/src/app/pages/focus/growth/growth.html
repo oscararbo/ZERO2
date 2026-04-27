@@ -1,49 +1,89 @@
 <section class="page">
-  <app-toast *ngIf="toast()" [message]="toast()" position="top-right"></app-toast>
-  <app-focus-header title="Growth"></app-focus-header>
+  <app-focus-page-header title="Growth" [toastMessage]="toast()"></app-focus-page-header>
 
-  <main class="content">
+  <main class="content container-xl pb-5">
+    <section class="overview-grid">
+      <article class="card overview-card">
+        <h2>Momentum</h2>
+        <div class="momentum-value">{{ weeklyMomentum() }}%</div>
+        <div class="momentum-bar"><span [style.width.%]="weeklyMomentum()"></span></div>
+        <small>Based on completed goals, active goals and journal consistency.</small>
+      </article>
+
+      <article class="card overview-card">
+        <h2>Execution</h2>
+        <div class="overview-metrics">
+          <div><strong>{{ totalGoalsCount() }}</strong><span>Total goals</span></div>
+          <div><strong>{{ activeGoalsCount() }}</strong><span>Active goals</span></div>
+          <div><strong>{{ completedGoalsCount() }}</strong><span>Completed</span></div>
+          <div><strong>{{ goalCompletionPercent() }}%</strong><span>Completion rate</span></div>
+        </div>
+      </article>
+    </section>
+
     <div class="card quote-card">
       <h2>Daily Growth Quote</h2>
       <blockquote>{{ dailyQuote() }}</blockquote>
-      <button class="btn-secondary" (click)="setRandomQuote()">New Quote</button>
+      <button class="btn-secondary btn btn-outline-light" (click)="loadDailyQuote()">New Quote</button>
     </div>
 
     <div class="card goals-card">
       <h2>Growth Goals</h2>
+      <div class="goal-filters">
+        <button class="filter-btn" [class.active]="goalFilter() === 'all'" (click)="setGoalFilter('all')">All</button>
+        <button class="filter-btn" [class.active]="goalFilter() === 'active'" (click)="setGoalFilter('active')">Active</button>
+        <button class="filter-btn" [class.active]="goalFilter() === 'completed'" (click)="setGoalFilter('completed')">Completed</button>
+      </div>
+
+      <div class="goal-templates">
+        <button class="template-btn" type="button" *ngFor="let template of goalTemplates" (click)="useGoalTemplate(template)">
+          {{ template }}
+        </button>
+      </div>
+
+      <div class="goal-templates" *ngIf="userTemplates().length > 0">
+        <button class="template-btn template-btn--user" type="button" *ngFor="let template of userTemplates()" (click)="useCustomTemplate(template)">
+          {{ template.title }} · v{{ template.version }}
+        </button>
+      </div>
+
       <div class="goal-input">
         <input
+          class="form-control"
           type="text"
           [ngModel]="newGoal()"
           (ngModelChange)="setNewGoal($event)"
           (keyup.enter)="addGoal()"
           placeholder="Enter a new growth goal..."
         />
-        <button class="btn-primary" (click)="addGoal()">Add Goal</button>
+        <button class="btn-primary btn btn-light" (click)="addGoal()">Add Goal</button>
+        <button class="btn-secondary btn btn-outline-light" type="button" (click)="saveCurrentGoalAsTemplate()">Save template</button>
       </div>
-      <ul class="goals-list">
-        <li *ngFor="let goal of goals(); trackBy: trackByGoalId" class="goal-item" [class.completed]="goal.completed">
+      <ul class="goals-list list-unstyled mb-0">
+        <li *ngFor="let goal of filteredGoals(); trackBy: trackByGoalId" class="goal-item" [class.completed]="goal.completed">
           <input
             type="checkbox"
             [checked]="goal.completed"
             (change)="toggleGoal(goal.id)"
           />
           <span>{{ goal.title }}</span>
-          <button class="remove-btn" (click)="removeGoal(goal.id)">×</button>
+          <button class="remove-btn btn btn-sm btn-outline-danger" (click)="removeGoal(goal.id)">×</button>
         </li>
       </ul>
+      <p class="muted" *ngIf="filteredGoals().length === 0">No goals in this filter yet.</p>
     </div>
 
     <div class="card journal-card">
       <h2>Growth Journal</h2>
       <div class="journal-input">
         <textarea
+          class="form-control"
           [ngModel]="journalEntry()"
           (ngModelChange)="setJournalEntry($event)"
           placeholder="Reflect on your growth today..."
           rows="4"
         ></textarea>
-        <button class="btn-primary" (click)="addJournalEntry()" [disabled]="savingJournal() || !journalEntry().trim()">
+        <button class="btn-primary btn btn-light" (click)="addJournalEntry()" [disabled]="savingJournal() || !journalEntry().trim()">
           {{ savingJournal() ? 'Saving...' : 'Save Entry' }}
         </button>
       </div>
@@ -57,6 +97,22 @@
         </div>
       </div>
     </div>
+
+    <section class="reflection-grid">
+      <article class="card reflection-card">
+        <h2>Latest Reflection Snapshot</h2>
+        <p>{{ recentJournalPreview() }}</p>
+      </article>
+
+      <article class="card reflection-card">
+        <h2>Growth Pillars</h2>
+        <ul>
+          <li>Discipline: build repeatable actions daily.</li>
+          <li>Learning: capture one insight after execution.</li>
+          <li>Review: adjust every 7 days with evidence.</li>
+        </ul>
+      </article>
+    </section>
 
     <div class="card progress-card">
       <h2>Weekly Progress</h2>

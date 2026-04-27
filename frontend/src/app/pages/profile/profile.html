@@ -1,63 +1,192 @@
 <section class="page">
-  <header class="top">
-    <div class="brand">ZERO</div>
-    <div class="title">
-      <div class="kicker">Account</div>
-      <h1>Your Profile</h1>
-    </div>
-    <a class="btn" routerLink="/dashboard">Back</a>
-  </header>
+  <app-page-top-header
+    brand="ZΞRO"
+    kicker="Account"
+    title="Your Profile Center"
+    backRoute="/dashboard">
+  </app-page-top-header>
 
-  <main class="content">
+  <main class="content container-xl pb-5">
     <div class="loading-state" *ngIf="loadingProfile()">Loading profile...</div>
 
-    <section class="profile-grid" *ngIf="!loadingProfile() && profile() as p">
-      <article class="card hero-card">
+    <section class="profile-shell" *ngIf="!loadingProfile() && profile() as p">
+      <article class="card simple-hero">
         <div>
-          <div class="eyebrow">Identity</div>
+          <div class="eyebrow">Overview</div>
           <h2>{{ p.full_name || 'User' }}</h2>
-          <p class="hero-sub">Goal: {{ fitnessGoalLabel() }}</p>
+          <p class="hero-sub">Goal: {{ fitnessGoalLabel() }} | Consistency: {{ consistencyLevel() }}</p>
         </div>
-        <a class="edit-link" routerLink="/profile/edit">Edit profile</a>
-      </article>
-
-      <article class="card stats-card">
-        <div class="stat-block">
-          <span class="stat-value">{{ p.weekly_goal }}</span>
-          <span class="stat-label">Weekly sessions</span>
-        </div>
-        <div class="stat-block">
-          <span class="stat-value">{{ p.weight || '--' }}</span>
-          <span class="stat-label">Weight (kg)</span>
-        </div>
-        <div class="stat-block">
-          <span class="stat-value">{{ p.height || '--' }}</span>
-          <span class="stat-label">Height (cm)</span>
-        </div>
-        <div class="stat-block">
-          <span class="stat-value">{{ bmi() }}</span>
-          <span class="stat-label">BMI</span>
+        <div class="hero-actions d-flex flex-wrap gap-2">
+          <button type="button" class="edit-link" (click)="toggleQuickEdit()">{{ editingQuick() ? 'Close quick edit' : 'Quick edit' }}</button>
+          <a class="edit-link edit-link--ghost" routerLink="/profile/edit">Full editor</a>
         </div>
       </article>
 
-      <article class="card focus-card">
-        <div class="section-title">Focus Areas</div>
-        <div class="chips" *ngIf="focusAreas().length; else noFocus">
+      <article class="card quick-edit" *ngIf="editingQuick()">
+        <h3>Quick edit</h3>
+        <p>Change your core profile data here. Use full editor for interests and full setup.</p>
+
+        <form [formGroup]="quickForm" class="quick-edit__grid">
+          <label>
+            <span>Full name</span>
+            <input class="form-control" type="text" formControlName="full_name" />
+          </label>
+
+          <label>
+            <span>Weekly sessions goal</span>
+            <input class="form-control" type="number" formControlName="weekly_goal" min="1" max="14" />
+          </label>
+
+          <label>
+            <span>Fitness goal</span>
+            <app-ui-select
+              ariaLabel="Fitness goal"
+              [options]="fitnessGoalOptions"
+              formControlName="fitness_goal">
+            </app-ui-select>
+          </label>
+
+          <label>
+            <span>Weight (kg)</span>
+            <input class="form-control" type="number" formControlName="weight" min="30" max="300" />
+          </label>
+
+          <label>
+            <span>Height (cm)</span>
+            <input class="form-control" type="number" formControlName="height" min="100" max="250" />
+          </label>
+        </form>
+
+        <div class="quick-edit__actions d-flex justify-content-end gap-2 mt-3">
+          <button type="button" class="edit-link edit-link--ghost" (click)="cancelQuickEdit()">Cancel</button>
+          <button type="button" class="edit-link" (click)="saveQuickEdit()" [disabled]="savingQuick()">{{ savingQuick() ? 'Saving...' : 'Save changes' }}</button>
+        </div>
+      </article>
+
+      <article class="card quick-stats">
+        <div class="quick-stat">
+          <span class="quick-stat__label">Weekly sessions</span>
+          <strong>{{ p.weekly_goal }}</strong>
+        </div>
+        <div class="quick-stat">
+          <span class="quick-stat__label">Weight</span>
+          <strong>{{ p.weight || '--' }} kg</strong>
+        </div>
+        <div class="quick-stat">
+          <span class="quick-stat__label">Height</span>
+          <strong>{{ p.height || '--' }} cm</strong>
+        </div>
+        <div class="quick-stat">
+          <span class="quick-stat__label">BMI</span>
+          <strong>{{ bmi() }}</strong>
+        </div>
+        <div class="quick-stat quick-stat--wide">
+          <span class="quick-stat__label">Profile completion</span>
+          <div class="progress-line" role="progressbar" [attr.aria-valuenow]="profileCompletion()" aria-valuemin="0" aria-valuemax="100">
+            <span [style.width.%]="profileCompletion()"></span>
+          </div>
+          <small>{{ profileCompletion() }}% complete</small>
+        </div>
+      </article>
+
+      <article class="card simple-focus">
+        <div class="section-title">Current focus</div>
+        <div class="chips" *ngIf="focusAreas().length; else noFocusSimple">
           <span class="chip" *ngFor="let item of focusAreas()">{{ item }}</span>
         </div>
-        <ng-template #noFocus>
+        <ng-template #noFocusSimple>
           <p class="muted">No focus areas selected yet.</p>
         </ng-template>
       </article>
 
       <article class="card summary-card">
-        <div class="section-title">Summary</div>
+        <div class="section-title">Simple summary</div>
         <ul class="summary-list">
           <li>You are training toward <strong>{{ fitnessGoalLabel() }}</strong>.</li>
           <li>Your current weekly target is <strong>{{ p.weekly_goal }}</strong> sessions.</li>
           <li *ngIf="focusAreas().length">Your selected areas are <strong>{{ focusAreasText() }}</strong>.</li>
         </ul>
+        <button type="button" class="toggle-advanced" (click)="toggleAdvanced()">
+          {{ showAdvanced() ? 'Hide advanced analytics' : 'Show advanced analytics' }}
+        </button>
       </article>
+
+      <article class="card advanced" *ngIf="showAdvanced()">
+        <div class="section-title">Advanced analytics</div>
+        <ng-container *ngIf="hasConfiguredInterests(); else noInterestsAdvanced">
+        <div class="advanced-grid">
+          <div class="advanced-bars">
+            <div class="sparkline-card" *ngIf="advancedSparklinePoints()">
+              <div class="sparkline-head">
+                <span>Trend line</span>
+                <small>Overview of key performance indicators</small>
+              </div>
+              <svg viewBox="0 0 300 100" preserveAspectRatio="none" aria-label="Advanced metrics trend">
+                <polyline [attr.points]="advancedSparklinePoints()"></polyline>
+              </svg>
+            </div>
+
+            <div class="bar-row" *ngFor="let metric of advancedBars()">
+              <div class="bar-row__head">
+                <span>{{ metric.label }}</span>
+                <strong>{{ metric.value }}%</strong>
+              </div>
+              <div class="bar-track"><span [style.width.%]="metric.value"></span></div>
+            </div>
+          </div>
+
+          <div class="advanced-points">
+            <h4>Deeper data</h4>
+            <ul>
+              <li>Consistency and recovery signals are recalculated from your weekly structure.</li>
+              <li>Profile quality reflects completeness and readiness to scale routines.</li>
+              <li>Interest-specific cards below appear only for the areas you enabled.</li>
+            </ul>
+            <p>Use this section when you want more detail. Keep daily use in Simple summary mode.</p>
+          </div>
+        </div>
+
+        <div class="interest-analytics">
+          <div class="interest-card" *ngFor="let insight of activeInterestAnalytics()">
+            <div class="interest-head">
+              <div>
+                <h4>{{ insight.title }}</h4>
+                <p>{{ insight.subtitle }}</p>
+              </div>
+              <span class="interest-pill">{{ insight.key | titlecase }}</span>
+            </div>
+
+            <div class="interest-chart">
+              <svg viewBox="0 0 300 100" preserveAspectRatio="none" [attr.aria-label]="insight.title + ' trend'">
+                <polyline [attr.points]="insight.sparklinePoints"></polyline>
+              </svg>
+            </div>
+
+            <div class="interest-metrics">
+              <div class="interest-metric" *ngFor="let metric of insight.metrics">
+                <div class="interest-metric__head">
+                  <span>{{ metric.label }}</span>
+                  <strong>{{ metric.value }}{{ metric.unit || '' }}</strong>
+                </div>
+                <div class="bar-track"><span [style.width.%]="metric.percent"></span></div>
+              </div>
+            </div>
+
+            <ul class="interest-highlights">
+              <li *ngFor="let line of insight.highlights">{{ line }}</li>
+            </ul>
+          </div>
+        </div>
+        </ng-container>
+        <ng-template #noInterestsAdvanced>
+          <div class="advanced-empty">
+            <h4>No category analytics yet</h4>
+            <p>Enable at least one interest in Full editor to unlock advanced analytics cards.</p>
+          </div>
+        </ng-template>
+      </article>
+
+      <p class="status-msg" *ngIf="message()">{{ message() }}</p>
     </section>
   </main>
 </section>

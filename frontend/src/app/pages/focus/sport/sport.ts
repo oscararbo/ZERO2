@@ -4,13 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ExerciseService, Exercise } from '../../../core/exercise.service';
 import { ProfileService, FitnessGoal } from '../../../core/profile.service';
-import { AppToastComponent } from '../../shared/components/toast/toast.component';
-import { FocusHeaderComponent } from '../../shared/components/focus-header/focus-header.component';
+import { FocusPageHeaderComponent } from '../../shared/components/focus-page-header/focus-page-header';
+import { PageStateComponent } from '../../shared/components/page-state/page-state';
 
 @Component({
   selector: 'app-sport',
   standalone: true,
-  imports: [CommonModule, FormsModule, AppToastComponent, FocusHeaderComponent],
+  imports: [CommonModule, FormsModule, FocusPageHeaderComponent, PageStateComponent],
   templateUrl: './sport.html',
   styleUrls: ['./sport.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

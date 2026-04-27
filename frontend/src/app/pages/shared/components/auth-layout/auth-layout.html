@@ -1,0 +1,10 @@
+<section class="auth-layout">
+  <app-back-button class="back-pos"></app-back-button>
+
+  <div class="auth-card" [style.max-width]="maxWidth">
+    <div class="logo">ZΞRO</div>
+    <h1>{{ title }}</h1>
+    <p class="subtitle" *ngIf="subtitle">{{ subtitle }}</p>
+    <ng-content></ng-content>
+  </div>
+</section>

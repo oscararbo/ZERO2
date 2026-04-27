@@ -7,17 +7,8 @@ import { ProgressService } from "../../../core/progress.service";
   selector: 'app-progress-chart',
   standalone: true,
   imports: [CommonModule],
-  template: `<div class="wrap"><canvas #c></canvas></div>`,
-  styles: [`
-    .wrap {
-      height: 250px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.35);
-      padding: 12px;
-    }
-    canvas { width: 100% !important; height: 100% !important; }
-  `],
+  templateUrl: './progress-chart.component.html',
+  styleUrl: './progress-chart.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProgressChartComponent implements AfterViewInit {

@@ -15,7 +15,7 @@ export interface JournalEntry {
 })
 export class MindsetService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/api/accounts/journal/`;
+  private apiUrl = `${environment.apiUrl}/api/journal/`;
 
   constructor() { }
 
@@ -35,12 +35,7 @@ export class MindsetService {
   }
 
   // Delete a journal entry
-  deleteJournalEntry(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}${id}/`);
-  }
-
-  // Test API connection
-  testConnection(): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/api/accounts/profile/`);
+  deleteJournalEntry(id: number): Observable<{ detail: string }> {
+    return this.http.delete<{ detail: string }>(`${this.apiUrl}${id}/`);
   }
 }

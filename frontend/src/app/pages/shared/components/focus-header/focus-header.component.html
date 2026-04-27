@@ -1,11 +1,12 @@
 <header class="top">
-  <div class="brand">{{ brand }}</div>
+  <div class="left">
+    <app-back-button *ngIf="showBack" [link]="backLink"></app-back-button>
+  </div>
   <div class="title">
     <div class="kicker">{{ kicker }}</div>
     <h1>{{ title }}</h1>
   </div>
   <div class="actions">
     <ng-content select="[focus-header-actions]"></ng-content>
-    <a *ngIf="showBack" [ngClass]="backClass" [routerLink]="backLink">{{ backLabel }}</a>
   </div>
 </header>

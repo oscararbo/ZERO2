@@ -13,6 +13,19 @@
   font-weight: 600;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
   animation: toastSlideIn 0.2s ease;
+  overflow: hidden;
+}
+
+.toast::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  background: rgba(182, 188, 194, 0.9);
+  transform-origin: left;
+  animation: toastLife 2.4s linear forwards;
 }
 
 .toast.top-right {
@@ -29,14 +42,28 @@
   border-color: rgba(255, 80, 80, 0.4);
 }
 
+.toast.toast-error::after {
+  background: rgba(255, 110, 110, 0.92);
+}
+
 @keyframes toastSlideIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(10px) scale(.98);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toastLife {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
   }
 }

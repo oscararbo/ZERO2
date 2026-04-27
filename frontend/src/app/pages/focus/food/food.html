@@ -1,55 +1,86 @@
 <section class="page">
-  <app-focus-header title="Food"></app-focus-header>
+  <app-focus-page-header title="Food"></app-focus-page-header>
 
-  <main class="content">
+  <main class="content container-xl pb-5">
+    <section class="goal-overview">
+      <article class="goal-card">
+        <h2>{{ goalGuidance().title }}</h2>
+        <p>{{ goalGuidance().guidance }}</p>
+        <div class="goal-meta">
+          <span>Calories: {{ goalGuidance().calories }}</span>
+          <span>Protein: {{ goalGuidance().protein }}</span>
+        </div>
+      </article>
+
+      <article class="goal-card macro-summary" *ngIf="hasMeals()">
+        <h3>Macro Distribution</h3>
+        <div class="macro-lines">
+          <div>
+            <label>Protein</label>
+            <strong>{{ macroDistribution().protein | number: '1.0-0' }}%</strong>
+          </div>
+          <div>
+            <label>Carbs</label>
+            <strong>{{ macroDistribution().carbs | number: '1.0-0' }}%</strong>
+          </div>
+          <div>
+            <label>Fat</label>
+            <strong>{{ macroDistribution().fat | number: '1.0-0' }}%</strong>
+          </div>
+        </div>
+      </article>
+    </section>
+
     <div class="controls-bar">
-      <div class="meal-type-toggle">
+      <div class="meal-type-toggle d-flex flex-wrap gap-2">
         <button
-          class="toggle-btn"
+          class="toggle-btn btn btn-sm"
           [class.active]="selectedMealView() === 'all'"
           (click)="selectedMealView.set('all')">
           All
         </button>
         <button
-          class="toggle-btn"
+          class="toggle-btn btn btn-sm"
           [class.active]="selectedMealView() === 'breakfast'"
           (click)="selectedMealView.set('breakfast')">
           Breakfast
         </button>
         <button
-          class="toggle-btn"
+          class="toggle-btn btn btn-sm"
           [class.active]="selectedMealView() === 'lunch'"
           (click)="selectedMealView.set('lunch')">
           Lunch
         </button>
         <button
-          class="toggle-btn"
+          class="toggle-btn btn btn-sm"
           [class.active]="selectedMealView() === 'dinner'"
           (click)="selectedMealView.set('dinner')">
           Dinner
         </button>
         <button
-          class="toggle-btn"
+          class="toggle-btn btn btn-sm"
           [class.active]="selectedMealView() === 'snack'"
           (click)="selectedMealView.set('snack')">
           Snack
         </button>
       </div>
 
-      <button class="toggle-btn refresh-btn" type="button" (click)="loadMealRecommendations()">
+      <button class="toggle-btn refresh-btn btn btn-outline-light btn-sm" type="button" (click)="loadMealRecommendations()">
         Refresh Meals
       </button>
     </div>
 
-    <div class="loading-state" *ngIf="loadingMeals()">Loading real meals from API...</div>
-    <div class="error-state" *ngIf="mealError()">{{ mealError() }}</div>
-    <div class="empty-state" *ngIf="!loadingMeals() && !mealError() && !hasMeals()">
-      No meals available for this filter.
-    </div>
+    <app-page-state
+      [loading]="loadingMeals()"
+      [error]="mealError()"
+      [empty]="!hasMeals()"
+      loadingText="Loading real meals from API..."
+      emptyText="No meals available for this filter.">
+    </app-page-state>
 
     <div class="meals-container" *ngIf="!loadingMeals() && !mealError() && hasMeals()">
       <article class="meal-card" *ngFor="let meal of displayMeals(); trackBy: trackByMealId">
-        <div class="meal-header">
+        <div class="meal-header d-flex justify-content-between align-items-start gap-3">
           <h3>{{ meal.recipe.title }}</h3>
           <div class="meal-time">{{ meal.time }}</div>
         </div>
@@ -93,7 +124,7 @@
 
         <div class="recipe-section">
           <h4>Ingredients</h4>
-          <ul class="ingredients-list">
+          <ul class="ingredients-list list-unstyled mb-0">
             <li *ngFor="let ing of meal.recipe.ingredients; trackBy: trackByIngredient">
               <span class="amount">{{ ing.amount | number: '1.0-2' }} {{ ing.unit }}</span>
               <span class="name">{{ ing.name }}</span>
@@ -133,5 +164,42 @@
         </div>
       </div>
     </div>
+
+    <section class="daily-total-card" *ngIf="!loadingMeals() && !mealError() && hasMeals() && hasMacroTargets()">
+      <h3>Target Adherence</h3>
+      <div class="target-grid">
+        <article class="target-item" *ngIf="targetProgress().calories !== null">
+          <span>Calories</span>
+          <strong>{{ dailyNutrition().calories | number: '1.0-0' }} / {{ macroTargets().calories | number: '1.0-0' }}</strong>
+          <div class="target-bar"><span [style.width.%]="targetProgress().calories"></span></div>
+        </article>
+        <article class="target-item" *ngIf="targetProgress().protein !== null">
+          <span>Protein (g)</span>
+          <strong>{{ dailyNutrition().protein | number: '1.0-1' }} / {{ macroTargets().protein | number: '1.0-1' }}</strong>
+          <div class="target-bar"><span [style.width.%]="targetProgress().protein"></span></div>
+        </article>
+        <article class="target-item" *ngIf="targetProgress().carbs !== null">
+          <span>Carbs (g)</span>
+          <strong>{{ dailyNutrition().carbs | number: '1.0-1' }} / {{ macroTargets().carbs | number: '1.0-1' }}</strong>
+          <div class="target-bar"><span [style.width.%]="targetProgress().carbs"></span></div>
+        </article>
+        <article class="target-item" *ngIf="targetProgress().fat !== null">
+          <span>Fat (g)</span>
+          <strong>{{ dailyNutrition().fat | number: '1.0-1' }} / {{ macroTargets().fat | number: '1.0-1' }}</strong>
+          <div class="target-bar"><span [style.width.%]="targetProgress().fat"></span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="shopping-card" *ngIf="!loadingMeals() && !mealError() && shoppingList().length > 0">
+      <h3>Auto Shopping List</h3>
+      <p>Aggregated ingredients from your current meal plan.</p>
+      <div class="shopping-list">
+        <article class="shopping-item" *ngFor="let item of shoppingList(); trackBy: trackByIngredient">
+          <strong>{{ item.name }}</strong>
+          <span>{{ item.amount | number: '1.0-2' }} {{ item.unit }}</span>
+        </article>
+      </div>
+    </section>
   </main>
 </section>

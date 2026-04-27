@@ -1,0 +1,7 @@
+<article [ngClass]="cardClass">
+  <h4>{{ title }}</h4>
+  <p *ngIf="description">{{ description }}</p>
+  <ul *ngIf="bullets?.length">
+    <li *ngFor="let bullet of bullets">{{ bullet }}</li>
+  </ul>
+</article>

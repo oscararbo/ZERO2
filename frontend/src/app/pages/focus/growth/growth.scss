@@ -61,7 +61,69 @@ h1 {
 .content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 clamp(16px, 3vw, 44px) 44px;
+  padding: 12px clamp(16px, 3vw, 24px) 56px;
+}
+
+.overview-grid,
+.reflection-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.overview-card {
+  margin-bottom: 0;
+}
+
+.momentum-value {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.momentum-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.1);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.momentum-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #9aa0a6, #ccd2d8);
+}
+
+.overview-card small {
+  color: rgba(255,255,255,.62);
+}
+
+.overview-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.overview-metrics div {
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255,255,255,.03);
+}
+
+.overview-metrics strong {
+  display: block;
+  font-size: 24px;
+}
+
+.overview-metrics span {
+  font-size: 12px;
+  color: rgba(255,255,255,.62);
 }
 
 .card {
@@ -121,6 +183,49 @@ h1 {
 }
 
 .goals-card {
+  .goal-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .filter-btn {
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 999px;
+    padding: 6px 12px;
+    background: transparent;
+    color: rgba(255,255,255,.7);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .filter-btn.active {
+    background: rgba(255,255,255,.14);
+    color: #fff;
+  }
+
+  .goal-templates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .template-btn {
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 999px;
+    padding: 5px 10px;
+    background: rgba(255,255,255,.03);
+    color: rgba(255,255,255,.82);
+    font-size: 12px;
+  }
+
+  .template-btn--user {
+    border-color: rgba(255,255,255,.3);
+    background: rgba(255,255,255,.08);
+  }
+
   .goal-input {
     display: flex;
     gap: 0.5rem;
@@ -129,24 +234,6 @@ h1 {
     input {
       flex: 1;
       padding: 0.75rem 0.9rem;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.04);
-      color: #fff;
-    }
-
-    .btn-primary {
-      background: #9aa0a6;
-      color: #0b0b0b;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.3s;
-
-      &:hover {
-        background: #b0b6bc;
-      }
     }
   }
 
@@ -198,6 +285,16 @@ h1 {
       }
     }
   }
+}
+
+.reflection-card {
+  margin-bottom: 0;
+}
+
+.muted {
+  margin: 10px 0 0;
+  color: rgba(255,255,255,.58);
+  font-size: 13px;
 }
 
 .journal-card {
@@ -269,5 +366,12 @@ h1 {
         color: rgba(255, 255, 255, 0.55);
       }
     }
+  }
+}
+
+@media (max-width: 860px) {
+  .overview-grid,
+  .reflection-grid {
+    grid-template-columns: 1fr;
   }
 }

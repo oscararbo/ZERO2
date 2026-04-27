@@ -1,0 +1,236 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #050505;
+  --display-font: "Bahnschrift", "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  --space-page-x: clamp(16px, 3vw, 24px);
+  --space-page-top: clamp(18px, 2.5vw, 28px);
+  --space-page-bottom: clamp(44px, 5vw, 60px);
+  --space-block: clamp(12px, 1.8vw, 18px);
+  --surface: rgba(255, 255, 255, 0.03);
+  --surface-strong: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.14);
+  --text: #ffffff;
+  --accent: #9aa0a6;
+  --accent-strong: #b6bcc2;
+  --shadow-soft: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-strong: 0 18px 50px rgba(0, 0, 0, 0.62);
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --bs-body-bg: #050505;
+  --bs-body-color: #ffffff;
+  --bs-border-color: rgba(255, 255, 255, 0.14);
+  --bs-card-bg: rgba(255, 255, 255, 0.03);
+  --bs-card-border-color: rgba(255, 255, 255, 0.14);
+  --bs-light-rgb: 111, 118, 125;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", "Avenir Next", "Helvetica Neue", sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+main,
+section,
+article,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+small,
+label,
+li,
+a {
+  color: #fff;
+}
+
+.surface-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  background: var(--surface);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.36);
+}
+
+.layout-shell {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  transition: background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s ease, opacity .2s ease;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(182, 188, 194, 0.85);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgba(154, 160, 166, 0.42);
+  color: var(--text);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+app-root {
+  display: block;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.page > .content,
+.dash > .content,
+.home > .content {
+  padding-inline: var(--space-page-x);
+  padding-bottom: var(--space-page-bottom);
+}
+
+app-page-top-header .top,
+app-focus-header .top {
+  padding: var(--space-page-top) var(--space-page-x) 14px;
+}
+
+app-auth-layout form > * + * {
+  margin-top: var(--space-block);
+}
+
+.btn {
+  --bs-btn-font-weight: 700;
+  --bs-btn-border-radius: 12px;
+}
+
+.btn-light {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #6f767d;
+  --bs-btn-border-color: rgba(255, 255, 255, 0.12);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #848b92;
+  --bs-btn-hover-border-color: rgba(255, 255, 255, 0.18);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #848b92;
+  --bs-btn-active-border-color: rgba(255, 255, 255, 0.18);
+  --bs-btn-disabled-color: rgba(255, 255, 255, 0.72);
+  --bs-btn-disabled-bg: #5e646a;
+  --bs-btn-disabled-border-color: rgba(255, 255, 255, 0.08);
+}
+
+.btn-outline-light {
+  --bs-btn-color: rgba(255, 255, 255, 0.88);
+  --bs-btn-border-color: rgba(255, 255, 255, 0.24);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: rgba(255, 255, 255, 0.1);
+  --bs-btn-hover-border-color: rgba(255, 255, 255, 0.45);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: rgba(255, 255, 255, 0.16);
+  --bs-btn-active-border-color: rgba(255, 255, 255, 0.52);
+}
+
+.form-control,
+.form-select {
+  min-height: 44px;
+  border-radius: 12px;
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+}
+
+.form-control::placeholder {
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.form-control:focus,
+.form-select:focus {
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  border-color: rgba(182, 188, 194, 0.85);
+  box-shadow: 0 0 0 0.2rem rgba(154, 160, 166, 0.22);
+}
+
+.form-control.error,
+.form-select.error {
+  border-color: rgba(255, 80, 80, 0.55);
+  box-shadow: 0 0 0 0.2rem rgba(255, 80, 80, 0.14);
+}
+
+.form-check-input {
+  border-color: rgba(255, 255, 255, 0.35);
+  background-color: rgba(0, 0, 0, 0.35);
+}
+
+.form-check-input:checked {
+  background-color: #fff;
+  border-color: #fff;
+}
+
+.brand,
+.brand__text {
+  font-family: var(--display-font);
+  letter-spacing: 1.4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .page > .content,
+  .dash > .content,
+  .home > .content {
+    padding-bottom: 40px;
+  }
+}
