@@ -190,6 +190,137 @@ npm test
 3. Sirve Django con Gunicorn o uWSGI detrás de Nginx
 4. Usa PostgreSQL en producción (actualizar `DATABASES` en `settings.py`)
 
+## Despliegue en Vercel (frontend Angular)
+
+Este proyecto queda preparado para desplegar el frontend en Vercel con SPA routing y proxy de API.
+
+### Archivos ya preparados
+
+- `frontend/vercel.json`
+    - Rewrite de `/api/*` al backend externo.
+    - Fallback de rutas a `/index.html` para Angular Router.
+- `frontend/src/environments/environments.production.ts`
+    - `apiUrl` en producción es `''` para usar rutas relativas (`/api/...`).
+- `frontend/angular.json`
+    - Reemplazo de environment en build de producción.
+
+### 1) Desplegar backend (recomendado: Render/Railway/Fly)
+
+Vercel no es la mejor opción para este backend Django completo con estado persistente. Despliega el backend en otro proveedor y usa su dominio HTTPS.
+
+Variables mínimas recomendadas en backend:
+
+- `DJANGO_DEBUG=false`
+- `DJANGO_SECRET_KEY=<tu_clave_larga_y_segura>`
+- `DJANGO_ALLOWED_HOSTS=<tu-backend-dominio>,localhost,127.0.0.1`
+- `DJANGO_CORS_ALLOWED_ORIGINS=https://<tu-frontend-vercel>.vercel.app`
+- `DJANGO_CSRF_TRUSTED_ORIGINS=https://<tu-frontend-vercel>.vercel.app`
+
+Importante:
+
+- En producción usa PostgreSQL (no SQLite persistente).
+- Ejecuta migraciones en backend antes de abrir el frontend.
+
+### 2) Configurar `frontend/vercel.json`
+
+Edita `frontend/vercel.json` y reemplaza:
+
+- `https://REPLACE_WITH_YOUR_BACKEND_DOMAIN`
+
+por el dominio real de tu backend, por ejemplo:
+
+- `https://zero-api.onrender.com`
+
+### 3) Crear proyecto en Vercel
+
+1. Entra en Vercel y conecta tu repositorio.
+2. En configuración del proyecto usa:
+     - Root Directory: `frontend`
+     - Framework Preset: `Other` (o Angular si te aparece)
+     - Build Command: `npm run build`
+     - Output Directory: `dist/ZERO/browser`
+3. Deploy.
+
+### 4) Verificación post-deploy
+
+1. Abre tu dominio Vercel y prueba navegación directa en rutas internas (ej: `/login`, `/focus/challenges`) para validar fallback SPA.
+2. Prueba login/registro para confirmar que `/api/*` se está reescribiendo al backend.
+3. Verifica en backend que `DJANGO_ALLOWED_HOSTS`, CORS y CSRF incluyen tu dominio final.
+
+### 5) Flujo de updates
+
+- Cada push a la rama conectada dispara nuevo deploy en Vercel.
+- Si cambias dominio de backend, actualiza `frontend/vercel.json` y vuelve a desplegar.
+
+## Despliegue en Railway (backend Django)
+
+Esta es la opción recomendada para tu API Django.
+
+### Archivos backend preparados
+
+- `backend/Procfile`
+    - Arranque con Gunicorn usando el puerto de Railway.
+- `backend/config/settings.py`
+    - Soporte `DATABASE_URL` (PostgreSQL) + fallback SQLite local.
+    - Static files listos con WhiteNoise.
+    - CORS/CSRF por variables de entorno.
+- `backend/requirements.txt`
+    - Incluye `gunicorn`, `dj-database-url`, `psycopg[binary]`, `whitenoise`.
+
+### 1) Crear proyecto y servicio en Railway
+
+1. Crea un nuevo proyecto en Railway.
+2. Conecta tu repositorio.
+3. Crea un servicio para el backend con:
+     - Root Directory: `backend`
+
+### 2) Añadir base de datos PostgreSQL
+
+1. En el mismo proyecto, añade plugin `PostgreSQL`.
+2. Railway inyectará `DATABASE_URL` automáticamente en el servicio backend.
+
+### 3) Variables de entorno del backend
+
+En el servicio backend configura:
+
+- `DJANGO_DEBUG=false`
+- `DJANGO_SECRET_KEY=<tu_clave_segura>`
+- `DJANGO_ALLOWED_HOSTS=<tu-backend>.up.railway.app`
+- `DJANGO_CORS_ALLOWED_ORIGINS=https://<tu-frontend>.vercel.app`
+- `DJANGO_CSRF_TRUSTED_ORIGINS=https://<tu-frontend>.vercel.app`
+
+Si añades dominio custom, inclúyelo también en estas variables.
+
+### 4) Build/Start en Railway
+
+Railway debería detectar Python automáticamente. Si te pide comandos manuales:
+
+- Build Command: `pip install -r requirements.txt && python manage.py collectstatic --noinput`
+- Start Command: `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120`
+
+### 5) Migraciones y seed
+
+Desde Railway (shell/command):
+
+```bash
+python manage.py migrate
+python manage.py seed_dummy_data --reset --users 14 --days 45 --seed 123
+```
+
+### 6) Conectar frontend (Vercel) con backend (Railway)
+
+1. Toma la URL pública del backend Railway, por ejemplo:
+     - `https://zero-backend.up.railway.app`
+2. En `frontend/vercel.json` reemplaza el placeholder:
+     - `https://REPLACE_WITH_YOUR_BACKEND_DOMAIN`
+3. Redeploy del frontend en Vercel.
+
+### 7) Checklist final
+
+1. `GET /api/health/` responde 200 en Railway.
+2. Login/registro desde frontend funciona sin errores CORS/CSRF.
+3. Endpoints autenticados responden con token válido.
+
 ## Contacto
 
 Para preguntas o soporte, por favor abre un issue en este repositorio.
