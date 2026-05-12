@@ -122,7 +122,7 @@ h1 {
   gap: 8px;
 }
 
-.macro-lines div {
+.macro-line-item {
   display: flex;
   justify-content: space-between;
   border: 1px solid rgba(255,255,255,.1);
@@ -428,10 +428,72 @@ h1 {
   gap: 12px;
 }
 
+.macro-kcal-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.macro-kcal-item {
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255,255,255,.03);
+}
+
+.macro-kcal-item span {
+  display: block;
+  font-size: 12px;
+  opacity: .62;
+}
+
+.macro-kcal-item strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 14px;
+}
+
+.macro-kcal-item small {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  opacity: .58;
+}
+
 .target-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.remaining-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.remaining-item {
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255,255,255,.02);
+}
+
+.remaining-item span {
+  display: block;
+  font-size: 12px;
+  opacity: .62;
+  margin-bottom: 4px;
+}
+
+.remaining-item strong {
+  font-size: 16px;
+}
+
+.remaining-item .over-target {
+  color: #ff9b9b;
 }
 
 .target-item {
@@ -502,6 +564,11 @@ h1 {
   }
 
   .target-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .macro-kcal-grid,
+  .remaining-grid {
     grid-template-columns: 1fr;
   }
 

@@ -13,13 +13,19 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart } from 'chart.js/auto';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import {
   AdminService,
+  AdminChallengeRecord,
+  AdminChallengesFilters,
   AdminStatsFilters,
   AdminStatsResponse,
+  AdminUserRecord,
+  AdminUsersFilters,
   PersistedAlert,
 } from '../../core/admin.service';
 
@@ -63,6 +69,29 @@ export class AdminComponent implements AfterViewInit, OnDestroy {
   persistedAlerts = signal<PersistedAlert[]>([]);
   alertsLoading = signal(false);
   alertsFilter = signal<'all' | 'open' | 'resolved'>('all');
+
+  usersLoading = signal(false);
+  users = signal<AdminUserRecord[]>([]);
+  usersTotal = signal(0);
+  userPage = signal(1);
+  readonly userPageSize = 12;
+  userSearch = signal('');
+  userFilterStaff = signal<'all' | 'staff' | 'normal'>('all');
+  userFilterActive = signal<'all' | 'active' | 'inactive'>('all');
+  selectedUserIds = signal<number[]>([]);
+  bulkUsersBusy = signal(false);
+
+  challengesLoading = signal(false);
+  managedChallenges = signal<AdminChallengeRecord[]>([]);
+  challengesTotal = signal(0);
+  challengePage = signal(1);
+  readonly challengePageSize = 10;
+  challengeSearch = signal('');
+  challengeCategory = signal<'all' | 'sport' | 'nutrition' | 'mindset' | 'growth' | 'general'>('all');
+  editingChallengeId = signal<number | null>(null);
+  challengeDraft = signal<{ title: string; category: string; duration_days: number; target_count: number } | null>(null);
+  private userSearchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private challengeSearchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   customStart = signal('');
   customEnd = signal('');
@@ -164,9 +193,21 @@ export class AdminComponent implements AfterViewInit, OnDestroy {
     return all.filter((a) => a.status === filter);
   });
 
+  readonly userTotalPages = computed(() => Math.max(1, Math.ceil(this.usersTotal() / this.userPageSize)));
+  readonly challengeTotalPages = computed(() => Math.max(1, Math.ceil(this.challengesTotal() / this.challengePageSize)));
+  readonly selectedUsersCount = computed(() => this.selectedUserIds().length);
+  readonly allVisibleUsersSelected = computed(() => {
+    const visible = this.users().map((u) => u.id);
+    if (visible.length === 0) return false;
+    const selected = new Set(this.selectedUserIds());
+    return visible.every((id) => selected.has(id));
+  });
+
   constructor() {
     this.load({ days: this.selectedDays(), top: this.topLimitInput() });
     this.loadPersistedAlerts();
+    this.loadUsers();
+    this.loadManagedChallenges();
 
     effect(() => {
       const data = this.stats();
@@ -183,6 +224,12 @@ export class AdminComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyCharts();
+    if (this.userSearchDebounceTimer) {
+      clearTimeout(this.userSearchDebounceTimer);
+    }
+    if (this.challengeSearchDebounceTimer) {
+      clearTimeout(this.challengeSearchDebounceTimer);
+    }
   }
 
   logout() {
@@ -282,6 +329,256 @@ export class AdminComponent implements AfterViewInit, OnDestroy {
       },
       error: () => {
         this.error.set('No se pudo reabrir la alerta.');
+      },
+    });
+  }
+
+  loadUsers() {
+    this.usersLoading.set(true);
+    const filters: AdminUsersFilters = { page: this.userPage(), page_size: this.userPageSize };
+    const search = this.userSearch().trim();
+    if (search) filters.search = search;
+    const staff = this.userFilterStaff();
+    if (staff === 'staff') filters.is_staff = true;
+    if (staff === 'normal') filters.is_staff = false;
+    const active = this.userFilterActive();
+    if (active === 'active') filters.is_active = true;
+    if (active === 'inactive') filters.is_active = false;
+
+    this.adminService.getUsers(filters).subscribe({
+      next: (res) => {
+        this.users.set(res.items ?? []);
+        this.usersTotal.set(res.total ?? 0);
+        this.usersLoading.set(false);
+      },
+      error: () => {
+        this.users.set([]);
+        this.usersTotal.set(0);
+        this.usersLoading.set(false);
+      },
+    });
+  }
+
+  loadManagedChallenges() {
+    this.challengesLoading.set(true);
+    this.cancelChallengeEdit();
+    const filters: AdminChallengesFilters = { page: this.challengePage(), page_size: this.challengePageSize };
+    const search = this.challengeSearch().trim();
+    if (search) filters.search = search;
+    const selectedCategory = this.challengeCategory();
+    if (selectedCategory !== 'all') {
+      filters.category = selectedCategory;
+    }
+
+    this.adminService.getChallenges(filters).subscribe({
+      next: (res) => {
+        this.managedChallenges.set(res.items ?? []);
+        this.challengesTotal.set(res.total ?? 0);
+        this.challengesLoading.set(false);
+      },
+      error: () => {
+        this.managedChallenges.set([]);
+        this.challengesTotal.set(0);
+        this.challengesLoading.set(false);
+      },
+    });
+  }
+
+  applyUserFilters() {
+    this.userPage.set(1);
+    this.loadUsers();
+  }
+
+  applyChallengeFilters() {
+    this.challengePage.set(1);
+    this.loadManagedChallenges();
+  }
+
+  onUserSearchInput(value: string) {
+    this.userSearch.set(value);
+    if (this.userSearchDebounceTimer) {
+      clearTimeout(this.userSearchDebounceTimer);
+    }
+    this.userSearchDebounceTimer = setTimeout(() => {
+      this.applyUserFilters();
+    }, 300);
+  }
+
+  onChallengeSearchInput(value: string) {
+    this.challengeSearch.set(value);
+    if (this.challengeSearchDebounceTimer) {
+      clearTimeout(this.challengeSearchDebounceTimer);
+    }
+    this.challengeSearchDebounceTimer = setTimeout(() => {
+      this.applyChallengeFilters();
+    }, 300);
+  }
+
+  isUserSelected(userId: number) {
+    return this.selectedUserIds().includes(userId);
+  }
+
+  toggleUserSelection(userId: number, checked: boolean) {
+    const current = new Set(this.selectedUserIds());
+    if (checked) {
+      current.add(userId);
+    } else {
+      current.delete(userId);
+    }
+    this.selectedUserIds.set(Array.from(current));
+  }
+
+  toggleSelectAllVisibleUsers(checked: boolean) {
+    const visibleIds = this.users().map((user) => user.id);
+    if (checked) {
+      const merged = new Set(this.selectedUserIds());
+      for (const id of visibleIds) merged.add(id);
+      this.selectedUserIds.set(Array.from(merged));
+      return;
+    }
+
+    const remaining = this.selectedUserIds().filter((id) => !visibleIds.includes(id));
+    this.selectedUserIds.set(remaining);
+  }
+
+  clearSelectedUsers() {
+    this.selectedUserIds.set([]);
+  }
+
+  bulkSetUsersStaff(isStaff: boolean) {
+    this.runBulkUserOperation((id) => this.adminService.updateUser(id, { is_staff: isStaff }));
+  }
+
+  bulkSetUsersActive(isActive: boolean) {
+    this.runBulkUserOperation((id) => this.adminService.updateUser(id, { is_active: isActive }));
+  }
+
+  bulkDeleteUsers() {
+    if (!confirm(`Eliminar ${this.selectedUsersCount()} usuarios seleccionados?`)) return;
+    this.runBulkUserOperation((id) => this.adminService.deleteUser(id));
+  }
+
+  prevUsersPage() {
+    if (this.userPage() <= 1) return;
+    this.userPage.update((value) => value - 1);
+    this.loadUsers();
+  }
+
+  nextUsersPage() {
+    if (this.userPage() >= this.userTotalPages()) return;
+    this.userPage.update((value) => value + 1);
+    this.loadUsers();
+  }
+
+  prevChallengesPage() {
+    if (this.challengePage() <= 1) return;
+    this.challengePage.update((value) => value - 1);
+    this.loadManagedChallenges();
+  }
+
+  nextChallengesPage() {
+    if (this.challengePage() >= this.challengeTotalPages()) return;
+    this.challengePage.update((value) => value + 1);
+    this.loadManagedChallenges();
+  }
+
+  startChallengeEdit(challenge: AdminChallengeRecord) {
+    this.editingChallengeId.set(challenge.id);
+    this.challengeDraft.set({
+      title: challenge.title,
+      category: challenge.category,
+      duration_days: challenge.duration_days,
+      target_count: challenge.target_count,
+    });
+  }
+
+  cancelChallengeEdit() {
+    this.editingChallengeId.set(null);
+    this.challengeDraft.set(null);
+  }
+
+  saveChallengeEdit(challenge: AdminChallengeRecord) {
+    const draft = this.challengeDraft();
+    if (!draft) return;
+
+    this.adminService.updateChallenge(challenge.id, {
+      title: draft.title.trim(),
+      category: draft.category,
+      duration_days: Number(draft.duration_days),
+      target_count: Number(draft.target_count),
+    }).subscribe({
+      next: () => {
+        this.cancelChallengeEdit();
+        this.loadManagedChallenges();
+      },
+      error: () => this.error.set('No se pudo actualizar el challenge.'),
+    });
+  }
+
+  updateChallengeDraft<K extends 'title' | 'category'>(field: K, value: string) {
+    const draft = this.challengeDraft();
+    if (!draft) return;
+    this.challengeDraft.set({ ...draft, [field]: value });
+  }
+
+  updateChallengeDraftNumber(field: 'duration_days' | 'target_count', value: number) {
+    const draft = this.challengeDraft();
+    if (!draft) return;
+    this.challengeDraft.set({ ...draft, [field]: value });
+  }
+
+  toggleUserStaff(user: AdminUserRecord) {
+    this.adminService.updateUser(user.id, { is_staff: !user.is_staff }).subscribe({
+      next: () => this.loadUsers(),
+      error: () => this.error.set('No se pudo actualizar el rol del usuario.'),
+    });
+  }
+
+  toggleUserActive(user: AdminUserRecord) {
+    this.adminService.updateUser(user.id, { is_active: !user.is_active }).subscribe({
+      next: () => this.loadUsers(),
+      error: () => this.error.set('No se pudo actualizar el estado del usuario.'),
+    });
+  }
+
+  deleteUser(user: AdminUserRecord) {
+    if (!confirm(`Eliminar usuario ${user.username}?`)) return;
+    this.adminService.deleteUser(user.id).subscribe({
+      next: () => this.loadUsers(),
+      error: () => this.error.set('No se pudo eliminar el usuario.'),
+    });
+  }
+
+  deleteManagedChallenge(challenge: AdminChallengeRecord) {
+    if (!confirm(`Eliminar challenge ${challenge.title}?`)) return;
+    this.adminService.deleteChallenge(challenge.id).subscribe({
+      next: () => this.loadManagedChallenges(),
+      error: () => this.error.set('No se pudo eliminar el challenge.'),
+    });
+  }
+
+  private runBulkUserOperation(operation: (id: number) => any) {
+    const ids = this.selectedUserIds();
+    if (ids.length === 0 || this.bulkUsersBusy()) return;
+
+    this.bulkUsersBusy.set(true);
+    this.error.set('');
+
+    forkJoin(
+      ids.map((id) => operation(id).pipe(catchError(() => of(null))))
+    ).subscribe({
+      next: (results) => {
+        const failed = results.filter((item) => item === null).length;
+        if (failed > 0) {
+          this.error.set(`Acción masiva completada con ${failed} errores.`);
+        }
+        this.clearSelectedUsers();
+        this.loadUsers();
+        this.bulkUsersBusy.set(false);
+      },
+      error: () => {
+        this.error.set('No se pudo ejecutar la acción masiva de usuarios.');
+        this.bulkUsersBusy.set(false);
       },
     });
   }

@@ -109,6 +109,19 @@ export class FoodComponent implements OnInit {
     };
   });
 
+  readonly macroCalories = computed(() => {
+    const daily = this.dailyNutrition();
+    const protein = Math.round(daily.protein * 4);
+    const carbs = Math.round(daily.carbs * 4);
+    const fat = Math.round(daily.fat * 9);
+    return {
+      protein,
+      carbs,
+      fat,
+      total: protein + carbs + fat,
+    };
+  });
+
   readonly shoppingList = computed(() => {
     const bucket = new Map<string, { name: string; unit: string; amount: number }>();
 
@@ -145,6 +158,23 @@ export class FoodComponent implements OnInit {
       protein: ratio(totals.protein, targets.protein),
       carbs: ratio(totals.carbs, targets.carbs),
       fat: ratio(totals.fat, targets.fat),
+    };
+  });
+
+  readonly remainingTargets = computed(() => {
+    const totals = this.dailyNutrition();
+    const targets = this.macroTargets();
+
+    const remaining = (target: number, current: number) => {
+      if (!target || target <= 0) return null;
+      return Math.round((target - current) * 10) / 10;
+    };
+
+    return {
+      calories: remaining(targets.calories, totals.calories),
+      protein: remaining(targets.protein, totals.protein),
+      carbs: remaining(targets.carbs, totals.carbs),
+      fat: remaining(targets.fat, totals.fat),
     };
   });
 

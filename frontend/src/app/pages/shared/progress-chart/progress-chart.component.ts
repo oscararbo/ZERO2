@@ -18,7 +18,12 @@ export class ProgressChartComponent implements AfterViewInit {
   private chart!: Chart;
 
   ngAfterViewInit() {
-    this.chart = new Chart(this.c.nativeElement.getContext('2d')!, {
+    const context = this.c.nativeElement.getContext('2d');
+    if (!context) {
+      return;
+    }
+
+    this.chart = new Chart(context, {
       type: 'line',
       data: {
         labels: [],
@@ -48,7 +53,10 @@ export class ProgressChartComponent implements AfterViewInit {
         this.chart.data.labels = res.labels;
         this.chart.data.datasets[0].data = res.values;
         this.chart.update();
-      }
+      },
+      error: () => {
+        // Avoid unhandled test/runtime noise when API is temporarily unavailable.
+      },
     });
   }
 }

@@ -15,7 +15,12 @@
   <section class="reminders-panel" *ngIf="remindersOpen()">
     <div class="reminders-head">
       <h3>In-App Reminders</h3>
-      <button class="btn-ghost btn btn-outline-light btn-sm" type="button" (click)="markAllRemindersRead()" [disabled]="unreadReminders() === 0">Mark all read</button>
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-light btn-sm" type="button" (click)="toggleUnreadOnlyReminders()">
+          {{ remindersUnreadOnly() ? 'Show all' : 'Unread only' }}
+        </button>
+        <button class="btn btn-outline-light btn-sm" type="button" (click)="markAllRemindersRead()" [disabled]="unreadReminders() === 0">Mark all read</button>
+      </div>
     </div>
     <div class="reminders-list" *ngIf="reminders().length > 0; else noReminders">
       <cdk-virtual-scroll-viewport class="reminders-viewport" [itemSize]="78">
@@ -24,7 +29,7 @@
             <p>{{ reminder.message }}</p>
             <small>{{ reminder.created_at | date:'short' }}</small>
           </div>
-          <button class="btn-ghost" type="button" (click)="markReminderRead(reminder)" [disabled]="reminder.is_read">
+          <button class="btn btn-outline-light btn-sm" type="button" (click)="markReminderRead(reminder)" [disabled]="reminder.is_read">
             {{ reminder.is_read ? 'Read' : 'Mark read' }}
           </button>
         </article>
@@ -50,19 +55,19 @@
       <article class="insight-card">
         <h3>Personal Analytics</h3>
         <div class="insight-metrics">
-          <div>
+          <div class="insight-metric-item">
             <span class="metric">{{ a.total_joined }}</span>
             <small>Joined</small>
           </div>
-          <div>
+          <div class="insight-metric-item">
             <span class="metric">{{ a.total_completed }}</span>
             <small>Completed</small>
           </div>
-          <div>
+          <div class="insight-metric-item">
             <span class="metric">{{ a.completion_rate }}%</span>
             <small>Completion</small>
           </div>
-          <div>
+          <div class="insight-metric-item">
             <span class="metric">{{ a.average_progress }}%</span>
             <small>Avg. progress</small>
           </div>
@@ -80,7 +85,7 @@
         <div class="badges-list" *ngIf="badges().length > 0; else noBadges">
           <div class="badge-item" *ngFor="let badge of badges(); trackBy: trackByBadgeId">
             <span class="badge-icon">{{ badgeIconByCode[badge.code] }}</span>
-            <div>
+            <div class="badge-content">
               <strong>{{ badge.title }}</strong>
               <small>{{ badge.description }}</small>
             </div>
@@ -112,6 +117,36 @@
       <article class="overview-card">
         <small>Participation</small>
         <strong>{{ overviewStats().participationRate }}%</strong>
+      </article>
+    </section>
+
+    <section class="mb-3" *ngIf="activeTab() !== 'create'">
+      <article class="weekly-progress-card">
+        <div class="weekly-progress-head">
+          <h3>Weekly Challenge Progress</h3>
+          <span class="weekly-progress-rate">{{ weeklyStats().completionRate }}%</span>
+        </div>
+        <div class="weekly-progress-track">
+          <span [style.width.%]="weeklyStats().completionRate"></span>
+        </div>
+        <div class="weekly-progress-grid">
+          <div class="weekly-progress-metric">
+            <small>Joined (7d)</small>
+            <strong>{{ weeklyStats().joinedThisWeek }}</strong>
+          </div>
+          <div class="weekly-progress-metric">
+            <small>Completed (7d)</small>
+            <strong>{{ weeklyStats().completedThisWeek }}</strong>
+          </div>
+          <div class="weekly-progress-metric">
+            <small>Active now</small>
+            <strong>{{ weeklyStats().activeJoined }}</strong>
+          </div>
+          <div class="weekly-progress-metric">
+            <small>Avg. progress</small>
+            <strong>{{ weeklyStats().avgProgress }}%</strong>
+          </div>
+        </div>
       </article>
     </section>
 
@@ -210,15 +245,15 @@
       </div>
 
       <div class="form-actions">
-        <button class="btn-ghost" type="button" (click)="saveDraftAsTemplate()">Save as template</button>
-        <button class="btn-primary btn btn-light" (click)="submitCreate()" [disabled]="saving()">
+        <button class="btn btn-outline-light btn-sm" type="button" (click)="saveDraftAsTemplate()">Save as template</button>
+        <button class="btn btn-light btn-sm" (click)="submitCreate()" [disabled]="saving()">
           {{ saving() ? 'Creating...' : 'Create Challenge' }}
         </button>
       </div>
     </div>
 
     <!-- CHALLENGE LIST -->
-    <div *ngIf="activeTab() !== 'create'">
+    <div class="challenge-list-section" *ngIf="activeTab() !== 'create'">
       <div class="loading-state" *ngIf="loading()">Loading challenges...</div>
 
       <div class="empty-state" *ngIf="!loading() && visibleChallenges().length === 0">
@@ -316,11 +351,11 @@
 
             <!-- Not participating, not owner -->
             <div class="action-row" *ngIf="!c.isParticipating && !c.isOwner">
-              <button class="btn-primary" (click)="join(c); $event.stopPropagation()">Join Challenge</button>
+              <button class="btn btn-light btn-sm" (click)="join(c); $event.stopPropagation()">Join Challenge</button>
             </div>
 
             <!-- Participating, not owner -->
-            <div *ngIf="c.isParticipating && !c.isOwner">
+            <div class="participant-actions" *ngIf="c.isParticipating && !c.isOwner">
               <!-- Progress editor -->
               <div class="progress-editor" *ngIf="progressEditing() === c.id">
                 <label>Your progress: {{ progressValue() }}%</label>
@@ -335,18 +370,30 @@
                   (ngModelChange)="progressNotes.set($event)"
                   rows="2"></textarea>
                 <div class="action-row">
-                  <button class="btn-primary" (click)="saveProgress(c); $event.stopPropagation()" [disabled]="saving()">
+                  <button class="btn btn-light btn-sm" (click)="saveProgress(c); $event.stopPropagation()" [disabled]="saving()">
                     {{ saving() ? 'Saving...' : 'Save Progress' }}
                   </button>
-                  <button class="btn-ghost" (click)="cancelProgressEdit(); $event.stopPropagation()">Cancel</button>
+                  <button class="btn btn-outline-light btn-sm" (click)="cancelProgressEdit(); $event.stopPropagation()">Cancel</button>
                 </div>
               </div>
 
               <div class="action-row" *ngIf="progressEditing() !== c.id">
-                <button class="btn-primary" (click)="startProgressEdit(c); $event.stopPropagation()">
+                <button class="btn btn-light btn-sm" (click)="startProgressEdit(c); $event.stopPropagation()">
                   Update Progress
                 </button>
-                <button class="btn-ghost btn-leave" (click)="leave(c); $event.stopPropagation()">Leave</button>
+                <button
+                  class="btn btn-outline-light btn-sm"
+                  (click)="quickIncreaseProgress(c, 10); $event.stopPropagation()"
+                  [disabled]="quickUpdatingId() === c.id || (c.my_participation?.progress ?? 0) >= 100">
+                  {{ quickUpdatingId() === c.id ? 'Updating...' : '+10%' }}
+                </button>
+                <button
+                  class="btn btn-outline-light btn-sm"
+                  (click)="markChallengeCompleted(c); $event.stopPropagation()"
+                  [disabled]="quickUpdatingId() === c.id || (c.my_participation?.progress ?? 0) >= 100">
+                  Complete
+                </button>
+                <button class="btn btn-outline-light btn-sm" (click)="leave(c); $event.stopPropagation()">Leave</button>
               </div>
 
               <div class="notes-display" *ngIf="c.my_participation?.notes && progressEditing() !== c.id">
@@ -357,7 +404,7 @@
             <!-- Owner actions -->
             <div class="action-row" *ngIf="c.isOwner">
               <span class="owner-tag">Your challenge</span>
-              <button class="btn-ghost btn-danger" (click)="deleteChallenge(c); $event.stopPropagation()">Delete</button>
+              <button class="btn btn-outline-danger btn-sm" (click)="deleteChallenge(c); $event.stopPropagation()">Delete</button>
             </div>
 
             <div class="detail-grid">
@@ -394,7 +441,7 @@
                     (ngModelChange)="setUpdateDraft(c.id, $event)"
                     rows="2"
                     placeholder="Share your progress update..."></textarea>
-                  <button class="btn-primary" type="button" (click)="postUpdate(c)">Post update</button>
+                  <button class="btn btn-light btn-sm" type="button" (click)="postUpdate(c)">Post update</button>
                 </div>
                 <div class="updates-list" *ngIf="updatesItems()[c.id].length > 0; else noUpdates">
                   <cdk-virtual-scroll-viewport class="updates-viewport" [itemSize]="84">

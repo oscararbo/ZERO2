@@ -5,8 +5,12 @@ from .views import (
     AdminAlertListView,
     AdminAlertReopenView,
     AdminAlertResolveView,
+    AdminChallengeDetailView,
+    AdminChallengesListView,
     AdminStatsExportCsvView,
     AdminStatsView,
+    AdminUserDetailView,
+    AdminUsersListView,
 )
 
 urlpatterns = [
@@ -16,4 +20,8 @@ urlpatterns = [
     path('admin/alerts/', AdminAlertListView.as_view()),
     path('admin/alerts/<int:pk>/resolve/', AdminAlertResolveView.as_view()),
     path('admin/alerts/<int:pk>/reopen/', AdminAlertReopenView.as_view()),
+    path('admin/users/', AdminUsersListView.as_view()),
+    path('admin/users/<int:user_id>/', AdminUserDetailView.as_view()),
+    path('admin/challenges/', AdminChallengesListView.as_view()),
+    path('admin/challenges/<int:challenge_id>/', AdminChallengeDetailView.as_view()),
 ]

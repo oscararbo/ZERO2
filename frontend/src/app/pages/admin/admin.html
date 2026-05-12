@@ -264,6 +264,221 @@
       </article>
     </section>
 
+    <section class="card admin-management">
+      <div class="management-header">
+        <h2>Gestión de usuarios</h2>
+        <div class="management-controls">
+          <input type="text" placeholder="Buscar por username" [ngModel]="userSearch()" (ngModelChange)="onUserSearchInput($event)" />
+          <select [ngModel]="userFilterStaff()" (ngModelChange)="userFilterStaff.set($event)">
+            <option value="all">Todos roles</option>
+            <option value="staff">Solo admin</option>
+            <option value="normal">Solo normal</option>
+          </select>
+          <select [ngModel]="userFilterActive()" (ngModelChange)="userFilterActive.set($event)">
+            <option value="all">Todos estados</option>
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+          </select>
+          <button type="button" class="retry" (click)="applyUserFilters()">Aplicar</button>
+        </div>
+      </div>
+
+      <div class="bulk-toolbar" *ngIf="selectedUsersCount() > 0">
+        <span>{{ selectedUsersCount() }} usuarios seleccionados</span>
+        <div class="table-actions">
+          <button type="button" class="chip" [disabled]="bulkUsersBusy()" (click)="bulkSetUsersStaff(true)">Dar admin</button>
+          <button type="button" class="chip" [disabled]="bulkUsersBusy()" (click)="bulkSetUsersStaff(false)">Quitar admin</button>
+          <button type="button" class="chip" [disabled]="bulkUsersBusy()" (click)="bulkSetUsersActive(true)">Activar</button>
+          <button type="button" class="chip" [disabled]="bulkUsersBusy()" (click)="bulkSetUsersActive(false)">Desactivar</button>
+          <button type="button" class="chip danger" [disabled]="bulkUsersBusy()" (click)="bulkDeleteUsers()">Eliminar</button>
+          <button type="button" class="chip" [disabled]="bulkUsersBusy()" (click)="clearSelectedUsers()">Limpiar</button>
+        </div>
+      </div>
+
+      <p class="state" *ngIf="usersLoading()">Cargando usuarios...</p>
+      <div class="table-wrap" *ngIf="!usersLoading()">
+        <table>
+          <thead>
+            <tr>
+              <th>
+                <input
+                  type="checkbox"
+                  [checked]="allVisibleUsersSelected()"
+                  (change)="toggleSelectAllVisibleUsers($any($event.target).checked)"
+                />
+              </th>
+              <th>Usuario</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th>Objetivo</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users()">
+              <td>
+                <input
+                  type="checkbox"
+                  [checked]="isUserSelected(user.id)"
+                  (change)="toggleUserSelection(user.id, $any($event.target).checked)"
+                />
+              </td>
+              <td>{{ user.username }}</td>
+              <td>{{ user.is_staff ? 'Admin' : 'Normal' }}</td>
+              <td>{{ user.is_active ? 'Activo' : 'Inactivo' }}</td>
+              <td>{{ user.fitness_goal || 'N/A' }}</td>
+              <td>
+                <div class="table-actions">
+                  <button type="button" class="chip" (click)="toggleUserStaff(user)">{{ user.is_staff ? 'Quitar admin' : 'Dar admin' }}</button>
+                  <button type="button" class="chip" (click)="toggleUserActive(user)">{{ user.is_active ? 'Desactivar' : 'Activar' }}</button>
+                  <button type="button" class="chip danger" (click)="deleteUser(user)">Eliminar</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pager" *ngIf="!usersLoading() && usersTotal() > 0">
+        <button type="button" class="retry" (click)="prevUsersPage()" [disabled]="userPage() <= 1">Anterior</button>
+        <span>Página {{ userPage() }} de {{ userTotalPages() }} · {{ usersTotal() }} usuarios</span>
+        <button type="button" class="retry" (click)="nextUsersPage()" [disabled]="userPage() >= userTotalPages()">Siguiente</button>
+      </div>
+    </section>
+
+    <section class="card admin-management">
+      <div class="management-header">
+        <h2>Gestión de challenges</h2>
+        <div class="management-controls">
+          <input type="text" placeholder="Buscar challenge" [ngModel]="challengeSearch()" (ngModelChange)="onChallengeSearchInput($event)" />
+          <select [ngModel]="challengeCategory()" (ngModelChange)="challengeCategory.set($event)">
+            <option value="all">Todas categorias</option>
+            <option value="sport">Sport</option>
+            <option value="nutrition">Nutrition</option>
+            <option value="mindset">Mindset</option>
+            <option value="growth">Growth</option>
+            <option value="general">General</option>
+          </select>
+          <button type="button" class="retry" (click)="applyChallengeFilters()">Aplicar</button>
+        </div>
+      </div>
+
+      <p class="state" *ngIf="challengesLoading()">Cargando challenges...</p>
+      <div class="table-wrap" *ngIf="!challengesLoading()">
+        <table>
+          <thead>
+            <tr>
+              <th>Titulo</th>
+              <th>Categoria</th>
+              <th>Creador</th>
+              <th>Duración</th>
+              <th>Objetivo</th>
+              <th>Participantes</th>
+              <th>Updates</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let challenge of managedChallenges()">
+              <td>
+                <ng-container *ngIf="editingChallengeId() !== challenge.id; else editTitle">
+                  {{ challenge.title }}
+                </ng-container>
+                <ng-template #editTitle>
+                  <input
+                    class="edit-input"
+                    type="text"
+                    [ngModel]="challengeDraft()?.title || ''"
+                    (ngModelChange)="updateChallengeDraft('title', $event)"
+                  />
+                </ng-template>
+              </td>
+              <td>
+                <ng-container *ngIf="editingChallengeId() !== challenge.id; else editCategory">
+                  {{ challenge.category }}
+                </ng-container>
+                <ng-template #editCategory>
+                  <select
+                    class="edit-input"
+                    [ngModel]="challengeDraft()?.category || challenge.category"
+                    (ngModelChange)="updateChallengeDraft('category', $event)"
+                  >
+                    <option value="sport">Sport</option>
+                    <option value="nutrition">Nutrition</option>
+                    <option value="mindset">Mindset</option>
+                    <option value="growth">Growth</option>
+                    <option value="general">General</option>
+                  </select>
+                </ng-template>
+              </td>
+              <td>{{ challenge.creator_username }}</td>
+              <td>
+                <ng-container *ngIf="editingChallengeId() !== challenge.id; else editDuration">
+                  {{ challenge.duration_days }} d
+                </ng-container>
+                <ng-template #editDuration>
+                  <input
+                    class="edit-input edit-input--xs"
+                    type="number"
+                    min="1"
+                    max="365"
+                    [ngModel]="challengeDraft()?.duration_days || challenge.duration_days"
+                    (ngModelChange)="updateChallengeDraftNumber('duration_days', +$event || 1)"
+                  />
+                </ng-template>
+              </td>
+              <td>
+                <ng-container *ngIf="editingChallengeId() !== challenge.id; else editTarget">
+                  {{ challenge.target_count }}
+                </ng-container>
+                <ng-template #editTarget>
+                  <input
+                    class="edit-input edit-input--xs"
+                    type="number"
+                    min="1"
+                    max="10000"
+                    [ngModel]="challengeDraft()?.target_count || challenge.target_count"
+                    (ngModelChange)="updateChallengeDraftNumber('target_count', +$event || 1)"
+                  />
+                </ng-template>
+              </td>
+              <td>{{ challenge.participant_count }}</td>
+              <td>{{ challenge.updates_count }}</td>
+              <td>{{ challenge.is_expired ? 'Expirado' : 'Activo' }}</td>
+              <td>
+                <div class="table-actions">
+                  <button
+                    type="button"
+                    class="chip"
+                    *ngIf="editingChallengeId() !== challenge.id"
+                    (click)="startChallengeEdit(challenge)"
+                  >Editar</button>
+                  <button
+                    type="button"
+                    class="chip"
+                    *ngIf="editingChallengeId() === challenge.id"
+                    (click)="saveChallengeEdit(challenge)"
+                  >Guardar</button>
+                  <button
+                    type="button"
+                    class="chip"
+                    *ngIf="editingChallengeId() === challenge.id"
+                    (click)="cancelChallengeEdit()"
+                  >Cancelar</button>
+                  <button type="button" class="chip danger" (click)="deleteManagedChallenge(challenge)">Eliminar</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pager" *ngIf="!challengesLoading() && challengesTotal() > 0">
+        <button type="button" class="retry" (click)="prevChallengesPage()" [disabled]="challengePage() <= 1">Anterior</button>
+        <span>Página {{ challengePage() }} de {{ challengeTotalPages() }} · {{ challengesTotal() }} challenges</span>
+        <button type="button" class="retry" (click)="nextChallengesPage()" [disabled]="challengePage() >= challengeTotalPages()">Siguiente</button>
+      </div>
+    </section>
+
     <p class="foot">
       Rango: {{ data.meta.range.start | date:'dd/MM/yyyy' }} - {{ data.meta.range.end | date:'dd/MM/yyyy' }}
       · Generado: {{ data.generated_at | date:'dd/MM/yyyy HH:mm' }}

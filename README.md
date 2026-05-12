@@ -52,6 +52,16 @@ python create_exercises.py
 python populate_exercises.py
 ```
 
+Reset total + datos dummy (1 comando):
+```bash
+python manage.py seed_dummy_data --reset --users 14 --days 45 --seed 123
+```
+
+Notas rápidas:
+- Crea/actualiza `admin_demo` y usuarios `demo_user_XX`.
+- Password por defecto para usuarios dummy: `password123`.
+- Puedes cambiarla con `--password "tu_password"`.
+
 ### Frontend
 
 ```bash

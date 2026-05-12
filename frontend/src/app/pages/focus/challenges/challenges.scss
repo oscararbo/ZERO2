@@ -64,6 +64,7 @@
   gap: 10px;
 }
 
+
 .reminders-head h3 {
   margin: 0;
   font-size: 14px;
@@ -116,6 +117,71 @@
   margin-bottom: 10px;
 }
 
+.weekly-progress-card {
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  padding: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+}
+
+.weekly-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.weekly-progress-head h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.weekly-progress-rate {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.weekly-progress-track {
+  height: 8px;
+  width: 100%;
+  border-radius: 999px;
+  background: rgba(255,255,255,.12);
+  overflow: hidden;
+}
+
+.weekly-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ffffff, #9aa0a6);
+}
+
+.weekly-progress-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.weekly-progress-metric {
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,.02);
+}
+
+.weekly-progress-grid small {
+  display: block;
+  font-size: 11px;
+  opacity: .6;
+  margin-bottom: 2px;
+}
+
+.weekly-progress-grid strong {
+  font-size: 16px;
+}
+
 .overview-card {
   border: 1px solid rgba(255,255,255,.12);
   border-radius: 12px;
@@ -153,7 +219,7 @@
   gap: 10px;
 }
 
-.insight-metrics div {
+.insight-metric-item {
   padding: 10px;
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,.09);
@@ -200,6 +266,11 @@
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,.1);
   background: rgba(255,255,255,.03);
+}
+
+.badge-content {
+  display: grid;
+  gap: 2px;
 }
 
 .badge-icon {
@@ -282,9 +353,7 @@
   outline: none;
 }
 
-.search-input {
-  width: 220px;
-}
+.search-input { width: 220px; }
 
 .sort-select {
   width: 180px;
@@ -621,6 +690,14 @@ h3 {
   background: rgba(255,255,255,.04);
   color: rgba(255,255,255,.86);
   font-size: 12px;
+  cursor: pointer;
+  transition: border-color .2s ease, transform .2s ease, background .2s ease;
+}
+
+.template-pill:hover {
+  border-color: rgba(255,255,255,.34);
+  background: rgba(255,255,255,.08);
+  transform: translateY(-1px);
 }
 
 .template-pill--user {
@@ -718,30 +795,13 @@ h3 {
   font-style: italic;
 }
 
-.btn-ghost {
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 12px;
-  background: transparent;
-  border: 1px solid rgba(255,255,255,.2);
-  color: rgba(255,255,255,.75);
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all .2s;
-
-  &:hover { border-color: rgba(255,255,255,.4); color: #fff; }
-}
-
-.btn-leave { color: rgba(255,255,255,.55); }
-.btn-danger { border-color: rgba(255,80,80,.3); color: rgba(255,100,100,.8); }
-
 @media (max-width: 720px) {
   .top { grid-template-columns: 1fr; text-align: center; }
   .head-actions { justify-self: center; }
   .btn-back { justify-self: center; }
   .insights { grid-template-columns: 1fr; }
   .overview-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .weekly-progress-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .insight-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .tabs { width: 100%; overflow-x: auto; }
   .detail-grid { grid-template-columns: 1fr; }

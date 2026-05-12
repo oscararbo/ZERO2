@@ -13,12 +13,12 @@ from core_domain.models import Profile
 
 _EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 _USERNAME_RE = re.compile(r'^[a-zA-Z0-9_]{3,30}$')
-PASSWORD_MIN = 6
+PASSWORD_MIN = 8
 
 
 def _validate_password(password):
     if len(password) < PASSWORD_MIN:
-        return f'La contrasena debe tener al menos {PASSWORD_MIN} caracteres.'
+        return f'La contraseña debe tener al menos {PASSWORD_MIN} caracteres.'
     return None
 
 

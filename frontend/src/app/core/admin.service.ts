@@ -16,6 +16,59 @@ export type AdminStatsFilters = {
   top?: number;
 };
 
+export type AdminUsersFilters = {
+  search?: string;
+  is_staff?: boolean;
+  is_active?: boolean;
+  page?: number;
+  page_size?: number;
+};
+
+export type AdminChallengesFilters = {
+  search?: string;
+  category?: 'sport' | 'nutrition' | 'mindset' | 'growth' | 'general';
+  page?: number;
+  page_size?: number;
+};
+
+export type AdminPaginatedResponse<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+};
+
+export type AdminUserRecord = {
+  id: number;
+  username: string;
+  is_staff: boolean;
+  is_active: boolean;
+  date_joined: string;
+  weekly_goal: number | null;
+  fitness_goal: string | null;
+  focus: {
+    sport: boolean;
+    food: boolean;
+    mindset: boolean;
+    growth: boolean;
+    challenges: boolean;
+  };
+};
+
+export type AdminChallengeRecord = {
+  id: number;
+  title: string;
+  category: string;
+  duration_days: number;
+  target_count: number;
+  creator_username: string;
+  participant_count: number;
+  updates_count: number;
+  created_at: string;
+  is_expired: boolean;
+};
+
 export type AdminTopUser = {
   user_id: number;
   username: string;
@@ -194,13 +247,46 @@ export class AdminService {
     );
   }
 
-  private toParams(filters: AdminStatsFilters): Record<string, string> {
+  getUsers(filters: AdminUsersFilters = {}): Observable<AdminPaginatedResponse<AdminUserRecord>> {
+    return this.http.get<AdminPaginatedResponse<AdminUserRecord>>(
+      `${environment.apiUrl}/api/admin/users/`,
+      { params: this.toParams(filters as Record<string, any>) },
+    );
+  }
+
+  updateUser(userId: number, payload: { is_staff?: boolean; is_active?: boolean }): Observable<AdminUserRecord> {
+    return this.http.patch<AdminUserRecord>(`${environment.apiUrl}/api/admin/users/${userId}/`, payload);
+  }
+
+  deleteUser(userId: number): Observable<{ detail: string }> {
+    return this.http.delete<{ detail: string }>(`${environment.apiUrl}/api/admin/users/${userId}/`);
+  }
+
+  getChallenges(filters: AdminChallengesFilters = {}): Observable<AdminPaginatedResponse<AdminChallengeRecord>> {
+    return this.http.get<AdminPaginatedResponse<AdminChallengeRecord>>(
+      `${environment.apiUrl}/api/admin/challenges/`,
+      { params: this.toParams(filters as Record<string, any>) },
+    );
+  }
+
+  updateChallenge(
+    challengeId: number,
+    payload: { title?: string; category?: string; duration_days?: number; target_count?: number }
+  ): Observable<AdminChallengeRecord> {
+    return this.http.patch<AdminChallengeRecord>(`${environment.apiUrl}/api/admin/challenges/${challengeId}/`, payload);
+  }
+
+  deleteChallenge(challengeId: number): Observable<{ detail: string }> {
+    return this.http.delete<{ detail: string }>(`${environment.apiUrl}/api/admin/challenges/${challengeId}/`);
+  }
+
+  private toParams(filters: Record<string, any>): Record<string, string> {
     const params: Record<string, string> = {};
 
-    if (typeof filters.days === 'number') params['days'] = String(filters.days);
-    if (filters.start) params['start'] = filters.start;
-    if (filters.end) params['end'] = filters.end;
-    if (typeof filters.top === 'number') params['top'] = String(filters.top);
+    for (const [key, value] of Object.entries(filters)) {
+      if (value === undefined || value === null || value === '') continue;
+      params[key] = String(value);
+    }
 
     return params;
   }

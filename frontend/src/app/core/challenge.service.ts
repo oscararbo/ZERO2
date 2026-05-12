@@ -165,8 +165,16 @@ export class ChallengeService {
     );
   }
 
-  updateProgress(id: number, progress: number, notes?: string): Observable<MyParticipation> {
-    return this.http.put<MyParticipation>(`${this.base}/${id}/progress/`, { progress, notes }).pipe(
+  updateProgress(
+    id: number,
+    payload: { progress?: number; notes?: string; delta?: number }
+  ): Observable<MyParticipation> {
+    const body: { progress?: number; notes?: string; delta?: number } = {};
+    if (typeof payload.progress === 'number') body.progress = payload.progress;
+    if (typeof payload.notes === 'string') body.notes = payload.notes;
+    if (typeof payload.delta === 'number') body.delta = payload.delta;
+
+    return this.http.put<MyParticipation>(`${this.base}/${id}/progress/`, body).pipe(
       tap(() => {
         this.invalidateCachePrefix(`${this.base}/${id}/leaderboard/`);
         this.invalidateChallengeOverviewCaches();

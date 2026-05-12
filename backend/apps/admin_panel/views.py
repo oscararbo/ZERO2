@@ -8,7 +8,7 @@ from django.utils import timezone
 from rest_framework import permissions
 from rest_framework.views import APIView
 
-from common.api.responses import success_response
+from common.api.responses import error_response, success_response
 from core_domain.models import (
     Challenge,
     ChallengeParticipant,
@@ -640,6 +640,225 @@ class AdminAlertReopenView(APIView):
         })
 
 
+class AdminUsersListView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        search = (request.query_params.get('search') or '').strip()
+        is_staff = (request.query_params.get('is_staff') or '').strip().lower()
+        is_active = (request.query_params.get('is_active') or '').strip().lower()
+        page = self._safe_int(request.query_params.get('page'), default=1, min_value=1, max_value=100000)
+        page_size = self._safe_int(request.query_params.get('page_size'), default=25, min_value=5, max_value=100)
+
+        qs = User.objects.select_related('profile').order_by('-date_joined')
+
+        if search:
+            qs = qs.filter(username__icontains=search)
+        if is_staff in ('true', 'false'):
+            qs = qs.filter(is_staff=(is_staff == 'true'))
+        if is_active in ('true', 'false'):
+            qs = qs.filter(is_active=(is_active == 'true'))
+
+        total = qs.count()
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        users = []
+        for user in qs[start:end]:
+            profile = getattr(user, 'profile', None)
+            users.append({
+                'id': user.id,
+                'username': user.username,
+                'is_staff': user.is_staff,
+                'is_active': user.is_active,
+                'date_joined': user.date_joined.isoformat(),
+                'weekly_goal': profile.weekly_goal if profile else None,
+                'fitness_goal': profile.fitness_goal if profile else None,
+                'focus': {
+                    'sport': bool(profile.sport) if profile else False,
+                    'food': bool(profile.food) if profile else False,
+                    'mindset': bool(profile.mindset) if profile else False,
+                    'growth': bool(profile.growth) if profile else False,
+                    'challenges': bool(profile.challenges) if profile else False,
+                },
+            })
+
+        total_pages = (total + page_size - 1) // page_size if total else 0
+        return success_response({
+            'items': users,
+            'total': total,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': total_pages,
+        })
+
+    def _safe_int(self, value, default, min_value, max_value):
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            return default
+        return max(min_value, min(max_value, parsed))
+
+
+class AdminUserDetailView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def patch(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return error_response('Usuario no encontrado.', status_code=404)
+
+        if user.id == request.user.id and 'is_staff' in request.data and request.data.get('is_staff') is False:
+            return error_response('No puedes quitarte permisos de admin a ti mismo.', status_code=400)
+
+        updates = []
+        if 'is_staff' in request.data:
+            user.is_staff = bool(request.data.get('is_staff'))
+            updates.append('is_staff')
+        if 'is_active' in request.data:
+            user.is_active = bool(request.data.get('is_active'))
+            updates.append('is_active')
+
+        if not updates:
+            return error_response('No hay campos para actualizar.', status_code=400)
+
+        user.save(update_fields=updates)
+        return success_response({
+            'id': user.id,
+            'username': user.username,
+            'is_staff': user.is_staff,
+            'is_active': user.is_active,
+        })
+
+    def delete(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return error_response('Usuario no encontrado.', status_code=404)
+
+        if user.id == request.user.id:
+            return error_response('No puedes eliminar tu propio usuario.', status_code=400)
+
+        user.delete()
+        return success_response({'detail': 'Usuario eliminado.'})
+
+
+class AdminChallengesListView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        search = (request.query_params.get('search') or '').strip()
+        category = (request.query_params.get('category') or '').strip().lower()
+        page = self._safe_int(request.query_params.get('page'), default=1, min_value=1, max_value=100000)
+        page_size = self._safe_int(request.query_params.get('page_size'), default=25, min_value=5, max_value=100)
+
+        qs = Challenge.objects.select_related('creator').annotate(
+            participant_count_annotated=Count('participants', distinct=True),
+            updates_count_annotated=Count('updates', distinct=True),
+        ).order_by('-created_at')
+
+        if search:
+            qs = qs.filter(title__icontains=search)
+        if category in {'sport', 'nutrition', 'mindset', 'growth', 'general'}:
+            qs = qs.filter(category=category)
+
+        total = qs.count()
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        items = []
+        for challenge in qs[start:end]:
+            items.append({
+                'id': challenge.id,
+                'title': challenge.title,
+                'category': challenge.category,
+                'duration_days': challenge.duration_days,
+                'target_count': challenge.target_count,
+                'creator_username': challenge.creator.username,
+                'participant_count': getattr(challenge, 'participant_count_annotated', 0),
+                'updates_count': getattr(challenge, 'updates_count_annotated', 0),
+                'created_at': challenge.created_at.isoformat(),
+                'is_expired': challenge.is_expired,
+            })
+
+        total_pages = (total + page_size - 1) // page_size if total else 0
+        return success_response({
+            'items': items,
+            'total': total,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': total_pages,
+        })
+
+    def _safe_int(self, value, default, min_value, max_value):
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            return default
+        return max(min_value, min(max_value, parsed))
+
+
+class AdminChallengeDetailView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def patch(self, request, challenge_id):
+        try:
+            challenge = Challenge.objects.get(id=challenge_id)
+        except Challenge.DoesNotExist:
+            return error_response('Challenge no encontrado.', status_code=404)
+
+        updates = []
+        if 'title' in request.data and isinstance(request.data.get('title'), str):
+            title = request.data.get('title').strip()
+            if len(title) < 3:
+                return error_response('El titulo debe tener al menos 3 caracteres.', status_code=400)
+            challenge.title = title
+            updates.append('title')
+        if 'category' in request.data and request.data.get('category') in {'sport', 'nutrition', 'mindset', 'growth', 'general'}:
+            challenge.category = request.data.get('category')
+            updates.append('category')
+        if 'duration_days' in request.data:
+            try:
+                duration = int(request.data.get('duration_days'))
+            except (TypeError, ValueError):
+                return error_response('duration_days debe ser un entero.', status_code=400)
+            if duration < 1 or duration > 365:
+                return error_response('duration_days debe estar entre 1 y 365.', status_code=400)
+            challenge.duration_days = duration
+            updates.append('duration_days')
+        if 'target_count' in request.data:
+            try:
+                target = int(request.data.get('target_count'))
+            except (TypeError, ValueError):
+                return error_response('target_count debe ser un entero.', status_code=400)
+            if target < 1 or target > 10000:
+                return error_response('target_count debe estar entre 1 y 10000.', status_code=400)
+            challenge.target_count = target
+            updates.append('target_count')
+
+        if not updates:
+            return error_response('No hay campos validos para actualizar.', status_code=400)
+
+        challenge.save(update_fields=updates)
+        return success_response({
+            'id': challenge.id,
+            'title': challenge.title,
+            'category': challenge.category,
+            'duration_days': challenge.duration_days,
+            'target_count': challenge.target_count,
+        })
+
+    def delete(self, request, challenge_id):
+        try:
+            challenge = Challenge.objects.get(id=challenge_id)
+        except Challenge.DoesNotExist:
+            return error_response('Challenge no encontrado.', status_code=404)
+
+        challenge.delete()
+        return success_response({'detail': 'Challenge eliminado.'})
+
+
 __all__ = [
     'AdminAccessView',
     'AdminStatsView',
@@ -647,4 +866,8 @@ __all__ = [
     'AdminAlertListView',
     'AdminAlertResolveView',
     'AdminAlertReopenView',
+    'AdminUsersListView',
+    'AdminUserDetailView',
+    'AdminChallengesListView',
+    'AdminChallengeDetailView',
 ]

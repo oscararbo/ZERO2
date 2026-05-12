@@ -66,6 +66,7 @@ export class ChallengesComponent implements OnInit {
   remindersPage = signal(1);
   remindersHasNext = signal(false);
   remindersLoading = signal(false);
+  remindersUnreadOnly = signal(false);
 
   badges = signal<UserBadge[]>([]);
   analytics = signal<ChallengeAnalytics | null>(null);
@@ -76,6 +77,7 @@ export class ChallengesComponent implements OnInit {
   progressEditing = signal<number | null>(null);
   progressValue = signal(0);
   progressNotes = signal('');
+  quickUpdatingId = signal<number | null>(null);
 
   leaderboardByChallenge = signal<Partial<Record<number, MyParticipation[]>>>({});
   leaderboardPageByChallenge = signal<Partial<Record<number, number>>>({});
@@ -218,6 +220,50 @@ export class ChallengesComponent implements OnInit {
       expiringSoon,
       mine,
       participationRate,
+    };
+  });
+
+  readonly weeklyStats = computed(() => {
+    const now = new Date();
+    const weekAgo = new Date(now);
+    weekAgo.setDate(now.getDate() - 7);
+
+    let joinedThisWeek = 0;
+    let completedThisWeek = 0;
+    let activeJoined = 0;
+    let progressTotal = 0;
+    let progressCount = 0;
+
+    for (const challenge of this.visibleChallenges()) {
+      const participation = challenge.my_participation;
+      if (!participation) continue;
+
+      activeJoined += challenge.is_expired || participation.completed ? 0 : 1;
+      progressTotal += participation.progress;
+      progressCount += 1;
+
+      const joinedAt = new Date(participation.joined_at);
+      if (joinedAt >= weekAgo) {
+        joinedThisWeek += 1;
+      }
+
+      if (participation.completed_at) {
+        const completedAt = new Date(participation.completed_at);
+        if (completedAt >= weekAgo) {
+          completedThisWeek += 1;
+        }
+      }
+    }
+
+    const avgProgress = progressCount ? Math.round(progressTotal / progressCount) : 0;
+    const completionRate = joinedThisWeek ? Math.round((completedThisWeek / joinedThisWeek) * 100) : 0;
+
+    return {
+      joinedThisWeek,
+      completedThisWeek,
+      activeJoined,
+      avgProgress,
+      completionRate,
     };
   });
 
@@ -423,7 +469,7 @@ export class ChallengesComponent implements OnInit {
     });
   }
 
-  loadReminders(unreadOnly = false): void {
+  loadReminders(unreadOnly = this.remindersUnreadOnly()): void {
     this.remindersLoading.set(true);
     this.challengeService.getReminders(unreadOnly, 1).subscribe({
       next: (payload) => {
@@ -442,7 +488,7 @@ export class ChallengesComponent implements OnInit {
     });
   }
 
-  loadMoreReminders(unreadOnly = false): void {
+  loadMoreReminders(unreadOnly = this.remindersUnreadOnly()): void {
     if (!this.remindersHasNext() || this.remindersLoading()) return;
     const nextPage = this.remindersPage() + 1;
     this.remindersLoading.set(true);
@@ -461,7 +507,16 @@ export class ChallengesComponent implements OnInit {
   }
 
   toggleReminders(): void {
-    this.remindersOpen.set(!this.remindersOpen());
+    const next = !this.remindersOpen();
+    this.remindersOpen.set(next);
+    if (next) {
+      this.loadReminders();
+    }
+  }
+
+  toggleUnreadOnlyReminders(): void {
+    this.remindersUnreadOnly.set(!this.remindersUnreadOnly());
+    this.loadReminders();
   }
 
   markReminderRead(reminder: InAppReminder): void {
@@ -630,7 +685,10 @@ export class ChallengesComponent implements OnInit {
 
   saveProgress(challenge: Challenge): void {
     this.saving.set(true);
-    this.challengeService.updateProgress(challenge.id, this.progressValue(), this.progressNotes()).subscribe({
+    this.challengeService.updateProgress(challenge.id, {
+      progress: this.progressValue(),
+      notes: this.progressNotes(),
+    }).subscribe({
       next: () => {
         this.saving.set(false);
         this.progressEditing.set(null);
@@ -641,6 +699,50 @@ export class ChallengesComponent implements OnInit {
       error: () => {
         this.saving.set(false);
         this.showToast('Failed to update progress.', 'error');
+      },
+    });
+  }
+
+  quickIncreaseProgress(challenge: Challenge, step = 10): void {
+    const participation = challenge.my_participation;
+    if (!participation || this.quickUpdatingId() === challenge.id) return;
+
+    this.quickUpdatingId.set(challenge.id);
+    this.challengeService.updateProgress(challenge.id, {
+      delta: step,
+      notes: participation.notes ?? '',
+    }).subscribe({
+      next: () => {
+        this.quickUpdatingId.set(null);
+        this.showToast(`Progress +${step}%`, 'success');
+        this.loadChallenges();
+        this.loadInsights();
+      },
+      error: () => {
+        this.quickUpdatingId.set(null);
+        this.showToast('Could not update progress.', 'error');
+      },
+    });
+  }
+
+  markChallengeCompleted(challenge: Challenge): void {
+    const participation = challenge.my_participation;
+    if (!participation || this.quickUpdatingId() === challenge.id || participation.progress >= 100) return;
+
+    this.quickUpdatingId.set(challenge.id);
+    this.challengeService.updateProgress(challenge.id, {
+      progress: 100,
+      notes: participation.notes ?? '',
+    }).subscribe({
+      next: () => {
+        this.quickUpdatingId.set(null);
+        this.showToast('Challenge completed!', 'success');
+        this.loadChallenges();
+        this.loadInsights();
+      },
+      error: () => {
+        this.quickUpdatingId.set(null);
+        this.showToast('Could not mark challenge as completed.', 'error');
       },
     });
   }

@@ -15,15 +15,15 @@
       <article class="goal-card macro-summary" *ngIf="hasMeals()">
         <h3>Macro Distribution</h3>
         <div class="macro-lines">
-          <div>
+          <div class="macro-line-item">
             <label>Protein</label>
             <strong>{{ macroDistribution().protein | number: '1.0-0' }}%</strong>
           </div>
-          <div>
+          <div class="macro-line-item">
             <label>Carbs</label>
             <strong>{{ macroDistribution().carbs | number: '1.0-0' }}%</strong>
           </div>
-          <div>
+          <div class="macro-line-item">
             <label>Fat</label>
             <strong>{{ macroDistribution().fat | number: '1.0-0' }}%</strong>
           </div>
@@ -163,6 +163,29 @@
           <span class="stat-value">{{ dailyNutrition().fat | number: '1.0-1' }}g</span>
         </div>
       </div>
+
+      <div class="macro-kcal-grid">
+        <article class="macro-kcal-item">
+          <span>Protein</span>
+          <strong>{{ dailyNutrition().protein | number: '1.0-1' }}g</strong>
+          <small>{{ macroCalories().protein | number: '1.0-0' }} kcal</small>
+        </article>
+        <article class="macro-kcal-item">
+          <span>Carbs</span>
+          <strong>{{ dailyNutrition().carbs | number: '1.0-1' }}g</strong>
+          <small>{{ macroCalories().carbs | number: '1.0-0' }} kcal</small>
+        </article>
+        <article class="macro-kcal-item">
+          <span>Fat</span>
+          <strong>{{ dailyNutrition().fat | number: '1.0-1' }}g</strong>
+          <small>{{ macroCalories().fat | number: '1.0-0' }} kcal</small>
+        </article>
+        <article class="macro-kcal-item">
+          <span>Total macro kcal</span>
+          <strong>{{ macroCalories().total | number: '1.0-0' }}</strong>
+          <small>4/4/9 rule</small>
+        </article>
+      </div>
     </div>
 
     <section class="daily-total-card" *ngIf="!loadingMeals() && !mealError() && hasMeals() && hasMacroTargets()">
@@ -187,6 +210,25 @@
           <span>Fat (g)</span>
           <strong>{{ dailyNutrition().fat | number: '1.0-1' }} / {{ macroTargets().fat | number: '1.0-1' }}</strong>
           <div class="target-bar"><span [style.width.%]="targetProgress().fat"></span></div>
+        </article>
+      </div>
+
+      <div class="remaining-grid">
+        <article class="remaining-item" *ngIf="remainingTargets().calories !== null">
+          <span>Calories remaining</span>
+          <strong [class.over-target]="(remainingTargets().calories ?? 0) < 0">{{ (remainingTargets().calories ?? 0) | number: '1.0-0' }}</strong>
+        </article>
+        <article class="remaining-item" *ngIf="remainingTargets().protein !== null">
+          <span>Protein remaining (g)</span>
+          <strong [class.over-target]="(remainingTargets().protein ?? 0) < 0">{{ (remainingTargets().protein ?? 0) | number: '1.0-1' }}</strong>
+        </article>
+        <article class="remaining-item" *ngIf="remainingTargets().carbs !== null">
+          <span>Carbs remaining (g)</span>
+          <strong [class.over-target]="(remainingTargets().carbs ?? 0) < 0">{{ (remainingTargets().carbs ?? 0) | number: '1.0-1' }}</strong>
+        </article>
+        <article class="remaining-item" *ngIf="remainingTargets().fat !== null">
+          <span>Fat remaining (g)</span>
+          <strong [class.over-target]="(remainingTargets().fat ?? 0) < 0">{{ (remainingTargets().fat ?? 0) | number: '1.0-1' }}</strong>
         </article>
       </div>
     </section>

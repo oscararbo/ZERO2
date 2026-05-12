@@ -143,7 +143,11 @@ class ChallengeProgressView(APIView):
         request_serializer.is_valid(raise_exception=True)
 
         progress = request_serializer.validated_data.get('progress')
+        delta = request_serializer.validated_data.get('delta')
         notes = request_serializer.validated_data.get('notes', participant.notes)
+
+        if progress is None and delta is not None:
+            progress = max(0, min(100, participant.progress + delta))
 
         if progress is not None:
             participant.progress = progress

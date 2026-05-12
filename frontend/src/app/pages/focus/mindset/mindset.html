@@ -68,7 +68,7 @@
       <div *ngIf="!isAuthenticated" class="auth-message">
         <p>Please <a routerLink="/login">log in</a> to save and view your journal entries.</p>
       </div>
-      <div *ngIf="isAuthenticated">
+      <div class="journal-editor" *ngIf="isAuthenticated">
         <textarea
           class="journal-textarea form-control"
           [ngModel]="journalEntry()"
