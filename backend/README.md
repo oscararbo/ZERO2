@@ -12,6 +12,7 @@ Actualizado: mayo 2026.
 - Journal personal y registro de estado de ánimo
 - Plantillas versionadas de usuario
 - Sistema de challenges: leaderboard, updates, badges y in-app reminders
+- Módulo performance: planner semanal, coach por reglas, recovery score, wearables e ingesta masiva
 
 ## Stack
 
@@ -65,8 +66,24 @@ backend/
     ├── workouts/            # ejercicios, sesiones, progreso
     ├── mindset/             # journal, mood, templates de usuario
     ├── challenges/          # challenges, leaderboard, badges, reminders
-    └── admin_panel/         # métricas globales para staff (/api/admin/*)
+    ├── admin_panel/         # métricas globales para staff (/api/admin/*)
+    └── performance/         # planner, coach, nutrition+, recovery, wearables, jobs, videos
 ```
+
+## Endpoints performance (auth)
+
+- `GET/POST /api/performance/planner/`
+- `GET /api/performance/coach/`
+- `GET /api/performance/nutrition/`
+- `GET/POST /api/performance/recovery/`
+- `GET/POST /api/performance/wearables/`
+- `GET /api/performance/feature-flags/`
+- `GET/POST /api/performance/jobs/`
+- `POST /api/performance/jobs/run-pending/` (admin)
+- `GET /api/exercises/<id>/video/`
+- `POST /api/performance/exercise-videos/refresh/` (admin)
+
+Versionado: disponibles en `/api/v1/...` tambien.
 
 ## Endpoints admin (staff)
 
@@ -105,6 +122,41 @@ Todas las respuestas siguen el mismo envelope:
 | `DJANGO_DEBUG` | `true` | Modo debug |
 | `DJANGO_ALLOWED_HOSTS` | `127.0.0.1,localhost` | Hosts permitidos (CSV) |
 | `APP_VERSION` | `dev` | Versión reportada en `/api/health/` y `/api/meta/` |
+| `REDIS_URL` | vacío | Si existe, usa Redis para caché; si no, usa caché local |
+
+## Jobs async y scheduler
+
+Ejecutar cola una vez:
+
+```bash
+python manage.py run_async_jobs --limit 20
+```
+
+Scripts incluidos:
+
+- `scripts/install-cron.sh` (Linux/macOS)
+- `scripts/register-windows-task.ps1` (Windows)
+- `scripts/job_worker.py` (loop simple)
+
+## Importación de wearables por API
+
+Payload `POST /api/performance/wearables/`:
+
+```json
+{
+    "provider": "manual",
+    "source": "bulk-import",
+    "entries": [
+        {
+            "date": "2026-05-10",
+            "steps": 10420,
+            "active_minutes": 61,
+            "calories_burned": 580,
+            "avg_heart_rate": 121
+        }
+    ]
+}
+```
 
 ## Tests
 

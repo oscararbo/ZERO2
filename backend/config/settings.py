@@ -21,6 +21,7 @@ def _csv_env(name: str, default: str = '') -> list[str]:
 
 
 WHITENOISE_AVAILABLE = importlib.util.find_spec('whitenoise') is not None
+DJANGO_REDIS_AVAILABLE = importlib.util.find_spec('django_redis') is not None
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -61,6 +62,7 @@ INSTALLED_APPS = [
     'apps.mindset',
     'apps.challenges',
     'apps.admin_panel',
+    'apps.performance',
 ]
 
 
@@ -245,3 +247,26 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'UPDATE_LAST_LOGIN': True,
 }
+
+REDIS_URL = os.environ.get('REDIS_URL', '').strip()
+
+if REDIS_URL and DJANGO_REDIS_AVAILABLE:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            },
+            'KEY_PREFIX': 'zero',
+            'TIMEOUT': 300,
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'zero-local-cache',
+            'TIMEOUT': 300,
+        }
+    }

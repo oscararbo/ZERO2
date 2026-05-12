@@ -215,6 +215,52 @@ h1 {
   }
 }
 
+.video-btn {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.88);
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.video-panel {
+  margin-top: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  display: grid;
+  gap: 10px;
+}
+
+.video-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.video-frame {
+  width: 100%;
+  min-height: 300px;
+  border: none;
+  border-radius: 10px;
+  background: #000;
+}
+
+.video-link {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+}
+
 .category-btn {
   padding: 8px 14px;
   border: 1px solid rgba(255, 255, 255, 0.18);

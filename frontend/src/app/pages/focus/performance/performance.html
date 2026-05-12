@@ -1,0 +1,138 @@
+<section class="page">
+  <app-focus-page-header title="Performance Hub" [toastMessage]="toast()"></app-focus-page-header>
+
+  <main class="content" *ngIf="!loading(); else loadingTpl">
+    <section class="grid-two">
+      <article class="card">
+        <h3>Weekly Planner</h3>
+        <p class="muted">Completion: {{ plannerCompletion() }}%</p>
+        <div class="plan-list" *ngIf="weeklyPlan() as plan">
+          <label class="plan-item" *ngFor="let item of plan.items">
+            <input type="checkbox" [checked]="item.completed" (change)="togglePlanItem(item.id, !item.completed)" />
+            <div>
+              <strong>{{ item.date }} · {{ item.focus_area | titlecase }}</strong>
+              <p>{{ item.planned_workout }}</p>
+            </div>
+          </label>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>AI Coach (Free Rule Engine)</h3>
+        <div *ngIf="coachBrief() as coach">
+          <p class="badge">Priority: {{ coach.priority }}</p>
+          <p>{{ coach.message }}</p>
+          <ul>
+            <li *ngFor="let action of coach.actions">{{ action }}</li>
+          </ul>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid-two">
+      <article class="card">
+        <h3>Nutrition Plus</h3>
+        <p class="muted" *ngIf="nutrition() as n">Goal: {{ n.goal }}</p>
+        <div class="shopping" *ngIf="nutrition() as n">
+          <h4>Shopping List</h4>
+          <ul>
+            <li *ngFor="let ingredient of n.shopping_list.slice(0, 16)">
+              {{ ingredient.name }} — {{ ingredient.amount | number:'1.0-0' }} {{ ingredient.unit }}
+            </li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>Recovery Score</h3>
+        <div class="form-grid">
+          <label>Sleep (hours)
+            <input type="number" min="0" max="24" [ngModel]="recoveryForm().sleep_hours" (ngModelChange)="setRecoveryField('sleep_hours', +$event)" />
+          </label>
+          <label>Stress (1-10)
+            <input type="number" min="1" max="10" [ngModel]="recoveryForm().stress_level" (ngModelChange)="setRecoveryField('stress_level', +$event)" />
+          </label>
+          <label>Soreness (1-10)
+            <input type="number" min="1" max="10" [ngModel]="recoveryForm().soreness_level" (ngModelChange)="setRecoveryField('soreness_level', +$event)" />
+          </label>
+          <label>Resting HR
+            <input type="number" min="30" max="220" [ngModel]="recoveryForm().resting_heart_rate" (ngModelChange)="setRecoveryField('resting_heart_rate', $event === '' ? null : +$event)" />
+          </label>
+        </div>
+        <button class="action" (click)="saveRecovery()">Save Recovery</button>
+        <p class="muted" *ngIf="latestRecovery() as r">Latest score: {{ r.recovery_score }}</p>
+      </article>
+    </section>
+
+    <section class="grid-two">
+      <article class="card">
+        <h3>Wearables Sync (Free)</h3>
+        <div class="form-grid">
+          <label>Provider
+            <select [ngModel]="wearableForm().provider" (ngModelChange)="setWearableField('provider', $event)">
+              <option value="samsung_health">Samsung Health</option>
+              <option value="manual">Manual</option>
+            </select>
+          </label>
+          <label>Date
+            <input type="date" [ngModel]="wearableForm().date" (ngModelChange)="setWearableField('date', $event)" />
+          </label>
+          <label>Steps
+            <input type="number" [ngModel]="wearableForm().steps" (ngModelChange)="setWearableField('steps', +$event)" />
+          </label>
+          <label>Active Minutes
+            <input type="number" [ngModel]="wearableForm().active_minutes" (ngModelChange)="setWearableField('active_minutes', +$event)" />
+          </label>
+        </div>
+        <button class="action" (click)="syncWearableEntry()">Sync Snapshot</button>
+
+        <div class="bulk-import">
+          <h4>Bulk Import (JSON/CSV)</h4>
+          <p class="muted">Accepted fields: date, steps, active_minutes, calories_burned, avg_heart_rate</p>
+          <div class="form-grid">
+            <label>Format
+              <select [ngModel]="bulkImportFormat()" (ngModelChange)="setBulkImportFormat($event)">
+                <option value="json">JSON</option>
+                <option value="csv">CSV</option>
+              </select>
+            </label>
+            <label>Upload file
+              <input type="file" accept=".json,.csv,text/csv,application/json" (change)="onBulkFileSelected($event)" />
+            </label>
+          </div>
+
+          <label>Paste entries
+            <textarea
+              rows="7"
+              [ngModel]="bulkImportText()"
+              (ngModelChange)="setBulkImportText($event)"
+              placeholder='JSON: [{"date":"2026-05-10","steps":10000}] or CSV: date,steps,active_minutes'></textarea>
+          </label>
+
+          <button class="action" [disabled]="bulkImportLoading()" (click)="importBulkWearables()">
+            {{ bulkImportLoading() ? 'Importing...' : 'Import Bulk Entries' }}
+          </button>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>Technical Controls</h3>
+        <button class="action" (click)="queueVideoSync()">Queue Exercise Video Sync Job</button>
+
+        <div class="flag-list">
+          <p class="muted">Feature Flags</p>
+          <div class="flag" *ngFor="let flag of flags()">
+            <strong>{{ flag.key }}</strong>
+            <span [class.on]="flag.enabled">{{ flag.enabled ? 'ON' : 'OFF' }}</span>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <ng-template #loadingTpl>
+    <main class="content">
+      <article class="card">Loading performance hub...</article>
+    </main>
+  </ng-template>
+</section>

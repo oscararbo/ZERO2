@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ScrollingModule } from '@angular/cdk/scrolling';
-import { ExerciseService, Exercise } from '../../../core/exercise.service';
+import { ExerciseService, Exercise, ExerciseVideo } from '../../../core/exercise.service';
 import { ProfileService, FitnessGoal } from '../../../core/profile.service';
 import { FocusPageHeaderComponent } from '../../shared/components/focus-page-header/focus-page-header';
 import { PageStateComponent } from '../../shared/components/page-state/page-state';
@@ -11,7 +12,7 @@ import { PageStateComponent } from '../../shared/components/page-state/page-stat
 @Component({
   selector: 'app-sport',
   standalone: true,
-  imports: [CommonModule, FormsModule, ScrollingModule, FocusPageHeaderComponent, PageStateComponent],
+  imports: [CommonModule, FormsModule, ScrollingModule, RouterLink, FocusPageHeaderComponent, PageStateComponent],
   templateUrl: './sport.html',
   styleUrls: ['./sport.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,6 +21,7 @@ export class SportComponent implements OnInit {
   private exerciseService = inject(ExerciseService);
   private profileService = inject(ProfileService);
   private router = inject(Router);
+  private sanitizer = inject(DomSanitizer);
 
   loading = signal(true);
   toast = signal('');
@@ -43,6 +45,9 @@ export class SportComponent implements OnInit {
   allExercises = signal<Record<string, Exercise[]>>({});
   exerciseState = signal<Record<number, { sets: number; reps: number; completed: boolean }>>({});
   hasCompletedExercises = signal(false);
+  activeVideo = signal<ExerciseVideo | null>(null);
+  activeVideoSafeUrl = signal<SafeResourceUrl | null>(null);
+  videoLoading = signal(false);
 
   readonly visibleCategories = computed(() => {
     const source = this.allExercises()[this.currentLocation()] ?? [];
@@ -136,6 +141,28 @@ export class SportComponent implements OnInit {
 
   setViewMode(mode: 'compact' | 'comfortable') {
     this.viewMode.set(mode);
+  }
+
+  openExerciseVideo(exercise: Exercise) {
+    this.videoLoading.set(true);
+    this.exerciseService.getExerciseVideo(exercise.id).subscribe({
+      next: (video) => {
+        this.activeVideo.set(video);
+        this.activeVideoSafeUrl.set(
+          video.embed_url ? this.sanitizer.bypassSecurityTrustResourceUrl(video.embed_url) : null
+        );
+        this.videoLoading.set(false);
+      },
+      error: () => {
+        this.videoLoading.set(false);
+        this.showToast('No video found for this exercise.');
+      },
+    });
+  }
+
+  closeExerciseVideo() {
+    this.activeVideo.set(null);
+    this.activeVideoSafeUrl.set(null);
   }
 
   updateExerciseState(exerciseId: number, field: 'sets' | 'reps' | 'completed', value: any) {

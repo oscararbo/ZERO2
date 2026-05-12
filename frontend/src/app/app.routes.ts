@@ -56,6 +56,11 @@ export const routes: Routes = [
     canActivate: [authGuard, nonAdminGuard],
   },
   {
+    path: 'performance',
+    loadComponent: () => import('./pages/focus/performance/performance').then((m) => m.PerformanceComponent),
+    canActivate: [authGuard, nonAdminGuard],
+  },
+  {
     path: 'admin',
     loadComponent: () => import('./pages/admin/admin').then((m) => m.AdminComponent),
     canActivate: [authGuard, adminGuard],

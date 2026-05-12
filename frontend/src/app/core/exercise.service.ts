@@ -39,6 +39,15 @@ export type ExerciseSession = {
   archived_at: string | null;
 };
 
+export type ExerciseVideo = {
+  exercise_id: number;
+  video_id: string | null;
+  url: string | null;
+  embed_url: string | null;
+  title: string | null;
+  source: string;
+};
+
 @Injectable({ providedIn: 'root' })
 export class ExerciseService {
   private readonly cacheTtlMs = 60000;
@@ -138,6 +147,10 @@ export class ExerciseService {
       `${environment.apiUrl}/api/progress/`,
       { params: location ? { location } : {} }
     );
+  }
+
+  getExerciseVideo(exerciseId: number) {
+    return this.http.get<ExerciseVideo>(`${environment.apiUrl}/api/exercises/${exerciseId}/video/`);
   }
 
   private buildCacheKey(url: string, params: HttpParams): string {

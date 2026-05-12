@@ -20,6 +20,7 @@ Actualizado: mayo 2026.
 - **Mindset** — journal personal, registro de estado de ánimo y meditación guiada
 - **Growth** — plantillas de crecimiento personal y templates versionados
 - **Challenges** — retos con leaderboard, updates, badges y reminders en-app
+- **Performance Hub** — planner semanal, coach inteligente (reglas), recovery score, wearables e importación masiva JSON/CSV
 - **Profile** — datos personales, métricas corporales, analytics por área de interés (datos reales del servidor)
 - **Admin panel (staff)** — KPIs globales, comparación por rango, cohortes, export CSV, historial de alertas con resolver/reabrir y skeletons durante carga
 
@@ -134,6 +135,22 @@ Todos los endpoints autenticados requieren header `Authorization: Bearer <access
 | POST | `/api/reminders/read-all/` | Marcar todos como leídos |
 | GET | `/api/badges/` | Badges del usuario |
 
+### Performance (autenticado)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET/POST | `/api/performance/planner/` | Plan semanal + toggle de completado |
+| GET | `/api/performance/coach/` | Brief diario del coach por reglas |
+| GET | `/api/performance/nutrition/` | Plan semanal nutricional + lista de compra |
+| GET/POST | `/api/performance/recovery/` | Historial recovery + nuevo registro |
+| GET/POST | `/api/performance/wearables/` | Lectura e ingesta de wearables |
+| GET | `/api/performance/feature-flags/` | Flags activas de funcionalidades |
+| GET/POST | `/api/performance/jobs/` | Listar/crear jobs async |
+| POST | `/api/performance/jobs/run-pending/` | Ejecutar cola pendiente (admin) |
+| GET | `/api/exercises/<id>/video/` | Video demo de YouTube por ejercicio |
+| POST | `/api/performance/exercise-videos/refresh/` | Refrescar videos (admin) |
+
+Nota: todos estos endpoints también están disponibles bajo `/api/v1/`.
+
 ## Estructura del proyecto
 
 ```
@@ -186,6 +203,58 @@ npm test
 | `DJANGO_DEBUG` | `true` | Modo debug |
 | `DJANGO_ALLOWED_HOSTS` | `127.0.0.1,localhost` | Hosts permitidos |
 | `APP_VERSION` | `dev` | Versión reportada en `/api/health/` y `/api/meta/` |
+| `REDIS_URL` | vacío | Si está definido, activa caché Redis (`django-redis`) |
+
+## Wearables - Importación masiva
+
+Desde la página `/performance`, en el bloque **Wearables Sync (Free)**:
+
+1. Elige proveedor (`samsung_health` o `manual`).
+2. Selecciona formato `JSON` o `CSV`.
+3. Pega datos o sube archivo `.json` / `.csv`.
+4. Pulsa `Import Bulk Entries`.
+
+Formato JSON (ejemplo):
+
+```json
+[
+    {"date":"2026-05-10","steps":10420,"active_minutes":61,"calories_burned":580,"avg_heart_rate":121},
+    {"date":"2026-05-11","steps":8920,"active_minutes":43,"calories_burned":470,"avg_heart_rate":116}
+]
+```
+
+Formato CSV (ejemplo):
+
+```csv
+date,steps,active_minutes,calories_burned,avg_heart_rate
+2026-05-10,10420,61,580,121
+2026-05-11,8920,43,470,116
+```
+
+Campos aceptados: `date`, `steps`, `active_minutes`, `calories_burned`, `avg_heart_rate`.
+
+## Scheduler gratis para jobs async
+
+Opciones incluidas en `backend/scripts/`:
+
+1. Linux/macOS (cron cada 5 min):
+```bash
+cd backend/scripts
+chmod +x install-cron.sh
+./install-cron.sh
+```
+
+2. Windows (Task Scheduler cada 5 min):
+```powershell
+cd backend/scripts
+powershell -ExecutionPolicy Bypass -File .\register-windows-task.ps1
+```
+
+3. Worker en loop simple:
+```bash
+cd backend
+python scripts/job_worker.py --interval 300 --limit 20
+```
 
 ## Despliegue
 

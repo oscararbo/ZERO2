@@ -12,6 +12,14 @@ from .exercise import (
     ExerciseSessionSerializer,
 )
 from .journal import JournalEntrySerializer, MoodEntrySerializer
+from .performance import (
+    AsyncJobSerializer,
+    ExerciseVideoSerializer,
+    FeatureFlagSerializer,
+    RecoveryLogSerializer,
+    WearableSnapshotSerializer,
+    WeeklyPlanItemSerializer,
+)
 from .profile import ProfileSerializer
 from .templates import UserTemplateVersionSerializer
 
@@ -23,6 +31,12 @@ __all__ = [
     'CompletedExerciseSerializer',
     'JournalEntrySerializer',
     'MoodEntrySerializer',
+    'WeeklyPlanItemSerializer',
+    'RecoveryLogSerializer',
+    'WearableSnapshotSerializer',
+    'FeatureFlagSerializer',
+    'ExerciseVideoSerializer',
+    'AsyncJobSerializer',
     'UserTemplateVersionSerializer',
     'ChallengeSerializer',
     'ChallengeParticipantSerializer',
