@@ -2,6 +2,8 @@
 
 API REST del proyecto ZERO, implementada con Django + Django REST Framework.
 
+Actualizado: mayo 2026.
+
 ## Responsabilidades
 
 - Autenticación y autorización JWT con refresh automático
@@ -13,8 +15,8 @@ API REST del proyecto ZERO, implementada con Django + Django REST Framework.
 
 ## Stack
 
-- Python 3.10+
-- Django (latest)
+- Python 3.12+
+- Django 6
 - Django REST Framework
 - djangorestframework-simplejwt
 - django-cors-headers

@@ -2,11 +2,13 @@
 
 Aplicación full-stack para seguimiento de fitness, nutrición y bienestar mental.
 
+Actualizado: mayo 2026.
+
 ## Stack
 
 | Capa | Tecnología |
 |------|-----------|
-| Backend | Django + Django REST Framework + SimpleJWT |
+| Backend | Django 6 + Django REST Framework + SimpleJWT |
 | Frontend | Angular 21 (standalone, signals) + TypeScript + SCSS |
 | Base de datos | SQLite (desarrollo) |
 
@@ -105,6 +107,7 @@ Todos los endpoints autenticados requieren header `Authorization: Bearer <access
 | GET/POST | `/api/sessions/` | Sesiones de entrenamiento |
 | GET | `/api/sessions/<id>/` | Detalle de sesión |
 | POST | `/api/completed/` | Registrar ejercicio completado |
+| GET | `/api/meal-recommendations/` | Recomendaciones de comida |
 | GET | `/api/progress/` | Stats de progreso para gráfica |
 
 ### Mindset (autenticado)
@@ -114,20 +117,21 @@ Todos los endpoints autenticados requieren header `Authorization: Bearer <access
 | GET/PUT/DELETE | `/api/journal/<id>/` | Detalle de entrada |
 | GET/POST | `/api/mood/` | Registro de estado de ánimo |
 | GET/POST | `/api/templates/` | Plantillas de usuario |
-| GET | `/api/templates/<kind>/<key>/history/` | Historial de versiones |
+| GET | `/api/templates/<kind>/<key>/` | Historial de versiones |
 
 ### Challenges (autenticado)
 | Método | Ruta | Descripción |
 |--------|------|-------------|
 | GET/POST | `/api/challenges/` | Lista / creación de challenges |
 | GET/PUT/DELETE | `/api/challenges/<id>/` | Detalle de challenge |
-| POST | `/api/challenges/<id>/join/` | Unirse a un challenge |
-| POST | `/api/challenges/<id>/leave/` | Salir de un challenge |
+| POST/DELETE | `/api/challenges/<id>/join/` | Unirse o salir de un challenge |
 | POST | `/api/challenges/<id>/progress/` | Actualizar progreso |
 | GET | `/api/challenges/<id>/leaderboard/` | Leaderboard paginado |
-| GET | `/api/challenges/<id>/updates/` | Updates paginados |
+| GET/POST | `/api/challenges/<id>/updates/` | Updates del challenge |
 | GET | `/api/challenges/analytics/` | Analytics del usuario |
-| GET/PUT | `/api/reminders/` | In-app reminders |
+| GET | `/api/reminders/` | In-app reminders |
+| POST | `/api/reminders/<id>/read/` | Marcar reminder como leído |
+| POST | `/api/reminders/read-all/` | Marcar todos como leídos |
 | GET | `/api/badges/` | Badges del usuario |
 
 ## Estructura del proyecto

@@ -2,6 +2,8 @@
 
 SPA cliente de ZERO construida con Angular 21 standalone, Signals, OnPush y SCSS.
 
+Actualizado: mayo 2026.
+
 ## Responsabilidades
 
 - Renderizar la UI de todas las páginas
@@ -11,7 +13,7 @@ SPA cliente de ZERO construida con Angular 21 standalone, Signals, OnPush y SCSS
 
 ## Stack
 
-- Angular 21 (standalone components, signals)
+- Angular 21.2 (standalone components, signals)
 - TypeScript 5.9
 - RxJS
 - Angular CDK (scroll virtual en listas pesadas)
@@ -34,7 +36,7 @@ cd frontend
 npm install
 npm start        # http://localhost:4200
 npm run build    # build de producción → dist/
-npm test         # tests unitarios (Karma/Jasmine)
+npm test         # tests unitarios (Angular unit-test builder)
 ```
 
 ## Estructura
