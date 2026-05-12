@@ -60,6 +60,7 @@ class ExerciseSessionSerializer(serializers.ModelSerializer):
             'location',
             'completed_exercises',
             'exercises',
+            'archived_at',
         )
 
 
@@ -79,4 +80,5 @@ class ExerciseSessionDetailSerializer(serializers.ModelSerializer):
             'location',
             'completed_exercises',
             'exercises',
+            'archived_at',
         )

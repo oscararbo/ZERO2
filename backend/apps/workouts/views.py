@@ -42,8 +42,13 @@ class ExerciseSessionView(APIView):
 
     def get(self, request):
         location = request.query_params.get('location', None)
+        show_archived = request.query_params.get('show_archived', 'false').lower() == 'true'
 
+        # Get sessions, excluding archived by default
         sessions = ExerciseSession.objects.filter(user=request.user).order_by('-date')
+        if not show_archived:
+            sessions = sessions.filter(archived_at__isnull=True)
+
         if location:
             sessions = sessions.filter(location=location)
 

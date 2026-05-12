@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { ExerciseService, Exercise } from '../../../core/exercise.service';
 import { ProfileService, FitnessGoal } from '../../../core/profile.service';
 import { FocusPageHeaderComponent } from '../../shared/components/focus-page-header/focus-page-header';
@@ -10,7 +11,7 @@ import { PageStateComponent } from '../../shared/components/page-state/page-stat
 @Component({
   selector: 'app-sport',
   standalone: true,
-  imports: [CommonModule, FormsModule, FocusPageHeaderComponent, PageStateComponent],
+  imports: [CommonModule, FormsModule, ScrollingModule, FocusPageHeaderComponent, PageStateComponent],
   templateUrl: './sport.html',
   styleUrls: ['./sport.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,7 +25,10 @@ export class SportComponent implements OnInit {
   toast = signal('');
   currentLocation = signal<'home' | 'gym'>('home');
   selectedCategory = signal<string | null>(null);
+  searchQuery = signal('');
   fitnessGoal = signal<FitnessGoal>('bulk');
+  showArchivedSessions = signal(false);
+  archivedSessionsCount = signal(0);
 
   categories = [
     { key: 'back', label: 'Back' },
@@ -39,12 +43,35 @@ export class SportComponent implements OnInit {
   exerciseState = signal<Record<number, { sets: number; reps: number; completed: boolean }>>({});
   hasCompletedExercises = signal(false);
 
+  readonly visibleCategories = computed(() => {
+    const source = this.allExercises()[this.currentLocation()] ?? [];
+    return this.categories.map((category) => ({
+      ...category,
+      count: source.filter((exercise) => exercise.category === category.key).length,
+    }));
+  });
+
   readonly filteredExercises = computed(() => {
     const location = this.currentLocation();
     const category = this.selectedCategory();
+    const query = this.searchQuery().trim().toLowerCase();
     const source = this.allExercises()[location] ?? [];
-    if (!category) return source;
-    return source.filter((exercise) => exercise.category === category);
+
+    return source
+      .filter((exercise) => !category || exercise.category === category)
+      .filter((exercise) => {
+        if (!query) return true;
+        const searchable = `${exercise.name} ${exercise.description ?? ''} ${exercise.category}`.toLowerCase();
+        return searchable.includes(query);
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+  });
+
+  readonly emptyMessage = computed(() => {
+    if (this.searchQuery().trim()) {
+      return 'No exercises match your search. Try a different keyword.';
+    }
+    return 'No exercises found for this selection';
   });
 
   readonly exerciseRows = computed(() => {
@@ -65,13 +92,33 @@ export class SportComponent implements OnInit {
       this.fitnessGoal.set(profile.fitness_goal);
     }
     this.loadExercises();
+    this.loadArchivedSessionsCount();
+  }
+
+  private loadArchivedSessionsCount() {
+    this.exerciseService.getSessions(undefined, true).subscribe({
+      next: (sessions) => {
+        const archived = sessions.filter((s) => s.archived_at !== null).length;
+        this.archivedSessionsCount.set(archived);
+      },
+      error: () => this.archivedSessionsCount.set(0),
+    });
+  }
+
+  toggleShowArchivedSessions() {
+    this.showArchivedSessions.set(!this.showArchivedSessions());
   }
 
   setLocation(location: 'home' | 'gym') {
     this.currentLocation.set(location);
     this.selectedCategory.set(null);
+    this.searchQuery.set('');
     this.exerciseState.set({});
     this.loadExercises();
+  }
+
+  setSearchQuery(value: string) {
+    this.searchQuery.set(value);
   }
 
   selectCategory(category: string) {
@@ -102,8 +149,7 @@ export class SportComponent implements OnInit {
   private loadExercises() {
     this.loading.set(true);
     const location = this.currentLocation();
-    const goal = this.fitnessGoal();
-    this.exerciseService.getExercisesByLocation(location, goal).subscribe({
+    this.exerciseService.getExercisesByLocation(location).subscribe({
       next: (data) => {
         const next = [...(this.allExercises()[location] ?? [])];
         next.length = 0;

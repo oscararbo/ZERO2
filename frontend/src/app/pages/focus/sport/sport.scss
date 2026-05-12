@@ -71,11 +71,49 @@ h1 {
 
 .controls-bar {
   display: flex;
-  gap: 16px;
-  margin-bottom: 32px;
+  gap: 14px;
+  margin-bottom: 18px;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
+}
+
+.search-panel {
+  display: grid;
+  gap: 6px;
+  min-width: min(100%, 380px);
+  flex: 1;
+
+  label {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.62);
+    font-weight: 700;
+  }
+}
+
+.search-input {
+  width: 100%;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  padding: 0 14px;
+  font-size: 14px;
+  transition: all 0.2s;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.42);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #9aa0a6;
+    box-shadow: 0 0 0 2px rgba(154, 160, 166, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+  }
 }
 
 .location-toggle {
@@ -142,6 +180,76 @@ h1 {
     background: #9aa0a6;
     color: #0b0b0b;
     border-color: #9aa0a6;
+  }
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+  }
+}
+
+.category-count {
+  opacity: 0.72;
+  font-size: 11px;
+  margin-left: 6px;
+}
+
+.results-strip {
+  margin-bottom: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.archived-sessions-banner {
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.archived-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.archived-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 0.2px;
+}
+
+.archived-toggle {
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #fff;
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 }
 
@@ -215,7 +323,7 @@ h1 {
   margin-top: 4px;
 }
 
-.input-group {
+.metric-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -340,6 +448,11 @@ h1 {
     flex-direction: column;
     gap: 12px;
     justify-content: flex-start;
+  }
+
+  .search-panel {
+    width: 100%;
+    min-width: 0;
   }
 
   .location-toggle {

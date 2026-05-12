@@ -169,8 +169,25 @@ export class ChallengesComponent implements OnInit {
   private readonly visibleChallengesComputed = computed(() => {
     const query = this.searchTerm().trim().toLowerCase();
     const sort = this.sortMode();
+    const tab = this.activeTab();
+    const filter = this.activeFilter();
+    const currentUsername = this.currentUsername;
     let list = [...this.challenges()];
 
+    // Filter by tab (all/mine/joined)
+    if (tab === 'mine') {
+      list = list.filter((c) => c.creator_username === currentUsername);
+    } else if (tab === 'joined') {
+      list = list.filter((c) => c.my_participation !== null && c.creator_username !== currentUsername);
+    }
+    // tab === 'all' shows everything
+
+    // Filter by category
+    if (filter !== 'all') {
+      list = list.filter((c) => c.category === filter);
+    }
+
+    // Filter by search query
     if (query) {
       list = list.filter((challenge) => {
         const title = challenge.title.toLowerCase();
@@ -180,6 +197,7 @@ export class ChallengesComponent implements OnInit {
       });
     }
 
+    // Apply sort
     if (sort === 'popular') {
       list.sort((a, b) => b.participant_count - a.participant_count);
     } else if (sort === 'completed') {
@@ -355,12 +373,18 @@ export class ChallengesComponent implements OnInit {
 
   setTab(tab: 'all' | 'mine' | 'joined' | 'create'): void {
     this.activeTab.set(tab);
-    if (tab !== 'create') this.loadChallenges();
+    // Tab change now filters locally via computed, no backend call needed
+    // Only reset expandedId when creating a new challenge
+    if (tab === 'create') {
+      this.expandedId.set(null);
+    }
   }
 
   setFilter(cat: ChallengeCategory | 'all'): void {
     this.activeFilter.set(cat);
-    this.loadChallenges();
+    // Filter now applied locally via computed, no backend call needed
+    // Reset expand state on filter change to avoid showing expanded card with no matching data
+    this.expandedId.set(null);
   }
 
   setSearchTerm(value: string): void {

@@ -45,6 +45,7 @@ class ExerciseSession(models.Model):
     date = models.DateField(auto_now_add=True)
     location = models.CharField(max_length=10, choices=Exercise.LOCATION_CHOICES)
     completed_exercises = models.IntegerField(default=0)
+    archived_at = models.DateTimeField(null=True, blank=True, db_index=True)
 
     class Meta:
         unique_together = ('user', 'date', 'location')

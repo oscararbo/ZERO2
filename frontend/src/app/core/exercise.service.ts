@@ -36,6 +36,7 @@ export type ExerciseSession = {
   location: string;
   completed_exercises: number;
   exercises: CompletedExercise[];
+  archived_at: string | null;
 };
 
 @Injectable({ providedIn: 'root' })
@@ -82,10 +83,13 @@ export class ExerciseService {
     );
   }
 
-  getSessions(location?: string) {
+  getSessions(location?: string, showArchived = false) {
     let params = new HttpParams();
     if (location) {
       params = params.set('location', location);
+    }
+    if (showArchived) {
+      params = params.set('show_archived', 'true');
     }
     return this.http.get<ExerciseSession[]>(
       `${environment.apiUrl}/api/sessions/`,
