@@ -3,6 +3,7 @@ import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/c
 import { AuthService } from './auth.service';
 import { Observable, catchError, switchMap, throwError } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environments';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -14,6 +15,10 @@ export class AuthInterceptor implements HttpInterceptor {
     const isRefresh = req.url.includes('/token/refresh/');
 
     if (isLogin || isRegister || isRefresh) {
+      return next.handle(req);
+    }
+
+    if (!this.isApiRequest(req.url)) {
       return next.handle(req);
     }
 
@@ -64,5 +69,15 @@ export class AuthInterceptor implements HttpInterceptor {
     this.auth.logout();
     this.router.navigateByUrl('/login');
     return throwError(() => err);
+  }
+
+  private isApiRequest(url: string): boolean {
+    const apiUrl = (environment.apiUrl || '').trim();
+
+    if (!apiUrl) {
+      return url.startsWith('/api/') || (!url.startsWith('http://') && !url.startsWith('https://'));
+    }
+
+    return url.startsWith(apiUrl);
   }
 }

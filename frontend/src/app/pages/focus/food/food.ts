@@ -21,6 +21,7 @@ export class FoodComponent implements OnInit {
   todaysMeals = signal<MealRecommendation[]>([]);
   loadingMeals = signal(false);
   mealError = signal('');
+  usingMockMeals = signal(false);
   fitnessGoal = signal<FitnessGoal>('bulk');
   macroTargets = signal({ calories: 0, protein: 0, carbs: 0, fat: 0 });
 
@@ -202,16 +203,251 @@ export class FoodComponent implements OnInit {
   loadMealRecommendations(): void {
     this.loadingMeals.set(true);
     this.mealError.set('');
+    this.usingMockMeals.set(false);
     this.nutritionService.getMealRecommendations(this.fitnessGoal()).subscribe({
       next: (meals) => {
-        this.todaysMeals.set(meals);
+        if (meals.length > 0) {
+          this.todaysMeals.set(meals);
+          this.usingMockMeals.set(false);
+        } else {
+          this.todaysMeals.set(this.buildMockMeals(this.fitnessGoal()));
+          this.usingMockMeals.set(true);
+        }
         this.loadingMeals.set(false);
       },
       error: () => {
+        this.todaysMeals.set(this.buildMockMeals(this.fitnessGoal()));
+        this.usingMockMeals.set(true);
         this.loadingMeals.set(false);
-        this.mealError.set('Could not load meals from food API.');
       },
     });
+  }
+
+  private buildMockMeals(goal: FitnessGoal): MealRecommendation[] {
+    const byGoal: Record<FitnessGoal, MealRecommendation[]> = {
+      bulk: [
+        {
+          name: 'Breakfast',
+          time: '08:00',
+          type: 'breakfast',
+          recipe: {
+            id: 91001,
+            title: 'Overnight Oats + Greek Yogurt',
+            image: '',
+            ingredients: [
+              { name: 'oats', amount: 80, unit: 'g' },
+              { name: 'greek yogurt', amount: 180, unit: 'g' },
+              { name: 'banana', amount: 1, unit: 'unit' },
+            ],
+            instructions: 'Mix oats with yogurt and sliced banana. Leave in fridge overnight.',
+            servings: 1,
+            nutritionPerServing: { calories: 640, protein: 35, carbs: 88, fat: 14 },
+          },
+        },
+        {
+          name: 'Lunch',
+          time: '13:00',
+          type: 'lunch',
+          recipe: {
+            id: 91002,
+            title: 'Chicken Rice Bowl',
+            image: '',
+            ingredients: [
+              { name: 'chicken breast', amount: 220, unit: 'g' },
+              { name: 'rice', amount: 140, unit: 'g cooked' },
+              { name: 'olive oil', amount: 8, unit: 'ml' },
+            ],
+            instructions: 'Cook chicken and rice. Add oil and season to taste.',
+            servings: 1,
+            nutritionPerServing: { calories: 760, protein: 52, carbs: 74, fat: 22 },
+          },
+        },
+        {
+          name: 'Snack',
+          time: '17:00',
+          type: 'snack',
+          recipe: {
+            id: 91003,
+            title: 'Protein Shake + Nuts',
+            image: '',
+            ingredients: [
+              { name: 'whey protein', amount: 35, unit: 'g' },
+              { name: 'milk', amount: 250, unit: 'ml' },
+              { name: 'mixed nuts', amount: 30, unit: 'g' },
+            ],
+            instructions: 'Blend whey with milk. Eat nuts on the side.',
+            servings: 1,
+            nutritionPerServing: { calories: 430, protein: 36, carbs: 18, fat: 24 },
+          },
+        },
+        {
+          name: 'Dinner',
+          time: '20:30',
+          type: 'dinner',
+          recipe: {
+            id: 91004,
+            title: 'Salmon + Potato + Veggies',
+            image: '',
+            ingredients: [
+              { name: 'salmon', amount: 180, unit: 'g' },
+              { name: 'potato', amount: 260, unit: 'g' },
+              { name: 'broccoli', amount: 120, unit: 'g' },
+            ],
+            instructions: 'Bake salmon and potatoes. Steam broccoli.',
+            servings: 1,
+            nutritionPerServing: { calories: 690, protein: 45, carbs: 58, fat: 29 },
+          },
+        },
+      ],
+      cut: [
+        {
+          name: 'Breakfast',
+          time: '08:00',
+          type: 'breakfast',
+          recipe: {
+            id: 92001,
+            title: 'Egg Whites + Toast',
+            image: '',
+            ingredients: [
+              { name: 'egg whites', amount: 220, unit: 'g' },
+              { name: 'whole egg', amount: 1, unit: 'unit' },
+              { name: 'whole-grain toast', amount: 1, unit: 'slice' },
+            ],
+            instructions: 'Scramble egg whites and whole egg. Serve with toast.',
+            servings: 1,
+            nutritionPerServing: { calories: 350, protein: 33, carbs: 23, fat: 12 },
+          },
+        },
+        {
+          name: 'Lunch',
+          time: '13:00',
+          type: 'lunch',
+          recipe: {
+            id: 92002,
+            title: 'Lean Chicken Salad',
+            image: '',
+            ingredients: [
+              { name: 'chicken breast', amount: 180, unit: 'g' },
+              { name: 'mixed greens', amount: 120, unit: 'g' },
+              { name: 'olive oil', amount: 6, unit: 'ml' },
+            ],
+            instructions: 'Grill chicken. Combine with greens and olive oil.',
+            servings: 1,
+            nutritionPerServing: { calories: 470, protein: 44, carbs: 15, fat: 24 },
+          },
+        },
+        {
+          name: 'Snack',
+          time: '17:00',
+          type: 'snack',
+          recipe: {
+            id: 92003,
+            title: 'Skyr + Berries',
+            image: '',
+            ingredients: [
+              { name: 'skyr', amount: 180, unit: 'g' },
+              { name: 'berries', amount: 90, unit: 'g' },
+            ],
+            instructions: 'Mix skyr and berries in a bowl.',
+            servings: 1,
+            nutritionPerServing: { calories: 190, protein: 20, carbs: 20, fat: 2 },
+          },
+        },
+        {
+          name: 'Dinner',
+          time: '20:30',
+          type: 'dinner',
+          recipe: {
+            id: 92004,
+            title: 'White Fish + Vegetables',
+            image: '',
+            ingredients: [
+              { name: 'white fish', amount: 200, unit: 'g' },
+              { name: 'zucchini', amount: 150, unit: 'g' },
+              { name: 'sweet potato', amount: 160, unit: 'g' },
+            ],
+            instructions: 'Bake fish and sweet potato. Saute zucchini.',
+            servings: 1,
+            nutritionPerServing: { calories: 480, protein: 42, carbs: 38, fat: 13 },
+          },
+        },
+      ],
+      maintain: [
+        {
+          name: 'Breakfast',
+          time: '08:00',
+          type: 'breakfast',
+          recipe: {
+            id: 93001,
+            title: 'Yogurt Bowl + Fruit',
+            image: '',
+            ingredients: [
+              { name: 'greek yogurt', amount: 170, unit: 'g' },
+              { name: 'granola', amount: 45, unit: 'g' },
+              { name: 'mixed fruit', amount: 120, unit: 'g' },
+            ],
+            instructions: 'Combine yogurt, granola and fruit.',
+            servings: 1,
+            nutritionPerServing: { calories: 430, protein: 24, carbs: 52, fat: 14 },
+          },
+        },
+        {
+          name: 'Lunch',
+          time: '13:00',
+          type: 'lunch',
+          recipe: {
+            id: 93002,
+            title: 'Turkey Wrap + Salad',
+            image: '',
+            ingredients: [
+              { name: 'whole wrap', amount: 1, unit: 'unit' },
+              { name: 'turkey', amount: 140, unit: 'g' },
+              { name: 'lettuce', amount: 80, unit: 'g' },
+            ],
+            instructions: 'Fill wrap with turkey and lettuce. Serve with side salad.',
+            servings: 1,
+            nutritionPerServing: { calories: 560, protein: 36, carbs: 48, fat: 22 },
+          },
+        },
+        {
+          name: 'Snack',
+          time: '17:00',
+          type: 'snack',
+          recipe: {
+            id: 93003,
+            title: 'Cottage Cheese + Toast',
+            image: '',
+            ingredients: [
+              { name: 'cottage cheese', amount: 150, unit: 'g' },
+              { name: 'toast', amount: 1, unit: 'slice' },
+            ],
+            instructions: 'Serve cottage cheese with toast.',
+            servings: 1,
+            nutritionPerServing: { calories: 260, protein: 21, carbs: 21, fat: 8 },
+          },
+        },
+        {
+          name: 'Dinner',
+          time: '20:30',
+          type: 'dinner',
+          recipe: {
+            id: 93004,
+            title: 'Rice + Chicken + Veg',
+            image: '',
+            ingredients: [
+              { name: 'rice', amount: 120, unit: 'g cooked' },
+              { name: 'chicken thigh', amount: 160, unit: 'g' },
+              { name: 'mixed vegetables', amount: 150, unit: 'g' },
+            ],
+            instructions: 'Cook rice and chicken. Add vegetables.',
+            servings: 1,
+            nutritionPerServing: { calories: 630, protein: 39, carbs: 59, fat: 24 },
+          },
+        },
+      ],
+    };
+
+    return byGoal[goal] ?? byGoal.maintain;
   }
 
   private toPercent(value: number): number {

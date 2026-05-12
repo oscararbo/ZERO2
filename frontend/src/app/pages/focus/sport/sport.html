@@ -30,7 +30,31 @@
           placeholder="Type exercise name, description, or category">
       </div>
 
-      <div class="category-carousel d-flex flex-wrap gap-2">
+      <div class="toolbar-actions">
+        <div class="view-mode-toggle" role="group" aria-label="View mode">
+          <button
+            class="mode-btn"
+            [class.active]="viewMode() === 'compact'"
+            (click)="setViewMode('compact')">
+            Compact
+          </button>
+          <button
+            class="mode-btn"
+            [class.active]="viewMode() === 'comfortable'"
+            (click)="setViewMode('comfortable')">
+            Comfort
+          </button>
+        </div>
+        <button
+          class="quick-btn"
+          type="button"
+          (click)="clearCompleted()"
+          [disabled]="!hasCompletedExercises()">
+          Clear done
+        </button>
+      </div>
+
+      <div class="category-carousel">
         <button
           class="category-btn btn btn-sm"
           [class.active]="selectedCategory() === null"
@@ -69,58 +93,71 @@
       [emptyText]="emptyMessage()">
     </app-page-state>
 
-    <cdk-virtual-scroll-viewport class="exercises-container" itemSize="280" *ngIf="!loading() && exerciseRows().length > 0">
-      <article class="exercise-card" *cdkVirtualFor="let row of exerciseRows(); trackBy: trackByExerciseId">
-        <ng-container *ngIf="row.exercise as exercise">
-        <div class="exercise-header d-flex justify-content-between align-items-start gap-3">
-          <h3>{{ exercise.name }}</h3>
-          <div class="exercise-meta">
-            {{ exercise.default_sets }} sets × {{ exercise.default_reps }} reps
-          </div>
-        </div>
-
-        <p class="exercise-desc" *ngIf="exercise.description">{{ exercise.description }}</p>
-
-        <div class="exercise-controls">
-          <div class="metric-field">
-            <label>Sets</label>
-            <input
-              type="number"
-              class="form-control"
-              [ngModel]="row.state.sets"
-              (ngModelChange)="updateExerciseState(exercise.id, 'sets', $event)"
-              min="0"
-              max="10">
-          </div>
-
-          <div class="metric-field">
-            <label>Reps</label>
-            <input
-              type="number"
-              class="form-control"
-              [ngModel]="row.state.reps"
-              (ngModelChange)="updateExerciseState(exercise.id, 'reps', $event)"
-              min="0"
-              max="50">
-          </div>
-
-          <div class="checkbox-group">
-            <input
-              type="checkbox"
-              [id]="'exercise-' + exercise.id"
-              [ngModel]="row.state.completed"
-              (ngModelChange)="updateExerciseState(exercise.id, 'completed', $event)">
-            <label [for]="'exercise-' + exercise.id">Done</label>
-          </div>
-        </div>
-        </ng-container>
-      </article>
-    </cdk-virtual-scroll-viewport>
-
     <div class="action-bar" *ngIf="!loading() && exerciseRows().length > 0">
+      <div class="action-info">
+        {{ completedCount() }} / {{ exerciseRows().length }} selected
+      </div>
       <button class="save-btn btn btn-light" (click)="saveSession()" [disabled]="!hasCompletedExercises()">
         Save Workout
       </button>
     </div>
+
+    <cdk-virtual-scroll-viewport class="exercises-container" [itemSize]="viewportItemSize()" *ngIf="!loading() && exerciseRows().length > 0">
+      <article class="exercise-card" [class.comfortable]="viewMode() === 'comfortable'" *cdkVirtualFor="let row of exerciseRows(); trackBy: trackByExerciseId">
+        <ng-container *ngIf="row.exercise as exercise">
+        <div class="exercise-row-main">
+          <div class="exercise-header">
+            <h3>{{ exercise.name }}</h3>
+            <div class="exercise-meta">
+              {{ exercise.default_sets }} sets × {{ exercise.default_reps }} reps
+            </div>
+          </div>
+
+          <div class="exercise-controls">
+            <div class="metric-field">
+              <label>Sets</label>
+              <input
+                type="number"
+                class="form-control"
+                [ngModel]="row.state.sets"
+                (ngModelChange)="updateExerciseState(exercise.id, 'sets', $event)"
+                min="0"
+                max="10">
+            </div>
+
+            <div class="metric-field">
+              <label>Reps</label>
+              <input
+                type="number"
+                class="form-control"
+                [ngModel]="row.state.reps"
+                (ngModelChange)="updateExerciseState(exercise.id, 'reps', $event)"
+                min="0"
+                max="50">
+            </div>
+
+            <div class="checkbox-group">
+              <input
+                type="checkbox"
+                [id]="'exercise-' + exercise.id"
+                [ngModel]="row.state.completed"
+                (ngModelChange)="updateExerciseState(exercise.id, 'completed', $event)">
+              <label [for]="'exercise-' + exercise.id">Done</label>
+            </div>
+          </div>
+        </div>
+
+        <p class="exercise-desc" *ngIf="viewMode() === 'comfortable' && exercise.description">{{ exercise.description }}</p>
+        </ng-container>
+      </article>
+    </cdk-virtual-scroll-viewport>
+
+    <button
+      class="mobile-save-fab"
+      *ngIf="!loading() && exerciseRows().length > 0"
+      (click)="saveSession()"
+      [disabled]="!hasCompletedExercises()">
+      Save ({{ completedCount() }})
+    </button>
   </main>
 </section>

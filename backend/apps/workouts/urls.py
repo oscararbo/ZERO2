@@ -5,6 +5,7 @@ from .views import (
     ExerciseSessionDetailView,
     ExerciseSessionView,
     ExerciseView,
+    MealRecommendationsView,
     MainMenuExerciseView,
     ProgressStatsView,
 )
@@ -14,6 +15,7 @@ urlpatterns = [
     path('sessions/', ExerciseSessionView.as_view()),
     path('sessions/<int:session_id>/', ExerciseSessionDetailView.as_view()),
     path('completed/', CompletedExerciseView.as_view()),
+    path('meal-recommendations/', MealRecommendationsView.as_view()),
     path('exercises-by-location/<str:location>/', MainMenuExerciseView.as_view()),
     path('progress/', ProgressStatsView.as_view()),
 ]

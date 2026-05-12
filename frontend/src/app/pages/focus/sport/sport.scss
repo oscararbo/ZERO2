@@ -71,8 +71,8 @@ h1 {
 
 .controls-bar {
   display: flex;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 12px;
+  margin-bottom: 14px;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
@@ -81,7 +81,7 @@ h1 {
 .search-panel {
   display: grid;
   gap: 6px;
-  min-width: min(100%, 380px);
+  min-width: min(100%, 340px);
   flex: 1;
 
   label {
@@ -152,9 +152,67 @@ h1 {
 .category-carousel {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  flex: 1;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  justify-content: flex-start;
+  flex: 1 1 100%;
+  scrollbar-width: thin;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.view-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mode-btn {
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.65);
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &.active {
+    background: rgba(255, 255, 255, 0.9);
+    color: #0b0b0b;
+  }
+}
+
+.quick-btn {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .category-btn {
@@ -195,7 +253,7 @@ h1 {
 }
 
 .results-strip {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
@@ -263,47 +321,54 @@ h1 {
 
 .exercises-container {
   width: 100%;
-  height: min(70vh, 900px);
-  margin-bottom: 32px;
+  height: min(60vh, 650px);
+  margin-bottom: 14px;
   overflow-y: auto;
   overflow-x: hidden;
 
   ::ng-deep .cdk-virtual-scroll-content-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 10px;
   }
 }
 
 .exercise-card {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;
-  padding: 18px;
+  padding: 10px 12px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 8px;
   transition: all 0.25s;
   flex-shrink: 0;
-  min-height: 280px;
+  min-height: 0;
 
   &:hover {
     border-color: rgba(255, 255, 255, 0.2);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
-    transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
   }
+}
+
+.exercise-row-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
 }
 
 .exercise-header {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
 
   h3 {
     margin: 0;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     letter-spacing: 0.3px;
     line-height: 1.2;
@@ -311,7 +376,7 @@ h1 {
 }
 
 .exercise-meta {
-  font-size: 12px;
+  font-size: 11px;
   opacity: 0.65;
   font-weight: 600;
   letter-spacing: 0.4px;
@@ -320,22 +385,25 @@ h1 {
 
 .exercise-desc {
   margin: 0;
-  font-size: 13px;
+  font-size: 12px;
   opacity: 0.75;
-  line-height: 1.5;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .exercise-controls {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 4px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
 }
 
 .metric-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 
   label {
     font-size: 11px;
@@ -346,12 +414,13 @@ h1 {
   }
 
   input[type="number"] {
-    padding: 10px 12px;
+    width: 76px;
+    padding: 7px 8px;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.05);
     color: #fff;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     transition: all 0.2s;
 
@@ -372,12 +441,16 @@ h1 {
   display: flex;
   align-items: center;
   gap: 8px;
-  grid-column: 1 / -1;
-  margin-top: 2px;
+  margin-top: 0;
+  justify-self: end;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9px;
+  padding: 7px 8px;
+  background: rgba(255, 255, 255, 0.04);
 
   input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     cursor: pointer;
     accent-color: #9aa0a6;
     border-radius: 4px;
@@ -392,21 +465,60 @@ h1 {
   }
 }
 
+.exercise-card.comfortable {
+  padding: 14px;
+  gap: 10px;
+
+  .exercise-row-main {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .exercise-controls {
+    gap: 10px;
+  }
+
+  .metric-field input[type="number"] {
+    width: 92px;
+    padding: 9px 10px;
+  }
+
+  .exercise-desc {
+    display: -webkit-box;
+  }
+}
+
 .action-bar {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
   gap: 12px;
-  margin-top: 32px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(8, 8, 8, 0.9);
+  position: sticky;
+  top: 8px;
+  z-index: 20;
+}
+
+.action-info {
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 700;
 }
 
 .save-btn {
-  padding: 14px 40px;
+  padding: 10px 18px;
   background: #9aa0a6;
   color: #0b0b0b;
   border: none;
   border-radius: 12px;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
   letter-spacing: 0.3px;
@@ -426,6 +538,10 @@ h1 {
     opacity: 0.5;
     cursor: not-allowed;
   }
+}
+
+.mobile-save-fab {
+  display: none;
 }
 
 @media (max-width: 768px) {
@@ -473,16 +589,68 @@ h1 {
     justify-content: flex-start;
   }
 
-  .exercises-container {
-    height: min(75vh, 900px);
-    gap: 14px;
+  .toolbar-actions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
   }
 
-  .exercise-card {
-    padding: 16px;
+  .view-mode-toggle {
+    flex: 1;
+  }
+
+  .mode-btn {
+    flex: 1;
+  }
+
+  .exercises-container {
+    height: min(62vh, 640px);
+    margin-bottom: 72px;
+  }
+
+  .exercise-row-main {
+    grid-template-columns: 1fr;
+    align-items: start;
   }
 
   .exercise-controls {
-    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .checkbox-group {
+    justify-self: start;
+  }
+
+  .exercise-card.comfortable .metric-field input[type="number"],
+  .metric-field input[type="number"] {
+    width: 84px;
+  }
+
+  .action-bar {
+    display: none;
+  }
+
+  .mobile-save-fab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 40;
+    border: none;
+    border-radius: 999px;
+    background: #9aa0a6;
+    color: #0b0b0b;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 12px 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+    &:disabled {
+      opacity: 0.52;
+    }
   }
 }

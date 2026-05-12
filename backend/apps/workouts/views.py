@@ -18,6 +18,7 @@ from .services import (
     upsert_completed_exercise_for_session,
     upsert_session_exercises,
 )
+from .meal_recommendations import build_meal_recommendations
 
 
 class ExerciseView(APIView):
@@ -145,6 +146,18 @@ class ProgressStatsView(APIView):
         payload = build_progress_stats(request.user, location=location, days_back=7)
         return success_response(payload)
 
+
+class MealRecommendationsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        goal = (request.query_params.get('goal', 'maintain') or 'maintain').strip().lower()
+        if goal not in ('bulk', 'cut', 'maintain'):
+            goal = 'maintain'
+
+        payload = build_meal_recommendations(goal)
+        return success_response(payload)
+
 __all__ = [
     'ExerciseView',
     'ExerciseSessionView',
@@ -152,4 +165,5 @@ __all__ = [
     'CompletedExerciseView',
     'MainMenuExerciseView',
     'ProgressStatsView',
+    'MealRecommendationsView',
 ]

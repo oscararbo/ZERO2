@@ -422,21 +422,6 @@
   }
 }
 
-// Small viewports for reminders, leaderboard, updates
-.reminders-viewport,
-.leaderboard-viewport,
-.updates-viewport {
-  height: fit-content;
-  max-height: 520px;
-  width: 100%;
-
-  ::ng-deep .cdk-virtual-scroll-content-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-}
-
 .challenge-card {
   border: 1px solid rgba(255,255,255,.1);
   border-radius: 18px;

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
+import { environment } from '../../environments/environments';
 
 export type NutritionInfo = {
   calories: number;
@@ -37,6 +38,7 @@ export type MealRecommendation = {
   providedIn: 'root',
 })
 export class NutritionService {
+  private apiBase = `${environment.apiUrl}/api`;
   private mealDbBase = 'https://www.themealdb.com/api/json/v1/1';
   private openFoodFactsBase = 'https://world.openfoodfacts.org/api/v2/search';
 
@@ -93,45 +95,11 @@ export class NutritionService {
   }
 
   getMealRecommendations(goal: 'bulk' | 'cut' | 'maintain'): Observable<MealRecommendation[]> {
-    const templatesByGoal: Record<string, { name: string; time: string; type: 'breakfast' | 'lunch' | 'dinner' | 'snack'; query: string }[]> = {
-      bulk: [
-        { name: 'Breakfast', time: '08:00', type: 'breakfast', query: 'Pancakes' },
-        { name: 'Lunch', time: '12:30', type: 'lunch', query: 'Beef and Mustard Pie' },
-        { name: 'Snack', time: '16:30', type: 'snack', query: 'Chicken Handi' },
-        { name: 'Dinner', time: '20:00', type: 'dinner', query: 'Salmon Prawn Risotto' },
-      ],
-      cut: [
-        { name: 'Breakfast', time: '08:00', type: 'breakfast', query: 'Fruit and Cream Cheese Breakfast Pastries' },
-        { name: 'Lunch', time: '12:30', type: 'lunch', query: 'Grilled Portuguese sardines' },
-        { name: 'Snack', time: '16:30', type: 'snack', query: 'Mediterranean Pasta Salad' },
-        { name: 'Dinner', time: '20:00', type: 'dinner', query: 'Chicken Fajita Mac and Cheese' },
-      ],
-      maintain: [
-        { name: 'Breakfast', time: '08:00', type: 'breakfast', query: 'French Omelette' },
-        { name: 'Lunch', time: '12:30', type: 'lunch', query: 'Chicken Couscous' },
-        { name: 'Snack', time: '16:30', type: 'snack', query: 'Tuna and Egg Briks' },
-        { name: 'Dinner', time: '20:00', type: 'dinner', query: 'Baked salmon with fennel & tomatoes' },
-      ],
-    };
-
-    const templates = templatesByGoal[goal] ?? templatesByGoal['maintain'];
-
-    return forkJoin(templates.map((template) => this.getRecipeByName(template.query))).pipe(
-      map((recipes) =>
-        recipes
-          .map((recipe, index) => {
-            if (!recipe) return null;
-            const template = templates[index];
-            return {
-              name: template.name,
-              time: template.time,
-              type: template.type,
-              recipe,
-            } as MealRecommendation;
-          })
-          .filter((item): item is MealRecommendation => item !== null)
-      )
-    );
+    return this.http
+      .get<MealRecommendation[]>(`${this.apiBase}/meal-recommendations/`, {
+        params: { goal },
+      })
+      .pipe(catchError(() => of([])));
   }
 
   private estimateRecipeNutrition(ingredients: RecipeIngredient[], servings: number): Observable<NutritionInfo> {

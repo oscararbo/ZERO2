@@ -146,6 +146,17 @@ h1 {
   border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
+.mock-banner {
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 214, 102, 0.55);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 214, 102, 0.12);
+  color: rgba(255, 236, 176, 0.96);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .loading-state,
 .error-state,
 .empty-state {

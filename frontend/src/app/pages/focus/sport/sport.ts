@@ -26,6 +26,7 @@ export class SportComponent implements OnInit {
   currentLocation = signal<'home' | 'gym'>('home');
   selectedCategory = signal<string | null>(null);
   searchQuery = signal('');
+  viewMode = signal<'compact' | 'comfortable'>('compact');
   fitnessGoal = signal<FitnessGoal>('bulk');
   showArchivedSessions = signal(false);
   archivedSessionsCount = signal(0);
@@ -86,6 +87,14 @@ export class SportComponent implements OnInit {
     });
   });
 
+  readonly completedCount = computed(() => {
+    return Object.values(this.exerciseState()).filter((state) => state.completed).length;
+  });
+
+  readonly viewportItemSize = computed(() => {
+    return this.viewMode() === 'compact' ? 176 : 210;
+  });
+
   ngOnInit() {
     const profile = this.profileService.getLocal();
     if (profile?.fitness_goal) {
@@ -123,6 +132,10 @@ export class SportComponent implements OnInit {
 
   selectCategory(category: string) {
     this.selectedCategory.set(this.selectedCategory() === category ? null : category);
+  }
+
+  setViewMode(mode: 'compact' | 'comfortable') {
+    this.viewMode.set(mode);
   }
 
   updateExerciseState(exerciseId: number, field: 'sets' | 'reps' | 'completed', value: any) {
@@ -199,6 +212,19 @@ export class SportComponent implements OnInit {
         this.showToast('Unable to save workout.');
       }
     });
+  }
+
+  clearCompleted() {
+    const current = this.exerciseState();
+    const next: Record<number, { sets: number; reps: number; completed: boolean }> = {};
+    for (const key in current) {
+      next[Number(key)] = {
+        ...current[Number(key)],
+        completed: false,
+      };
+    }
+    this.exerciseState.set(next);
+    this.syncCompletedState();
   }
 
   private syncCompletedState() {

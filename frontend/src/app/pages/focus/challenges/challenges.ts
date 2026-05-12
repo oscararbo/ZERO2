@@ -453,18 +453,9 @@ export class ChallengesComponent implements OnInit {
 
   loadChallenges(): void {
     this.loading.set(true);
-    const tab = this.activeTab();
-    const filter = this.activeFilter();
-    const category = filter !== 'all' ? filter : undefined;
-    const mine = tab === 'mine' ? true : undefined;
-
-    this.challengeService.getChallenges(category, mine).subscribe({
+    this.challengeService.getChallenges().subscribe({
       next: (data) => {
-        let filtered = data;
-        if (tab === 'joined') {
-          filtered = data.filter(c => c.my_participation !== null && c.creator_username !== this.currentUsername);
-        }
-        this.challenges.set(filtered);
+        this.challenges.set(data);
         this.loading.set(false);
       },
       error: () => {
