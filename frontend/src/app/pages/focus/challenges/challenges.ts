@@ -568,6 +568,17 @@ export class ChallengesComponent implements OnInit {
     this.progressEditing.set(null);
     if (next !== null) {
       this.ensureChallengeDetailsLoaded(next);
+      // Keep the challenge card visible after expansion
+      // Wait for DOM to update before scrolling
+      window.setTimeout(() => {
+        const element = document.querySelector(`[data-challenge-id="${next}"]`);
+        if (element) {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest', // Minimize scroll movement
+          });
+        }
+      }, 100);
     }
   }
 

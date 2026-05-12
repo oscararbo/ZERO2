@@ -262,10 +262,17 @@ h1 {
 }
 
 .exercises-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
+  width: 100%;
+  height: min(70vh, 900px);
   margin-bottom: 32px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  ::ng-deep .cdk-virtual-scroll-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
 }
 
 .exercise-card {
@@ -278,6 +285,8 @@ h1 {
   flex-direction: column;
   gap: 14px;
   transition: all 0.25s;
+  flex-shrink: 0;
+  min-height: 280px;
 
   &:hover {
     border-color: rgba(255, 255, 255, 0.2);
@@ -465,7 +474,7 @@ h1 {
   }
 
   .exercises-container {
-    grid-template-columns: 1fr;
+    height: min(75vh, 900px);
     gap: 14px;
   }
 

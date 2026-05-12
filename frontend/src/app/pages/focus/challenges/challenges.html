@@ -263,11 +263,14 @@
         <button class="btn btn-light" (click)="setTab('create')">Create a Challenge</button>
       </div>
 
-      <div class="challenge-list challenge-list-virtual" *ngIf="!loading() && visibleChallenges().length > 0 && !hasExpandedCard()">
-        <cdk-virtual-scroll-viewport class="challenge-viewport" [itemSize]="152" [minBufferPx]="456" [maxBufferPx]="760">
+      <!-- Single unified challenge list -->
+      <div class="challenge-list challenge-list-virtual" *ngIf="!loading() && visibleChallenges().length > 0">
+        <cdk-virtual-scroll-viewport class="challenge-viewport" [itemSize]="expandedId() ? 800 : 172" [minBufferPx]="456" [maxBufferPx]="760">
           <article
             class="challenge-card"
             *cdkVirtualFor="let c of visibleChallenges(); trackBy: trackByChallengeId"
+            [attr.data-challenge-id]="c.id"
+            [class.expanded]="expandedId() === c.id"
             [class.completed-card]="c.my_participation?.completed">
 
             <div class="card-main" (click)="toggleExpand(c.id)">
@@ -299,178 +302,136 @@
                   <span class="ring-label">{{ c.progressPercent }}%</span>
                 </div>
                 <span class="completed-badge" *ngIf="c.my_participation?.completed">✓</span>
-                <span class="chevron">▼</span>
+                <span class="chevron">{{ expandedId() === c.id ? '▲' : '▼' }}</span>
               </div>
+            </div>
+
+            <!-- Expanded details - stays in same card -->
+            <div class="card-detail" *ngIf="expandedId() === c.id">
+
+              <!-- Not participating, not owner -->
+              <div class="action-row" *ngIf="!c.isParticipating && !c.isOwner">
+                <button class="btn btn-light btn-sm" (click)="join(c); $event.stopPropagation()">Join Challenge</button>
+              </div>
+
+              <!-- Participating, not owner -->
+              <div class="participant-actions" *ngIf="c.isParticipating && !c.isOwner">
+                <!-- Progress editor -->
+                <div class="progress-editor" *ngIf="progressEditing() === c.id">
+                  <label>Your progress: {{ progressValue() }}%</label>
+                  <input
+                    type="range"
+                    min="0" max="100"
+                    [ngModel]="progressValue()"
+                    (ngModelChange)="progressValue.set($event)" />
+                  <textarea
+                    placeholder="Add a note about your progress..."
+                    [ngModel]="progressNotes()"
+                    (ngModelChange)="progressNotes.set($event)"
+                    rows="2"></textarea>
+                  <div class="action-row">
+                    <button class="btn btn-light btn-sm" (click)="saveProgress(c); $event.stopPropagation()" [disabled]="saving()">
+                      {{ saving() ? 'Saving...' : 'Save Progress' }}
+                    </button>
+                    <button class="btn btn-outline-light btn-sm" (click)="cancelProgressEdit(); $event.stopPropagation()">Cancel</button>
+                  </div>
+                </div>
+
+                <div class="action-row" *ngIf="progressEditing() !== c.id">
+                  <button class="btn btn-light btn-sm" (click)="startProgressEdit(c); $event.stopPropagation()">
+                    Update Progress
+                  </button>
+                  <button
+                    class="btn btn-outline-light btn-sm"
+                    (click)="quickIncreaseProgress(c, 10); $event.stopPropagation()"
+                    [disabled]="quickUpdatingId() === c.id || (c.my_participation?.progress ?? 0) >= 100">
+                    {{ quickUpdatingId() === c.id ? 'Updating...' : '+10%' }}
+                  </button>
+                  <button
+                    class="btn btn-outline-light btn-sm"
+                    (click)="markChallengeCompleted(c); $event.stopPropagation()"
+                    [disabled]="quickUpdatingId() === c.id || (c.my_participation?.progress ?? 0) >= 100">
+                    Complete
+                  </button>
+                  <button class="btn btn-outline-light btn-sm" (click)="leave(c); $event.stopPropagation()">Leave</button>
+                </div>
+
+                <div class="notes-display" *ngIf="c.my_participation?.notes && progressEditing() !== c.id">
+                  <span class="notes-label">Your notes:</span> {{ c.my_participation?.notes }}
+                </div>
+              </div>
+
+              <!-- Owner actions -->
+              <div class="action-row" *ngIf="c.isOwner">
+                <span class="owner-tag">Your challenge</span>
+                <button class="btn btn-outline-danger btn-sm" (click)="deleteChallenge(c); $event.stopPropagation()">Delete</button>
+              </div>
+
+              <div class="detail-grid">
+                <section class="detail-block">
+                  <h4>Leaderboard</h4>
+                  <div class="leaderboard" *ngIf="leaderboardItems()[c.id].length > 0; else noLeaderboard">
+                    <cdk-virtual-scroll-viewport class="leaderboard-viewport" [itemSize]="42">
+                      <div class="leader-row" *cdkVirtualFor="let entry of leaderboardItems()[c.id]; let i = index; trackBy: trackByParticipationId">
+                        <span class="position">#{{ i + 1 }}</span>
+                        <span class="name">{{ entry.username }}</span>
+                        <span class="value">{{ entry.progress }}%</span>
+                      </div>
+                    </cdk-virtual-scroll-viewport>
+                    <div class="list-actions" *ngIf="leaderboardHasNextMap()[c.id]">
+                      <app-load-more-button
+                        [loading]="leaderboardLoadingMap()[c.id]"
+                        [disabled]="!leaderboardHasNextMap()[c.id]"
+                        label="Load more"
+                        loadingLabel="Loading..."
+                        (pressed)="loadMoreLeaderboard(c.id)">
+                      </app-load-more-button>
+                    </div>
+                  </div>
+                  <ng-template #noLeaderboard>
+                    <p class="empty-inline">No participants yet.</p>
+                  </ng-template>
+                </section>
+
+                <section class="detail-block">
+                  <h4>Updates</h4>
+                  <div class="update-composer" *ngIf="c.isOwner || c.isParticipating">
+                    <textarea
+                      [ngModel]="updateDraftMap()[c.id]"
+                      (ngModelChange)="setUpdateDraft(c.id, $event)"
+                      rows="2"
+                      placeholder="Share your progress update..."></textarea>
+                    <button class="btn btn-light btn-sm" type="button" (click)="postUpdate(c)">Post update</button>
+                  </div>
+                  <div class="updates-list" *ngIf="updatesItems()[c.id].length > 0; else noUpdates">
+                    <cdk-virtual-scroll-viewport class="updates-viewport" [itemSize]="84">
+                      <article class="update-item" *cdkVirtualFor="let u of updatesItems()[c.id]; trackBy: trackByUpdateId">
+                        <div class="update-head">
+                          <strong>{{ u.username }}</strong>
+                          <small>{{ u.created_at | date:'short' }}</small>
+                        </div>
+                        <p>{{ u.content }}</p>
+                      </article>
+                    </cdk-virtual-scroll-viewport>
+                    <div class="list-actions" *ngIf="updatesHasNextMap()[c.id]">
+                      <app-load-more-button
+                        [loading]="updatesLoadingMap()[c.id]"
+                        [disabled]="!updatesHasNextMap()[c.id]"
+                        label="Load more updates"
+                        loadingLabel="Loading..."
+                        (pressed)="loadMoreUpdates(c.id)">
+                      </app-load-more-button>
+                    </div>
+                  </div>
+                  <ng-template #noUpdates>
+                    <p class="empty-inline">No updates yet.</p>
+                  </ng-template>
+                </section>
+              </div>
+
             </div>
           </article>
         </cdk-virtual-scroll-viewport>
-      </div>
-
-      <div class="challenge-list" *ngIf="!loading() && visibleChallenges().length > 0 && hasExpandedCard()">
-        <article
-          class="challenge-card"
-          *ngFor="let c of visibleChallenges(); trackBy: trackByChallengeId"
-          [class.expanded]="expandedId() === c.id"
-          [class.completed-card]="c.my_participation?.completed">
-
-          <div class="card-main" (click)="toggleExpand(c.id)">
-            <div class="card-left">
-              <span class="cat-badge" [attr.data-cat]="c.category">{{ c.categoryLabel }}</span>
-              <h3>{{ c.title }}</h3>
-              <p class="card-desc" *ngIf="c.description">{{ c.description }}</p>
-              <div class="card-meta">
-                <span>{{ c.duration_days }} days</span>
-                <span>·</span>
-                <span>{{ c.participant_count }} participants</span>
-                <span>·</span>
-                <span>{{ c.completed_count }} completed</span>
-                <span>·</span>
-                <span>by {{ c.creator_username }}</span>
-                <span>·</span>
-                <span class="deadline" [class.expired]="c.is_expired">{{ c.deadlineLabel }}</span>
-              </div>
-            </div>
-
-            <div class="card-right">
-              <div class="progress-ring" *ngIf="c.isParticipating">
-                <svg viewBox="0 0 44 44">
-                  <circle cx="22" cy="22" r="18" stroke-width="4" class="ring-bg"/>
-                  <circle cx="22" cy="22" r="18" stroke-width="4" class="ring-fill"
-                    [style.stroke-dasharray]="113"
-                    [style.stroke-dashoffset]="113 - (113 * c.progressPercent / 100)"/>
-                </svg>
-                <span class="ring-label">{{ c.progressPercent }}%</span>
-              </div>
-              <span class="completed-badge" *ngIf="c.my_participation?.completed">✓</span>
-              <span class="chevron">{{ expandedId() === c.id ? '▲' : '▼' }}</span>
-            </div>
-          </div>
-
-          <!-- Expanded actions -->
-          <div class="card-detail" *ngIf="expandedId() === c.id">
-
-            <!-- Not participating, not owner -->
-            <div class="action-row" *ngIf="!c.isParticipating && !c.isOwner">
-              <button class="btn btn-light btn-sm" (click)="join(c); $event.stopPropagation()">Join Challenge</button>
-            </div>
-
-            <!-- Participating, not owner -->
-            <div class="participant-actions" *ngIf="c.isParticipating && !c.isOwner">
-              <!-- Progress editor -->
-              <div class="progress-editor" *ngIf="progressEditing() === c.id">
-                <label>Your progress: {{ progressValue() }}%</label>
-                <input
-                  type="range"
-                  min="0" max="100"
-                  [ngModel]="progressValue()"
-                  (ngModelChange)="progressValue.set($event)" />
-                <textarea
-                  placeholder="Add a note about your progress..."
-                  [ngModel]="progressNotes()"
-                  (ngModelChange)="progressNotes.set($event)"
-                  rows="2"></textarea>
-                <div class="action-row">
-                  <button class="btn btn-light btn-sm" (click)="saveProgress(c); $event.stopPropagation()" [disabled]="saving()">
-                    {{ saving() ? 'Saving...' : 'Save Progress' }}
-                  </button>
-                  <button class="btn btn-outline-light btn-sm" (click)="cancelProgressEdit(); $event.stopPropagation()">Cancel</button>
-                </div>
-              </div>
-
-              <div class="action-row" *ngIf="progressEditing() !== c.id">
-                <button class="btn btn-light btn-sm" (click)="startProgressEdit(c); $event.stopPropagation()">
-                  Update Progress
-                </button>
-                <button
-                  class="btn btn-outline-light btn-sm"
-                  (click)="quickIncreaseProgress(c, 10); $event.stopPropagation()"
-                  [disabled]="quickUpdatingId() === c.id || (c.my_participation?.progress ?? 0) >= 100">
-                  {{ quickUpdatingId() === c.id ? 'Updating...' : '+10%' }}
-                </button>
-                <button
-                  class="btn btn-outline-light btn-sm"
-                  (click)="markChallengeCompleted(c); $event.stopPropagation()"
-                  [disabled]="quickUpdatingId() === c.id || (c.my_participation?.progress ?? 0) >= 100">
-                  Complete
-                </button>
-                <button class="btn btn-outline-light btn-sm" (click)="leave(c); $event.stopPropagation()">Leave</button>
-              </div>
-
-              <div class="notes-display" *ngIf="c.my_participation?.notes && progressEditing() !== c.id">
-                <span class="notes-label">Your notes:</span> {{ c.my_participation?.notes }}
-              </div>
-            </div>
-
-            <!-- Owner actions -->
-            <div class="action-row" *ngIf="c.isOwner">
-              <span class="owner-tag">Your challenge</span>
-              <button class="btn btn-outline-danger btn-sm" (click)="deleteChallenge(c); $event.stopPropagation()">Delete</button>
-            </div>
-
-            <div class="detail-grid">
-              <section class="detail-block">
-                <h4>Leaderboard</h4>
-                <div class="leaderboard" *ngIf="leaderboardItems()[c.id].length > 0; else noLeaderboard">
-                  <cdk-virtual-scroll-viewport class="leaderboard-viewport" [itemSize]="42">
-                    <div class="leader-row" *cdkVirtualFor="let entry of leaderboardItems()[c.id]; let i = index; trackBy: trackByParticipationId">
-                      <span class="position">#{{ i + 1 }}</span>
-                      <span class="name">{{ entry.username }}</span>
-                      <span class="value">{{ entry.progress }}%</span>
-                    </div>
-                  </cdk-virtual-scroll-viewport>
-                  <div class="list-actions" *ngIf="leaderboardHasNextMap()[c.id]">
-                    <app-load-more-button
-                      [loading]="leaderboardLoadingMap()[c.id]"
-                      [disabled]="!leaderboardHasNextMap()[c.id]"
-                      label="Load more"
-                      loadingLabel="Loading..."
-                      (pressed)="loadMoreLeaderboard(c.id)">
-                    </app-load-more-button>
-                  </div>
-                </div>
-                <ng-template #noLeaderboard>
-                  <p class="empty-inline">No participants yet.</p>
-                </ng-template>
-              </section>
-
-              <section class="detail-block">
-                <h4>Updates</h4>
-                <div class="update-composer" *ngIf="c.isOwner || c.isParticipating">
-                  <textarea
-                    [ngModel]="updateDraftMap()[c.id]"
-                    (ngModelChange)="setUpdateDraft(c.id, $event)"
-                    rows="2"
-                    placeholder="Share your progress update..."></textarea>
-                  <button class="btn btn-light btn-sm" type="button" (click)="postUpdate(c)">Post update</button>
-                </div>
-                <div class="updates-list" *ngIf="updatesItems()[c.id].length > 0; else noUpdates">
-                  <cdk-virtual-scroll-viewport class="updates-viewport" [itemSize]="84">
-                    <article class="update-item" *cdkVirtualFor="let u of updatesItems()[c.id]; trackBy: trackByUpdateId">
-                      <div class="update-head">
-                        <strong>{{ u.username }}</strong>
-                        <small>{{ u.created_at | date:'short' }}</small>
-                      </div>
-                      <p>{{ u.content }}</p>
-                    </article>
-                  </cdk-virtual-scroll-viewport>
-                  <div class="list-actions" *ngIf="updatesHasNextMap()[c.id]">
-                    <app-load-more-button
-                      [loading]="updatesLoadingMap()[c.id]"
-                      [disabled]="!updatesHasNextMap()[c.id]"
-                      label="Load more updates"
-                      loadingLabel="Loading..."
-                      (pressed)="loadMoreUpdates(c.id)">
-                    </app-load-more-button>
-                  </div>
-                </div>
-                <ng-template #noUpdates>
-                  <p class="empty-inline">No updates yet.</p>
-                </ng-template>
-              </section>
-            </div>
-
-          </div>
-        </article>
       </div>
     </div>
 
