@@ -1,5 +1,5 @@
 <section class="page">
-  <app-focus-page-header title="Performance Hub" [toastMessage]="toast()"></app-focus-page-header>
+  <app-focus-page-header title="Performance Hub" [toastMessage]="toast()" [toastType]="toastType()"></app-focus-page-header>
 
   <main class="content" *ngIf="!loading(); else loadingTpl">
     <section class="grid-two">

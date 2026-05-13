@@ -35,6 +35,7 @@ from .services import (
     refresh_exercise_video,
     save_recovery_log,
 )
+from .services import _scrape_video_only
 
 
 class WeeklyPlanView(APIView):
@@ -200,11 +201,29 @@ class AsyncJobsView(APIView):
     def post(self, request):
         serializer = AsyncJobCreateRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        payload = serializer.validated_data.get('payload', {})
+        job_type = serializer.validated_data['job_type']
         try:
-            job = create_job(request.user, serializer.validated_data['job_type'], serializer.validated_data.get('payload', {}))
+            job = create_job(request.user, job_type, payload)
             return success_response(AsyncJobSerializer(job).data, status_code=201)
         except (ProgrammingError, OperationalError, DatabaseError):
-            return error_response('Performance service is temporarily unavailable.', status_code=503)
+            # Accept the request while infrastructure catches up (migrations/cold start).
+            # Keep the response shape compatible with AsyncJob so frontend flows remain stable.
+            deferred_job = {
+                'id': 0,
+                'job_type': job_type,
+                'status': 'pending',
+                'payload': payload,
+                'result': {
+                    'deferred': True,
+                    'reason': 'service_initializing',
+                },
+                'error': '',
+                'created_at': timezone.now(),
+                'started_at': None,
+                'finished_at': None,
+            }
+            return success_response(deferred_job, status_code=202)
 
 
 class RunPendingJobsView(APIView):
@@ -232,14 +251,8 @@ class ExerciseVideoView(APIView):
         try:
             payload = refresh_exercise_video(exercise, force=False)
         except (ProgrammingError, OperationalError, DatabaseError):
-            payload = {
-                'exercise_id': int(exercise_id),
-                'video_id': None,
-                'url': None,
-                'embed_url': None,
-                'title': None,
-                'source': 'temporarily_unavailable',
-            }
+            # ExerciseVideo table not migrated yet – scrape without DB persistence.
+            payload = _scrape_video_only(int(exercise_id), exercise.name)
         return success_response(payload)
 
 

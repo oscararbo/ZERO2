@@ -7,6 +7,7 @@ from .core import (
     refresh_exercise_video,
     save_recovery_log,
 )
+from .core import _scrape_video_only
 from .jobs import create_job, execute_pending_jobs
 
 __all__ = [

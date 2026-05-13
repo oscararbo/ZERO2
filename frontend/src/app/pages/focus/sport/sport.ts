@@ -97,7 +97,9 @@ export class SportComponent implements OnInit {
   });
 
   readonly viewportItemSize = computed(() => {
-    return this.viewMode() === 'compact' ? 176 : 210;
+    // compact card ≈ 78px + 10px margin-bottom = 88px
+    // comfortable card ≈ 124px (adds desc + extra padding) + 10px margin = 134px
+    return this.viewMode() === 'compact' ? 88 : 134;
   });
 
   ngOnInit() {
@@ -152,6 +154,11 @@ export class SportComponent implements OnInit {
           video.embed_url ? this.sanitizer.bypassSecurityTrustResourceUrl(video.embed_url) : null
         );
         this.videoLoading.set(false);
+        if (!video.embed_url && !video.url) {
+          this.showToast('No video available for this exercise.');
+        } else if (!video.embed_url && video.url) {
+          this.showToast('No embed available — use the link below to watch on YouTube.');
+        }
       },
       error: () => {
         this.videoLoading.set(false);
@@ -204,6 +211,7 @@ export class SportComponent implements OnInit {
       },
       error: () => {
         this.loading.set(false);
+        this.showToast('Failed to load exercises. Check your connection.');
       }
     });
   }

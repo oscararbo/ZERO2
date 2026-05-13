@@ -224,6 +224,45 @@ def _extract_first_video_id(html: str) -> str | None:
     return None
 
 
+def _scrape_video_only(exercise_pk: int, exercise_name: str) -> dict:
+    """Scrape a YouTube video ID without touching the DB.
+
+    Used as a fallback when the ExerciseVideo table has not been migrated yet.
+    Always returns a usable ``url``: a direct watch link when a video is found,
+    or a YouTube search URL as a last resort so the user can click through.
+    """
+    query = urllib.parse.quote(f'{exercise_name} exercise tutorial')
+    yt_url = f'https://www.youtube.com/results?search_query={query}'
+    request = urllib.request.Request(yt_url, headers={'User-Agent': 'Mozilla/5.0'})
+    video_id = None
+    try:
+        with urllib.request.urlopen(request, timeout=8) as response:
+            html = response.read().decode('utf-8', errors='ignore')
+        video_id = _extract_first_video_id(html)
+    except Exception:
+        pass
+
+    if video_id:
+        return {
+            'exercise_id': exercise_pk,
+            'video_id': video_id,
+            'url': f'https://www.youtube.com/watch?v={video_id}',
+            'embed_url': f'https://www.youtube-nocookie.com/embed/{video_id}',
+            'title': f'{exercise_name} demo',
+            'source': 'scraped',
+        }
+
+    # Last resort: give the user a YouTube search link.
+    return {
+        'exercise_id': exercise_pk,
+        'video_id': None,
+        'url': yt_url,
+        'embed_url': None,
+        'title': f'{exercise_name} – search on YouTube',
+        'source': 'search_url',
+    }
+
+
 def refresh_exercise_video(exercise: Exercise, force: bool = False):
     exercise_pk = int(getattr(exercise, 'pk', 0))
     cache_key = f'yt-video:{exercise_pk}'

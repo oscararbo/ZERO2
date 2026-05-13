@@ -1,4 +1,11 @@
 <section class="dash">
+  <app-toast
+    *ngIf="toast()"
+    [message]="toast()"
+    [type]="toastType()"
+    position="top-right">
+  </app-toast>
+
   <header class="top">
     <div class="brand">ZΞRO</div>
 

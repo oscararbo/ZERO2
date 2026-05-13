@@ -6,13 +6,14 @@ import { AdminService } from '../../core/admin.service';
 import { ProfileService, Profile } from '../../core/profile.service';
 import { ProgressService } from '../../core/progress.service';
 import { ExerciseService } from '../../core/exercise.service';
+import { AppToastComponent } from '../shared/components/toast/toast.component';
 
 import type { Chart } from 'chart.js/auto';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, AppToastComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,6 +59,19 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
   private loadingChart = false;
   private pendingChartRetry: number | null = null;
   private chartRetryCount = 0;
+
+  toast = signal('');
+  toastType = signal<'success' | 'error'>('success');
+
+  private showToast(message: string, type: 'success' | 'error' = 'error'): void {
+    this.toastType.set(type);
+    this.toast.set(message);
+    window.setTimeout(() => {
+      if (this.toast() === message) {
+        this.toast.set('');
+      }
+    }, 3000);
+  }
 
   private getFallbackProgressData(): { labels: string[]; values: number[] } {
     const labels = this.getLast7DayLabels();
@@ -194,7 +208,7 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
         this.totalExercisesThisWeek.set(recent.reduce((acc, s) => acc + s.completed_exercises, 0));
       },
       error: () => {
-        // Keep defaults when the API is temporarily unavailable.
+        this.showToast('Session data unavailable — service is starting up.');
       },
     });
   }
@@ -291,6 +305,7 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
           chart.data.labels = fallback.labels;
           chart.data.datasets[0].data = fallback.values;
           chart.update();
+          this.showToast('Progress chart unavailable — service is starting up.');
         },
       });
     });

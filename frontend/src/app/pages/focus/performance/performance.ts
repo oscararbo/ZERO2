@@ -24,6 +24,7 @@ export class PerformanceComponent implements OnInit {
 
   loading = signal(true);
   toast = signal<string | null>(null);
+  toastType = signal<'success' | 'error'>('success');
 
   weeklyPlan = signal<WeeklyPlanResponse | null>(null);
   coachBrief = signal<any | null>(null);
@@ -70,7 +71,7 @@ export class PerformanceComponent implements OnInit {
     this.loading.set(true);
     this.performanceService.getWeeklyPlan().subscribe({
       next: (v) => this.weeklyPlan.set(v),
-      error: () => this.weeklyPlan.set(null),
+      error: () => { this.weeklyPlan.set(null); this.showToast('Weekly plan unavailable (service starting up).', 'error'); },
     });
     this.performanceService.getCoachBrief().subscribe({
       next: (v) => this.coachBrief.set(v),
@@ -82,7 +83,7 @@ export class PerformanceComponent implements OnInit {
     });
     this.performanceService.getRecoveryLogs().subscribe({
       next: (v) => this.recoveryLogs.set(v),
-      error: () => this.recoveryLogs.set([]),
+      error: () => { this.recoveryLogs.set([]); this.showToast('Recovery logs unavailable (service starting up).', 'error'); },
     });
     this.performanceService.getWearables().subscribe({
       next: (v) => this.wearables.set(v),
@@ -108,7 +109,7 @@ export class PerformanceComponent implements OnInit {
           error: () => this.weeklyPlan.set(null),
         });
       },
-      error: () => this.toast.set('Could not update planner item.'),
+      error: () => this.showToast('Could not update planner item.', 'error'),
     });
   }
 
@@ -123,9 +124,9 @@ export class PerformanceComponent implements OnInit {
           next: (v) => this.recoveryLogs.set(v),
           error: () => this.recoveryLogs.set([]),
         });
-        this.toast.set('Recovery log saved.');
+        this.showToast('Recovery log saved.');
       },
-      error: () => this.toast.set('Could not save recovery log.'),
+      error: () => this.showToast('Could not save recovery log.', 'error'),
     });
   }
 
@@ -153,9 +154,9 @@ export class PerformanceComponent implements OnInit {
           next: (v) => this.wearables.set(v),
           error: () => this.wearables.set([]),
         });
-        this.toast.set('Wearable snapshot synced.');
+        this.showToast('Wearable snapshot synced.');
       },
-      error: () => this.toast.set('Could not sync wearable snapshot.'),
+      error: () => this.showToast('Could not sync wearable snapshot.', 'error'),
     });
   }
 
@@ -189,7 +190,7 @@ export class PerformanceComponent implements OnInit {
   importBulkWearables(): void {
     const text = this.bulkImportText().trim();
     if (!text) {
-      this.toast.set('Paste or upload JSON/CSV data first.');
+      this.showToast('Paste or upload JSON/CSV data first.', 'error');
       return;
     }
 
@@ -204,12 +205,12 @@ export class PerformanceComponent implements OnInit {
     try {
       entries = this.bulkImportFormat() === 'json' ? this.parseJsonEntries(text) : this.parseCsvEntries(text);
     } catch {
-      this.toast.set('Invalid wearable data format.');
+      this.showToast('Invalid wearable data format.', 'error');
       return;
     }
 
     if (!entries.length) {
-      this.toast.set('No valid entries found to import.');
+      this.showToast('No valid entries found to import.', 'error');
       return;
     }
 
@@ -226,11 +227,11 @@ export class PerformanceComponent implements OnInit {
           next: (v) => this.wearables.set(v),
           error: () => this.wearables.set([]),
         });
-        this.toast.set(`Imported ${summary.processed} wearable entries.`);
+        this.showToast(`Imported ${summary.processed} wearable entries.`);
       },
       error: () => {
         this.bulkImportLoading.set(false);
-        this.toast.set('Bulk wearable import failed.');
+        this.showToast('Bulk wearable import failed.', 'error');
       },
     });
   }
@@ -301,8 +302,19 @@ export class PerformanceComponent implements OnInit {
 
   queueVideoSync(): void {
     this.performanceService.enqueueVideoSync(false).subscribe({
-      next: () => this.toast.set('Video sync job queued.'),
-      error: () => this.toast.set('Could not queue video sync.'),
+      next: () => this.showToast('Video sync job queued.'),
+      error: () => this.showToast('Could not queue video sync — service unavailable.', 'error'),
     });
   }
+  private showToast(message: string, type: 'success' | 'error' = 'success'): void {
+    this.toastType.set(type);
+    this.toast.set(message);
+    window.setTimeout(() => {
+      if (this.toast() === message) {
+        this.toast.set(null);
+      }
+    }, 2800);
+  }
+
 }
+
