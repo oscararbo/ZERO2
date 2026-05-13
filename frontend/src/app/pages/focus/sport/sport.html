@@ -159,19 +159,28 @@
       </article>
     </cdk-virtual-scroll-viewport>
 
-    <div *ngIf="videoSectionOpen()">
-      <div class="video-container" *ngIf="activeVideo() as video">
-        <section class="video-panel">
-          <div class="video-head">
-            <strong>
-              {{ video.title || 'Exercise video' }}
-            </strong>
-            <button class="quick-btn" type="button" (click)="closeExerciseVideo()">
-              Close
-            </button>
+    <div *ngIf="videoSectionOpen()" class="video-container">
+      <section class="video-panel">
+        <div class="video-head">
+          <strong>
+            {{ activeVideo()?.title || 'Exercise video' }}
+          </strong>
+          <button class="quick-btn" type="button" (click)="closeExerciseVideo()">
+            Close
+          </button>
+        </div>
+
+        <div class="video-frame-shell">
+          <div *ngIf="videoLoading()" class="video-skeleton" aria-hidden="true">
+            <div class="video-skeleton__shine"></div>
+            <div class="video-skeleton__body">
+              <span class="skeleton-line skeleton-line--lg"></span>
+              <span class="skeleton-line skeleton-line--md"></span>
+              <span class="skeleton-box"></span>
+            </div>
           </div>
-          <div *ngIf="videoLoading()" class="results-strip">Loading video...</div>
-          <iframe *ngIf="activeVideoSafeUrl()"
+
+          <iframe *ngIf="!videoLoading() && activeVideoSafeUrl()"
             class="video-frame"
             [src]="activeVideoSafeUrl()"
             title="Exercise demo"
@@ -180,11 +189,14 @@
             referrerpolicy="strict-origin-when-cross-origin"
             allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
           </iframe>
+        </div>
+
+        <ng-container *ngIf="!videoLoading() && activeVideo() as video">
           <a *ngIf="video.url" class="video-link" [href]="video.url" target="_blank" rel="noopener noreferrer">
             Open on YouTube
           </a>
-        </section>
-      </div>
+        </ng-container>
+      </section>
     </div>
 
     <button

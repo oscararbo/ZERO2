@@ -232,26 +232,25 @@ h1 {
 }
 
 .video-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80%;
-    max-width: 800px;
-    z-index: 9999;
-    background-color: rgba(0, 0, 0, 0.8);
-    border-radius: 10px;
-    padding: 20px;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(10px);
 }
 
 .video-panel {
-  margin-top: 14px;
+  width: min(800px, 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
   display: grid;
   gap: 10px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
 }
 
 .video-head {
@@ -263,15 +262,80 @@ h1 {
 
 .video-frame {
   width: 100%;
-  min-height: 300px;
+  min-height: 320px;
   border: none;
   border-radius: 10px;
   background: #000;
 }
 
+.video-frame-shell {
+  position: relative;
+  width: 100%;
+  min-height: 320px;
+}
+
+.video-skeleton {
+  position: relative;
+  width: 100%;
+  min-height: 320px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.video-skeleton__shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.08) 40%, transparent 60%);
+  transform: translateX(-100%);
+  animation: video-shimmer 1.35s infinite;
+}
+
+.video-skeleton__body {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  min-height: 320px;
+  display: grid;
+  align-content: center;
+  gap: 12px;
+  padding: 20px;
+}
+
+.skeleton-line,
+.skeleton-box {
+  display: block;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.skeleton-line--lg {
+  width: min(68%, 280px);
+  height: 16px;
+}
+
+.skeleton-line--md {
+  width: min(44%, 180px);
+  height: 12px;
+}
+
+.skeleton-box {
+  width: 100%;
+  height: 210px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .video-link {
   color: rgba(255, 255, 255, 0.85);
   font-size: 13px;
+}
+
+@keyframes video-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .category-btn {
@@ -447,6 +511,7 @@ h1 {
   font-size: 12px;
   opacity: 0.75;
   line-height: 1.35;
+  line-clamp: 2;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
