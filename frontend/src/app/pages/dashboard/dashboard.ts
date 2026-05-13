@@ -193,6 +193,9 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
         this.sessionsThisWeek.set(recent.length);
         this.totalExercisesThisWeek.set(recent.reduce((acc, s) => acc + s.completed_exercises, 0));
       },
+      error: () => {
+        // Keep defaults when the API is temporarily unavailable.
+      },
     });
   }
 

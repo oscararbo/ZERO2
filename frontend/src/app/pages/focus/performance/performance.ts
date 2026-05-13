@@ -68,23 +68,47 @@ export class PerformanceComponent implements OnInit {
 
   reloadAll(): void {
     this.loading.set(true);
-    this.performanceService.getWeeklyPlan().subscribe({ next: (v) => this.weeklyPlan.set(v) });
-    this.performanceService.getCoachBrief().subscribe({ next: (v) => this.coachBrief.set(v) });
-    this.performanceService.getNutritionPlus().subscribe({ next: (v) => this.nutrition.set(v) });
-    this.performanceService.getRecoveryLogs().subscribe({ next: (v) => this.recoveryLogs.set(v) });
-    this.performanceService.getWearables().subscribe({ next: (v) => this.wearables.set(v) });
+    this.performanceService.getWeeklyPlan().subscribe({
+      next: (v) => this.weeklyPlan.set(v),
+      error: () => this.weeklyPlan.set(null),
+    });
+    this.performanceService.getCoachBrief().subscribe({
+      next: (v) => this.coachBrief.set(v),
+      error: () => this.coachBrief.set(null),
+    });
+    this.performanceService.getNutritionPlus().subscribe({
+      next: (v) => this.nutrition.set(v),
+      error: () => this.nutrition.set(null),
+    });
+    this.performanceService.getRecoveryLogs().subscribe({
+      next: (v) => this.recoveryLogs.set(v),
+      error: () => this.recoveryLogs.set([]),
+    });
+    this.performanceService.getWearables().subscribe({
+      next: (v) => this.wearables.set(v),
+      error: () => this.wearables.set([]),
+    });
     this.performanceService.getFeatureFlags().subscribe({
       next: (v) => {
         this.flags.set(v);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: () => {
+        this.flags.set([]);
+        this.loading.set(false);
+      },
     });
   }
 
   togglePlanItem(itemId: number, completed: boolean): void {
     this.performanceService.setPlanItemCompleted(itemId, completed).subscribe({
-      next: () => this.performanceService.getWeeklyPlan().subscribe({ next: (v) => this.weeklyPlan.set(v) }),
+      next: () => {
+        this.performanceService.getWeeklyPlan().subscribe({
+          next: (v) => this.weeklyPlan.set(v),
+          error: () => this.weeklyPlan.set(null),
+        });
+      },
+      error: () => this.toast.set('Could not update planner item.'),
     });
   }
 
@@ -95,7 +119,10 @@ export class PerformanceComponent implements OnInit {
   saveRecovery(): void {
     this.performanceService.saveRecoveryLog(this.recoveryForm()).subscribe({
       next: () => {
-        this.performanceService.getRecoveryLogs().subscribe({ next: (v) => this.recoveryLogs.set(v) });
+        this.performanceService.getRecoveryLogs().subscribe({
+          next: (v) => this.recoveryLogs.set(v),
+          error: () => this.recoveryLogs.set([]),
+        });
         this.toast.set('Recovery log saved.');
       },
       error: () => this.toast.set('Could not save recovery log.'),
@@ -122,7 +149,10 @@ export class PerformanceComponent implements OnInit {
       ],
     }).subscribe({
       next: () => {
-        this.performanceService.getWearables().subscribe({ next: (v) => this.wearables.set(v) });
+        this.performanceService.getWearables().subscribe({
+          next: (v) => this.wearables.set(v),
+          error: () => this.wearables.set([]),
+        });
         this.toast.set('Wearable snapshot synced.');
       },
       error: () => this.toast.set('Could not sync wearable snapshot.'),
@@ -192,7 +222,10 @@ export class PerformanceComponent implements OnInit {
     }).subscribe({
       next: (summary) => {
         this.bulkImportLoading.set(false);
-        this.performanceService.getWearables().subscribe({ next: (v) => this.wearables.set(v) });
+        this.performanceService.getWearables().subscribe({
+          next: (v) => this.wearables.set(v),
+          error: () => this.wearables.set([]),
+        });
         this.toast.set(`Imported ${summary.processed} wearable entries.`);
       },
       error: () => {

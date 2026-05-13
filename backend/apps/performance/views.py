@@ -1,4 +1,8 @@
+from datetime import timedelta
+
 from django.core.cache import cache
+from django.db import DatabaseError, OperationalError, ProgrammingError
+from django.utils import timezone
 from rest_framework import permissions
 from rest_framework.views import APIView
 
@@ -39,14 +43,26 @@ class WeeklyPlanView(APIView):
     def get(self, request):
         serializer = WeeklyPlanRequestSerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
-        payload = build_weekly_plan(request.user, serializer.validated_data.get('start_date'))
-        return success_response({
-            'start_date': payload['start_date'],
-            'end_date': payload['end_date'],
-            'weekly_goal_target': payload['weekly_goal_target'],
-            'completed_items': payload['completed_items'],
-            'items': WeeklyPlanItemSerializer(payload['items'], many=True).data,
-        })
+        start_date = serializer.validated_data.get('start_date')
+        try:
+            payload = build_weekly_plan(request.user, start_date)
+            return success_response({
+                'start_date': payload['start_date'],
+                'end_date': payload['end_date'],
+                'weekly_goal_target': payload['weekly_goal_target'],
+                'completed_items': payload['completed_items'],
+                'items': WeeklyPlanItemSerializer(payload['items'], many=True).data,
+            })
+        except (ProgrammingError, OperationalError, DatabaseError):
+            base = start_date or timezone.now().date()
+            monday = base - timedelta(days=base.weekday())
+            return success_response({
+                'start_date': monday,
+                'end_date': monday + timedelta(days=6),
+                'weekly_goal_target': 3,
+                'completed_items': 0,
+                'items': [],
+            })
 
     def post(self, request):
         item_id = request.data.get('item_id')
@@ -55,6 +71,8 @@ class WeeklyPlanView(APIView):
             item = WeeklyPlanItem.objects.get(id=item_id, user=request.user)
         except WeeklyPlanItem.DoesNotExist:
             return error_response('Plan item not found.', status_code=404)
+        except (ProgrammingError, OperationalError, DatabaseError):
+            return error_response('Performance service is temporarily unavailable.', status_code=503)
 
         item.completed = completed
         item.save(update_fields=['completed'])
@@ -70,7 +88,17 @@ class CoachBriefView(APIView):
         if cached:
             return success_response(cached)
 
-        payload = generate_coach_brief(request.user)
+        try:
+            payload = generate_coach_brief(request.user)
+        except (ProgrammingError, OperationalError, DatabaseError):
+            payload = {
+                'priority': 'consistency',
+                'message': 'Coach brief is temporarily unavailable.',
+                'sessions_last_7_days': 0,
+                'avg_mood_last_7_days': None,
+                'latest_recovery_score': None,
+                'actions': [],
+            }
         cache.set(cache_key, payload, timeout=300)
         return success_response(payload)
 
@@ -84,7 +112,14 @@ class NutritionPlusView(APIView):
         if cached:
             return success_response(cached)
 
-        payload = build_nutrition_plus_plan(request.user)
+        try:
+            payload = build_nutrition_plus_plan(request.user)
+        except (ProgrammingError, OperationalError, DatabaseError):
+            payload = {
+                'goal': 'maintain',
+                'weekly_plan': [],
+                'shopping_list': [],
+            }
         cache.set(cache_key, payload, timeout=900)
         return success_response(payload)
 
@@ -93,63 +128,94 @@ class RecoveryLogView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        logs = RecoveryLog.objects.filter(user=request.user).order_by('-date')[:30]
-        return success_response(RecoveryLogSerializer(logs, many=True).data)
+        try:
+            logs = RecoveryLog.objects.filter(user=request.user).order_by('-date')[:30]
+            return success_response(RecoveryLogSerializer(logs, many=True).data)
+        except (ProgrammingError, OperationalError, DatabaseError):
+            return success_response([])
 
     def post(self, request):
         serializer = RecoveryLogRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        log = save_recovery_log(request.user, serializer.validated_data)
-        return success_response(RecoveryLogSerializer(log).data, status_code=201)
+        try:
+            log = save_recovery_log(request.user, serializer.validated_data)
+            return success_response(RecoveryLogSerializer(log).data, status_code=201)
+        except (ProgrammingError, OperationalError, DatabaseError):
+            return error_response('Performance service is temporarily unavailable.', status_code=503)
 
 
 class WearablesSyncView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        snapshots = request.user.wearable_snapshots.order_by('-date')[:100]
-        return success_response(WearableSnapshotSerializer(snapshots, many=True).data)
+        try:
+            snapshots = request.user.wearable_snapshots.order_by('-date')[:100]
+            return success_response(WearableSnapshotSerializer(snapshots, many=True).data)
+        except (ProgrammingError, OperationalError, DatabaseError):
+            return success_response([])
 
     def post(self, request):
         serializer = WearableIngestRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        summary = ingest_wearable_entries(
-            request.user,
-            serializer.validated_data['provider'],
-            serializer.validated_data.get('source', ''),
-            serializer.validated_data['entries'],
-        )
-        return success_response(summary, status_code=201)
+        try:
+            summary = ingest_wearable_entries(
+                request.user,
+                serializer.validated_data['provider'],
+                serializer.validated_data.get('source', ''),
+                serializer.validated_data['entries'],
+            )
+            return success_response(summary, status_code=201)
+        except (ProgrammingError, OperationalError, DatabaseError):
+            return error_response('Performance service is temporarily unavailable.', status_code=503)
 
 
 class FeatureFlagsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        flags = get_feature_flags()
-        return success_response(FeatureFlagSerializer(flags, many=True).data)
+        try:
+            flags = get_feature_flags()
+            return success_response(FeatureFlagSerializer(flags, many=True).data)
+        except (ProgrammingError, OperationalError, DatabaseError):
+            return success_response([
+                {
+                    'key': 'performance_hub',
+                    'enabled': False,
+                    'description': 'Temporarily disabled while the service is being initialized.',
+                    'updated_at': None,
+                }
+            ])
 
 
 class AsyncJobsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        jobs = AsyncJob.objects.filter(user=request.user).order_by('-created_at')[:40]
-        return success_response(AsyncJobSerializer(jobs, many=True).data)
+        try:
+            jobs = AsyncJob.objects.filter(user=request.user).order_by('-created_at')[:40]
+            return success_response(AsyncJobSerializer(jobs, many=True).data)
+        except (ProgrammingError, OperationalError, DatabaseError):
+            return success_response([])
 
     def post(self, request):
         serializer = AsyncJobCreateRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        job = create_job(request.user, serializer.validated_data['job_type'], serializer.validated_data.get('payload', {}))
-        return success_response(AsyncJobSerializer(job).data, status_code=201)
+        try:
+            job = create_job(request.user, serializer.validated_data['job_type'], serializer.validated_data.get('payload', {}))
+            return success_response(AsyncJobSerializer(job).data, status_code=201)
+        except (ProgrammingError, OperationalError, DatabaseError):
+            return error_response('Performance service is temporarily unavailable.', status_code=503)
 
 
 class RunPendingJobsView(APIView):
     permission_classes = [permissions.IsAdminUser]
 
     def post(self, request):
-        processed = execute_pending_jobs(limit=int(request.data.get('limit', 10)))
-        return success_response({'processed': processed})
+        try:
+            processed = execute_pending_jobs(limit=int(request.data.get('limit', 10)))
+            return success_response({'processed': processed})
+        except (ProgrammingError, OperationalError, DatabaseError):
+            return success_response({'processed': []})
 
 
 class ExerciseVideoView(APIView):
@@ -160,8 +226,20 @@ class ExerciseVideoView(APIView):
             exercise = Exercise.objects.get(id=exercise_id)
         except Exercise.DoesNotExist:
             return error_response('Exercise not found.', status_code=404)
+        except (ProgrammingError, OperationalError, DatabaseError):
+            return error_response('Performance service is temporarily unavailable.', status_code=503)
 
-        payload = refresh_exercise_video(exercise, force=False)
+        try:
+            payload = refresh_exercise_video(exercise, force=False)
+        except (ProgrammingError, OperationalError, DatabaseError):
+            payload = {
+                'exercise_id': int(exercise_id),
+                'video_id': None,
+                'url': None,
+                'embed_url': None,
+                'title': None,
+                'source': 'temporarily_unavailable',
+            }
         return success_response(payload)
 
 
@@ -180,11 +258,19 @@ class ExerciseVideoRefreshView(APIView):
                 exercise = Exercise.objects.get(id=exercise_id)
             except Exercise.DoesNotExist:
                 return error_response('Exercise not found.', status_code=404)
-            payload = refresh_exercise_video(exercise, force=force)
-            return success_response(payload)
+            except (ProgrammingError, OperationalError, DatabaseError):
+                return error_response('Performance service is temporarily unavailable.', status_code=503)
+            try:
+                payload = refresh_exercise_video(exercise, force=force)
+                return success_response(payload)
+            except (ProgrammingError, OperationalError, DatabaseError):
+                return error_response('Performance service is temporarily unavailable.', status_code=503)
 
-        job = create_job(request.user, 'sync_exercise_videos', {'force': force, 'limit': 60})
-        return success_response(AsyncJobSerializer(job).data, status_code=202)
+        try:
+            job = create_job(request.user, 'sync_exercise_videos', {'force': force, 'limit': 60})
+            return success_response(AsyncJobSerializer(job).data, status_code=202)
+        except (ProgrammingError, OperationalError, DatabaseError):
+            return error_response('Performance service is temporarily unavailable.', status_code=503)
 
 
 __all__ = [

@@ -32,6 +32,10 @@ class ProfileView(APIView):
         serializer.save()
         return success_response(serializer.data)
 
+    def post(self, request):
+        # Backward compatibility for legacy clients that still send POST for profile updates.
+        return self.put(request)
+
 
 class ApiMetaView(APIView):
     permission_classes = [permissions.AllowAny]

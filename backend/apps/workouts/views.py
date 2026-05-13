@@ -1,3 +1,7 @@
+from datetime import timedelta
+
+from django.db import DatabaseError, OperationalError, ProgrammingError
+from django.utils import timezone
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -44,17 +48,20 @@ class ExerciseSessionView(APIView):
     def get(self, request):
         location = request.query_params.get('location', None)
         show_archived = request.query_params.get('show_archived', 'false').lower() == 'true'
+        try:
+            # Get sessions, excluding archived by default
+            sessions = ExerciseSession.objects.filter(user=request.user).order_by('-date')
+            if not show_archived:
+                sessions = sessions.filter(archived_at__isnull=True)
 
-        # Get sessions, excluding archived by default
-        sessions = ExerciseSession.objects.filter(user=request.user).order_by('-date')
-        if not show_archived:
-            sessions = sessions.filter(archived_at__isnull=True)
+            if location:
+                sessions = sessions.filter(location=location)
 
-        if location:
-            sessions = sessions.filter(location=location)
-
-        serializer = ExerciseSessionSerializer(sessions[:7], many=True)
-        return success_response(serializer.data)
+            serializer = ExerciseSessionSerializer(sessions[:7], many=True)
+            return success_response(serializer.data)
+        except (ProgrammingError, OperationalError, DatabaseError):
+            # Keep dashboard/session pages usable while deploy migrations catch up.
+            return success_response([])
 
     def post(self, request):
         request_serializer = ExerciseSessionCreateRequestSerializer(data=request.data)
@@ -143,7 +150,17 @@ class ProgressStatsView(APIView):
 
     def get(self, request):
         location = request.query_params.get('location', None)
-        payload = build_progress_stats(request.user, location=location, days_back=7)
+        try:
+            payload = build_progress_stats(request.user, location=location, days_back=7)
+        except (ProgrammingError, OperationalError, DatabaseError):
+            labels = []
+            for i in range(7):
+                date = timezone.now().date() - timedelta(days=(6 - i))
+                labels.append(date.strftime('%a'))
+            payload = {
+                'labels': labels,
+                'values': [0] * 7,
+            }
         return success_response(payload)
 
 
