@@ -24,7 +24,6 @@ export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
   private performanceService = inject(PerformanceService);
 
   @ViewChild('wearablesChart') wearablesChartRef?: ElementRef<HTMLCanvasElement>;
-  @ViewChild('recoveryChart') recoveryChartRef?: ElementRef<HTMLCanvasElement>;
 
   loading = signal(true);
   toast = signal<string | null>(null);
@@ -60,8 +59,24 @@ export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
   bulkImportFileName = signal('');
   bulkImportLoading = signal(false);
 
+  // New planner and wearables date controls
+  plannerDate = signal<string>(this.getTodayDateValue());
+  wearableDateFrom = signal<string>(this.getDateNDaysAgo(6));
+  wearableDateTo = signal<string>(this.getTodayDateValue());
+
   private charts: Chart[] = [];
   private chartsReady = false;
+
+  private getTodayDateValue(): string {
+    const d = new Date();
+    return d.toISOString().split('T')[0];
+  }
+
+  private getDateNDaysAgo(n: number): string {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    return d.toISOString().split('T')[0];
+  }
 
   readonly plannerCompletion = computed(() => {
     const p = this.weeklyPlan();
@@ -228,6 +243,58 @@ export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
     this.bulkImportFormat.set(value);
   }
 
+  setPlannerDate(value: string): void {
+    this.plannerDate.set(value);
+  }
+
+  setWearableDateFrom(value: string): void {
+    const from = new Date(value);
+    const to = new Date(this.wearableDateTo());
+    const diffDays = Math.floor((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays <= 7) {
+      this.wearableDateFrom.set(value);
+      void this.renderCharts();
+    } else {
+      this.showToast('Max 7 day range allowed', 'error');
+    }
+  }
+
+  setWearableDateTo(value: string): void {
+    const today = new Date();
+    const selectedDate = new Date(value);
+    if (selectedDate > today) {
+      this.showToast('Future dates not allowed', 'error');
+      return;
+    }
+    const from = new Date(this.wearableDateFrom());
+    const diffDays = Math.floor((selectedDate.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays <= 7) {
+      this.wearableDateTo.set(value);
+      void this.renderCharts();
+    } else {
+      this.showToast('Max 7 day range allowed', 'error');
+    }
+  }
+
+  getTodayDate(): string {
+    return this.getTodayDateValue();
+  }
+
+  getPlannerDayIndex(): number {
+    const plan = this.weeklyPlan();
+    if (!plan) return 0;
+    const selectedDate = this.plannerDate();
+    return plan.items.findIndex((item) => item.date === selectedDate);
+  }
+
+  getScoreColor(score: number | null | undefined): string {
+    if (!score) return '#666';
+    if (score >= 8) return '#4caf50'; // Green
+    if (score >= 6) return '#2196f3'; // Blue
+    if (score >= 4) return '#ff9800'; // Orange
+    return '#f44336'; // Red
+  }
+
   onBulkFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -377,13 +444,6 @@ export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
     return Number.isFinite(parsed) ? parsed : null;
   }
 
-  queueVideoSync(): void {
-    this.performanceService.enqueueVideoSync(false).subscribe({
-      next: () => this.showToast('Video sync job queued.'),
-      error: () => this.showToast('Could not queue video sync — service unavailable.', 'error'),
-    });
-  }
-
   private destroyCharts(): void {
     this.charts.forEach((chart) => chart.destroy());
     this.charts = [];
@@ -393,19 +453,21 @@ export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.chartsReady) return;
 
     const wearablesCanvas = this.wearablesChartRef?.nativeElement;
-    const recoveryCanvas = this.recoveryChartRef?.nativeElement;
-    if (!wearablesCanvas || !recoveryCanvas) return;
+    if (!wearablesCanvas) return;
 
     this.destroyCharts();
 
     const chartModule = await import('chart.js/auto');
     const ChartClass = chartModule.Chart;
 
-    const wearables = [...this.wearables()].sort((a, b) => a.date.localeCompare(b.date)).slice(-14);
-    const recovery = [...this.recoveryLogs()].sort((a, b) => a.date.localeCompare(b.date)).slice(-14);
+    // Filter wearables by date range
+    const fromDate = this.wearableDateFrom();
+    const toDate = this.wearableDateTo();
+    const wearables = this.wearables()
+      .filter((w) => w.date >= fromDate && w.date <= toDate)
+      .sort((a, b) => a.date.localeCompare(b.date));
 
     const wearablesLabels = (wearables.length ? wearables : [{ date: 'No data' } as WearableSnapshot]).map((row) => row.date.slice(5));
-    const recoveryLabels = (recovery.length ? recovery : [{ date: 'No data' } as RecoveryLog]).map((row) => row.date.slice(5));
 
     this.charts.push(new ChartClass(wearablesCanvas, {
       type: 'bar',
@@ -448,42 +510,6 @@ export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
             ticks: { color: '#aab2c0' },
             grid: { drawOnChartArea: false },
           },
-        },
-      },
-    }));
-
-    this.charts.push(new ChartClass(recoveryCanvas, {
-      type: 'line',
-      data: {
-        labels: recoveryLabels,
-        datasets: [
-          {
-            label: 'Recovery score',
-            data: (recovery.length ? recovery : [{ recovery_score: 0 } as RecoveryLog]).map((row) => row.recovery_score),
-            borderColor: 'rgba(255, 196, 61, 1)',
-            backgroundColor: 'rgba(255, 196, 61, 0.18)',
-            tension: 0.35,
-            fill: true,
-          },
-          {
-            label: 'Sleep hours',
-            data: (recovery.length ? recovery : [{ sleep_hours: 0 } as RecoveryLog]).map((row) => row.sleep_hours),
-            borderColor: 'rgba(120, 255, 214, 1)',
-            backgroundColor: 'rgba(120, 255, 214, 0.14)',
-            tension: 0.3,
-            fill: false,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { labels: { color: '#f1f3f6' } },
-        },
-        scales: {
-          x: { ticks: { color: '#aab2c0' }, grid: { color: 'rgba(255,255,255,0.06)' } },
-          y: { beginAtZero: true, ticks: { color: '#aab2c0' }, grid: { color: 'rgba(255,255,255,0.06)' } },
         },
       },
     }));

@@ -133,22 +133,22 @@ def _parse_measure(measure: str) -> tuple[float, str]:
 def _estimate_nutrition(ingredients: list[dict[str, Any]], goal: str, meal_type: str) -> dict[str, float]:
     baseline = {
         'bulk': {
-            'breakfast': {'protein': 34, 'carbs': 72, 'fat': 20},
-            'lunch': {'protein': 44, 'carbs': 78, 'fat': 24},
-            'snack': {'protein': 24, 'carbs': 36, 'fat': 12},
-            'dinner': {'protein': 46, 'carbs': 66, 'fat': 22},
+            'breakfast': {'protein': 45, 'carbs': 95, 'fat': 28},
+            'lunch': {'protein': 55, 'carbs': 105, 'fat': 32},
+            'snack': {'protein': 28, 'carbs': 45, 'fat': 15},
+            'dinner': {'protein': 60, 'carbs': 95, 'fat': 30},
         },
         'cut': {
-            'breakfast': {'protein': 28, 'carbs': 42, 'fat': 14},
-            'lunch': {'protein': 36, 'carbs': 46, 'fat': 16},
-            'snack': {'protein': 20, 'carbs': 24, 'fat': 9},
-            'dinner': {'protein': 38, 'carbs': 38, 'fat': 15},
+            'breakfast': {'protein': 35, 'carbs': 55, 'fat': 18},
+            'lunch': {'protein': 45, 'carbs': 60, 'fat': 20},
+            'snack': {'protein': 24, 'carbs': 30, 'fat': 11},
+            'dinner': {'protein': 48, 'carbs': 50, 'fat': 18},
         },
         'maintain': {
-            'breakfast': {'protein': 30, 'carbs': 52, 'fat': 16},
-            'lunch': {'protein': 38, 'carbs': 56, 'fat': 18},
-            'snack': {'protein': 20, 'carbs': 28, 'fat': 10},
-            'dinner': {'protein': 40, 'carbs': 48, 'fat': 17},
+            'breakfast': {'protein': 38, 'carbs': 70, 'fat': 20},
+            'lunch': {'protein': 48, 'carbs': 75, 'fat': 24},
+            'snack': {'protein': 24, 'carbs': 35, 'fat': 12},
+            'dinner': {'protein': 52, 'carbs': 70, 'fat': 24},
         },
     }
 

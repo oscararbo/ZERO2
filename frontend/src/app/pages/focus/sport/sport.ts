@@ -12,7 +12,7 @@ import { PageStateComponent } from '../../shared/components/page-state/page-stat
 @Component({
   selector: 'app-sport',
   standalone: true,
-  imports: [CommonModule, FormsModule, ScrollingModule, RouterLink, FocusPageHeaderComponent, PageStateComponent],
+  imports: [CommonModule, FormsModule, ScrollingModule, FocusPageHeaderComponent, PageStateComponent],
   templateUrl: './sport.html',
   styleUrls: ['./sport.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

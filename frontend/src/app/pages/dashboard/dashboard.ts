@@ -189,12 +189,14 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
       { key: 'growth', label: 'Growth', link: '/growth' },
       { key: 'challenges', label: 'Challenges', link: '/challenges' },
     ] as const;
+    const performanceItem = { label: 'Performance', link: '/performance' };
 
     const selected = items
       .filter(i => (p as any)[i.key] === true)
       .map(i => ({ label: i.label, link: i.link }));
 
-    this.focus.set(selected.length ? selected : items.slice(0, 3).map(i => ({ label: i.label, link: i.link })));
+    const withPerformance = [...selected, performanceItem];
+    this.focus.set(withPerformance.length ? withPerformance : [...items.slice(0, 3).map(i => ({ label: i.label, link: i.link })), performanceItem]);
   }
 
   private loadWeeklyStats() {

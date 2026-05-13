@@ -2,104 +2,39 @@
   <app-focus-page-header title="Performance Hub" [toastMessage]="toast()" [toastType]="toastType()"></app-focus-page-header>
 
   <main class="content" *ngIf="!loading(); else loadingTpl">
-    <section class="grid-two">
-      <article class="card">
+    <!-- Weekly Planner: Full width, single day + date range -->
+    <article class="card card-full">
+      <div class="planner-header">
         <h3>Weekly Planner</h3>
-        <p class="muted">Completion: {{ plannerCompletion() }}%</p>
-        <div class="plan-list" *ngIf="weeklyPlan() as plan">
-          <label class="plan-item" *ngFor="let item of plan.items">
-            <input type="checkbox" [checked]="item.completed" (change)="togglePlanItem(item.id, !item.completed)" />
-            <div>
-              <strong>{{ item.date }} · {{ item.focus_area | titlecase }}</strong>
-              <p>{{ item.planned_workout }}</p>
-
-        <section class="grid-two insights">
-          <article class="card">
-            <h3>Wearable Insights</h3>
-            <p class="muted">Imported and synced wearable rows are summarized here as step and activity charts.</p>
-            <div class="summary-grid">
-              <div>
-                <span>Rows</span>
-                <strong>{{ wearablesSummary().rows }}</strong>
-              </div>
-              <div>
-                <span>Total Steps</span>
-                <strong>{{ wearablesSummary().totalSteps | number:'1.0-0' }}</strong>
-              </div>
-              <div>
-                <span>Avg Steps</span>
-                <strong>{{ wearablesSummary().averageSteps | number:'1.0-0' }}</strong>
-              </div>
-              <div>
-                <span>Avg Active Min</span>
-                <strong>{{ wearablesSummary().averageActiveMinutes | number:'1.0-0' }}</strong>
-              </div>
-            </div>
-            <div class="chart-wrap">
-              <canvas #wearablesChart></canvas>
-            </div>
-          </article>
-
-          <article class="card">
-            <h3>Recovery Trend</h3>
-            <p class="muted">Recovery log values also feed a time series so you can compare score and sleep quality.</p>
-            <div class="summary-grid">
-              <div>
-                <span>Rows</span>
-                <strong>{{ recoverySummary().rows }}</strong>
-              </div>
-              <div>
-                <span>Avg Score</span>
-                <strong>{{ recoverySummary().averageScore }}</strong>
-              </div>
-              <div>
-                <span>Avg Sleep</span>
-                <strong>{{ recoverySummary().averageSleep }}</strong>
-              </div>
-              <div>
-                <span>Best Score</span>
-                <strong>{{ recoverySummary().bestScore }}</strong>
-              </div>
-            </div>
-            <div class="chart-wrap">
-              <canvas #recoveryChart></canvas>
-            </div>
-          </article>
-        </section>
-            </div>
-          </label>
+        <div class="planner-controls">
+          <input type="date" [ngModel]="plannerDate()" (ngModelChange)="setPlannerDate($event)" />
+          <p class="muted">Select a date (up to 7 days range)</p>
         </div>
-      </article>
+      </div>
+      <div class="plan-list" *ngIf="weeklyPlan() as plan">
+        <label class="plan-item" *ngFor="let item of plan.items | slice:(getPlannerDayIndex()):((getPlannerDayIndex())+1)">
+          <input type="checkbox" [checked]="item.completed" (change)="togglePlanItem(item.id, !item.completed)" />
+          <div>
+            <strong>{{ item.date }}</strong>
+            <p class="focus-tag">{{ item.focus_area | titlecase }}</p>
+            <p class="workout-text">{{ item.planned_workout }}</p>
+            <p class="meal-text">{{ item.planned_meal_focus }}</p>
+            <p class="mindset-text">{{ item.mindset_task }}</p>
+          </div>
+        </label>
+      </div>
+    </article>
 
-      <article class="card">
-        <h3>AI Coach (Free Rule Engine)</h3>
-        <div *ngIf="coachBrief() as coach">
-          <p class="badge">Priority: {{ coach.priority }}</p>
-          <p>{{ coach.message }}</p>
-          <ul>
-            <li *ngFor="let action of coach.actions">{{ action }}</li>
-          </ul>
+    <!-- Recovery Score: Prominent display with color coding -->
+    <article class="card card-recovery">
+      <h3>Recovery Score</h3>
+      <div class="recovery-display">
+        <div class="sleep-score" [style.--score-color]="getScoreColor((latestRecovery()?.recovery_score) || 0)">
+          <div class="score-number">{{ (latestRecovery()?.recovery_score) || '—' }}</div>
+          <div class="score-label">Sleep Quality Score</div>
+          <div class="sleep-hours">{{ (latestRecovery()?.sleep_hours) || '—' }}h sleep</div>
         </div>
-      </article>
-    </section>
-
-    <section class="grid-two">
-      <article class="card">
-        <h3>Nutrition Plus</h3>
-        <p class="muted" *ngIf="nutrition() as n">Goal: {{ n.goal }}</p>
-        <div class="shopping" *ngIf="nutrition() as n">
-          <h4>Shopping List</h4>
-          <ul>
-            <li *ngFor="let ingredient of n.shopping_list.slice(0, 16)">
-              {{ ingredient.name }} — {{ ingredient.amount | number:'1.0-0' }} {{ ingredient.unit }}
-            </li>
-          </ul>
-        </div>
-      </article>
-
-      <article class="card">
-        <h3>Recovery Score</h3>
-        <div class="form-grid">
+        <div class="recovery-inputs">
           <label>Sleep (hours)
             <input type="number" min="0" max="24" [ngModel]="recoveryForm().sleep_hours" (ngModelChange)="setRecoveryField('sleep_hours', +$event)" />
           </label>
@@ -112,76 +47,74 @@
           <label>Resting HR
             <input type="number" min="30" max="220" [ngModel]="recoveryForm().resting_heart_rate" (ngModelChange)="setRecoveryField('resting_heart_rate', $event === '' ? null : +$event)" />
           </label>
+          <button class="action" (click)="saveRecovery()">Save Recovery</button>
         </div>
-        <button class="action" (click)="saveRecovery()">Save Recovery</button>
-        <p class="muted" *ngIf="latestRecovery() as r">Latest score: {{ r.recovery_score }}</p>
-      </article>
-    </section>
+      </div>
+    </article>
 
+    <!-- Wearables Data: Full width chart with date range selector -->
+    <article class="card card-full">
+      <div class="wearables-header">
+        <h3>Wearables Data</h3>
+        <div class="date-range-picker">
+          <label>From
+            <input type="date" [ngModel]="wearableDateFrom()" (ngModelChange)="setWearableDateFrom($event)" [max]="getTodayDate()" />
+          </label>
+          <label>To
+            <input type="date" [ngModel]="wearableDateTo()" (ngModelChange)="setWearableDateTo($event)" [max]="getTodayDate()" />
+          </label>
+          <p class="muted">Max 7 days range. No future dates.</p>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas #wearablesChart></canvas>
+      </div>
+      <div class="wearables-summary">
+        <div><span>Steps</span><strong>{{ wearablesSummary().totalSteps | number:'1.0-0' }}</strong></div>
+        <div><span>Avg Daily</span><strong>{{ wearablesSummary().averageSteps | number:'1.0-0' }}</strong></div>
+        <div><span>Active Min</span><strong>{{ wearablesSummary().averageActiveMinutes }}</strong></div>
+        <div><span>Avg HR</span><strong>{{ wearablesSummary().averageHeartRate }}</strong></div>
+      </div>
+    </article>
+
+    <!-- Other data sections -->
     <section class="grid-two">
       <article class="card">
-        <h3>Wearables Sync (Free)</h3>
-        <div class="form-grid">
-          <label>Provider
-            <select [ngModel]="wearableForm().provider" (ngModelChange)="setWearableField('provider', $event)">
-              <option value="samsung_health">Samsung Health</option>
-              <option value="manual">Manual</option>
-            </select>
-          </label>
-          <label>Date
-            <input type="date" [ngModel]="wearableForm().date" (ngModelChange)="setWearableField('date', $event)" />
-          </label>
-          <label>Steps
-            <input type="number" [ngModel]="wearableForm().steps" (ngModelChange)="setWearableField('steps', +$event)" />
-          </label>
-          <label>Active Minutes
-            <input type="number" [ngModel]="wearableForm().active_minutes" (ngModelChange)="setWearableField('active_minutes', +$event)" />
-          </label>
-        </div>
-        <button class="action" (click)="syncWearableEntry()">Sync Snapshot</button>
-
-        <div class="bulk-import">
-          <h4>Bulk Import (JSON/CSV)</h4>
-          <p class="muted">Accepted fields: date, steps, active_minutes, calories_burned, avg_heart_rate</p>
-          <div class="form-grid">
-            <label>Format
-              <select [ngModel]="bulkImportFormat()" (ngModelChange)="setBulkImportFormat($event)">
-                <option value="json">JSON</option>
-                <option value="csv">CSV</option>
-              </select>
-            </label>
-            <label>Upload file
-              <input class="form-control" type="file" accept=".json,.csv,text/csv,application/json" (change)="onBulkFileSelected($event)" />
-            </label>
-          </div>
-
-          <label>Paste entries
-            <textarea
-              rows="7"
-              [ngModel]="bulkImportText()"
-              (ngModelChange)="setBulkImportText($event)"
-              placeholder='JSON: [{"date":"2026-05-10","steps":10000}] or CSV: date,steps,active_minutes'></textarea>
-          </label>
-
-          <button class="action" [disabled]="bulkImportLoading()" (click)="importBulkWearables()">
-            {{ bulkImportLoading() ? 'Importing...' : 'Import Bulk Entries' }}
-          </button>
+        <h3>AI Coach</h3>
+        <div *ngIf="coachBrief() as coach">
+          <p class="badge">Priority: {{ coach.priority }}</p>
+          <p>{{ coach.message }}</p>
+          <ul>
+            <li *ngFor="let action of coach.actions">{{ action }}</li>
+          </ul>
         </div>
       </article>
 
       <article class="card">
-        <h3>Technical Controls</h3>
-        <button class="action" (click)="queueVideoSync()">Queue Exercise Video Sync Job</button>
-
-        <div class="flag-list">
-          <p class="muted">Feature Flags</p>
-          <div class="flag" *ngFor="let flag of flags()">
-            <strong>{{ flag.key }}</strong>
-            <span [class.on]="flag.enabled">{{ flag.enabled ? 'ON' : 'OFF' }}</span>
-          </div>
+        <h3>Nutrition Plan</h3>
+        <p class="muted" *ngIf="nutrition() as n">Goal: {{ n.goal | titlecase }}</p>
+        <div class="shopping" *ngIf="nutrition() as n">
+          <h4>Shopping List</h4>
+          <ul>
+            <li *ngFor="let ingredient of n.shopping_list.slice(0, 12)">
+              {{ ingredient.name }} — {{ ingredient.amount | number:'1.0-0' }} {{ ingredient.unit }}
+            </li>
+          </ul>
         </div>
       </article>
     </section>
+
+    <!-- Technical Controls -->
+    <article class="card">
+      <h3>Technical Controls</h3>
+      <div class="flag-list">
+        <p class="muted">Feature Flags</p>
+        <div class="flag" *ngFor="let flag of flags()">
+          <strong>{{ flag.key }}</strong>
+          <span [class.on]="flag.enabled">{{ flag.enabled ? 'ON' : 'OFF' }}</span>
+        </div>
+      </div>
+    </article>
   </main>
 
   <ng-template #loadingTpl>
