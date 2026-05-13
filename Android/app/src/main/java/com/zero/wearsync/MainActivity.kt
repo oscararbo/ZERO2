@@ -41,10 +41,6 @@ class MainActivity : ComponentActivity() {
             onPasswordChange = viewModel::onPasswordChange,
             onAutoDetectBackend = viewModel::autoDetectBackend,
             onDaysBackChange = viewModel::onDaysBackChange,
-            onImportFormatChange = viewModel::onImportFormatChange,
-            onImportPayloadChange = viewModel::onImportPayloadChange,
-            onFillSampleImport = viewModel::fillSampleImport,
-            onImportManualData = viewModel::importManualData,
             onLogin = viewModel::login,
             onLogout = viewModel::logout,
 

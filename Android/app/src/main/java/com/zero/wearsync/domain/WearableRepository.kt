@@ -7,6 +7,8 @@ import com.zero.wearsync.data.remote.RetrofitProvider
 import com.zero.wearsync.data.remote.WearableEntryDto
 import com.zero.wearsync.data.remote.WearableIngestRequest
 import com.zero.wearsync.sync.DailyMetric
+import kotlinx.coroutines.delay
+import retrofit2.HttpException
 
 class WearableRepository(
     private val sessionManager: SessionManager,
@@ -71,19 +73,25 @@ class WearableRepository(
             val pending = pendingSyncDao.getPending(limit)
             if (pending.isEmpty()) return@runCatching "No pending rows"
 
-            val response = apiProvider.api().ingestWearables(
-                WearableIngestRequest(
-                    entries = pending.map {
-                        WearableEntryDto(
-                            date = it.date,
-                            steps = it.steps,
-                            activeMinutes = it.activeMinutes,
-                            caloriesBurned = it.caloriesBurned,
-                            avgHeartRate = it.avgHeartRate
-                        )
-                    }
+            val response = retryOnServiceUnavailable {
+                apiProvider.api().ingestWearables(
+                    WearableIngestRequest(
+                        entries = pending.map {
+                            WearableEntryDto(
+                                date = it.date,
+                                steps = it.steps,
+                                activeMinutes = it.activeMinutes,
+                                caloriesBurned = it.caloriesBurned,
+                                avgHeartRate = it.avgHeartRate
+                            )
+                        }
+                    )
                 )
-            )
+            }
+
+            if (response == null) {
+                return@runCatching "Backend temporarily unavailable (503). ${pending.size} row(s) remain queued."
+            }
 
             if (!response.ok || response.data == null) {
                 pendingSyncDao.incrementAttempts(pending.map { it.id })
@@ -96,6 +104,24 @@ class WearableRepository(
     }
 
     suspend fun pendingCount(): Int = pendingSyncDao.getPending(1000).size
+
+    private suspend fun <T> retryOnServiceUnavailable(block: suspend () -> T): T? {
+        var lastError: HttpException? = null
+
+        repeat(3) { attempt ->
+            try {
+                return block()
+            } catch (e: HttpException) {
+                if (e.code() != 503) throw e
+                lastError = e
+                if (attempt < 2) {
+                    delay((attempt + 1) * 1000L)
+                }
+            }
+        }
+
+        return null
+    }
 
     fun currentBackendUrl(): String = sessionManager.backendUrl
 

@@ -10,15 +10,12 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.zero.wearsync.domain.ServiceLocator
 import com.zero.wearsync.sync.BackendDiscovery
-import com.zero.wearsync.sync.DailyMetric
 import com.zero.wearsync.sync.HealthConnectReader
 import com.zero.wearsync.sync.SyncWorker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
@@ -66,25 +63,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
   fun onDaysBackChange(v: String) {
     val parsed = v.toIntOrNull()?.coerceIn(1, 14) ?: 3
     _state.value = _state.value.copy(daysBack = parsed)
-  }
-
-  fun onImportFormatChange(v: String) {
-    val next = if (v.lowercase() == "csv") "csv" else "json"
-    _state.value = _state.value.copy(importFormat = next)
-  }
-
-  fun onImportPayloadChange(v: String) {
-    _state.value = _state.value.copy(importPayload = v)
-  }
-
-  fun fillSampleImport() {
-    val sample = """
-      [
-        {"date":"2026-05-10","steps":8420,"active_minutes":38,"avg_heart_rate":112},
-        {"date":"2026-05-11","steps":10550,"active_minutes":54,"avg_heart_rate":118}
-      ]
-    """.trimIndent()
-    _state.value = _state.value.copy(importFormat = "json", importPayload = sample)
   }
 
   fun onPermissionResult(granted: Set<String>) {
@@ -201,48 +179,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
   }
 
-  fun importManualData() = viewModelScope.launch {
-    val payload = _state.value.importPayload.trim()
-    if (payload.isBlank()) {
-      _state.value = _state.value.copy(status = "Pega datos JSON/CSV antes de importar")
-      return@launch
-    }
-
-    _state.value = _state.value.copy(working = true, status = "Importando datos...")
-
-    try {
-      val metrics = parseImportedMetrics(payload, _state.value.importFormat)
-      if (metrics.isEmpty()) {
-        _state.value = _state.value.copy(working = false, status = "No se encontraron filas validas")
-        return@launch
-      }
-
-      locator.repository.enqueueMetrics(metrics)
-
-      if (_state.value.loggedIn) {
-        val syncResult = locator.repository.syncPending()
-        val pending = locator.repository.pendingCount()
-        _state.value = _state.value.copy(
-          working = false,
-          pendingRows = pending,
-          status = syncResult.fold(
-            onSuccess = { "Importadas ${metrics.size} filas. $it" },
-            onFailure = { "Importadas ${metrics.size} filas, pero sync fallo: ${it.message}" }
-          )
-        )
-      } else {
-        val pending = locator.repository.pendingCount()
-        _state.value = _state.value.copy(
-          working = false,
-          pendingRows = pending,
-          status = "Importadas ${metrics.size} filas en cola. Haz login y pulsa Sync now"
-        )
-      }
-    } catch (e: Exception) {
-      _state.value = _state.value.copy(working = false, status = "Import error: ${e.message}")
-    }
-  }
-
   fun schedulePeriodicSync() {
     if (!_state.value.loggedIn) {
       _state.value = _state.value.copy(status = "Haz login primero")
@@ -285,85 +221,5 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
       pendingRows = pending,
       status = if (!hcAvailable) "Health Connect no disponible o sin actualizar" else _state.value.status
     )
-  }
-
-  private fun parseImportedMetrics(raw: String, format: String): List<DailyMetric> {
-    return if (format.lowercase() == "csv") parseCsvMetrics(raw) else parseJsonMetrics(raw)
-  }
-
-  private fun parseJsonMetrics(raw: String): List<DailyMetric> {
-    val rows: JSONArray = if (raw.trim().startsWith("[")) {
-      JSONArray(raw)
-    } else {
-      val obj = JSONObject(raw)
-      obj.optJSONArray("entries") ?: JSONArray()
-    }
-
-    val out = mutableListOf<DailyMetric>()
-    for (i in 0 until rows.length()) {
-      val row = rows.optJSONObject(i) ?: continue
-      val date = row.optString("date", "").trim().take(10)
-      if (!Regex("\\d{4}-\\d{2}-\\d{2}").matches(date)) continue
-
-      out += DailyMetric(
-        date = date,
-        steps = row.optIntOrNull("steps"),
-        activeMinutes = row.optIntOrNull("active_minutes"),
-        caloriesBurned = row.optIntOrNull("calories_burned"),
-        avgHeartRate = row.optIntOrNull("avg_heart_rate")
-      )
-    }
-    return out
-  }
-
-  private fun parseCsvMetrics(raw: String): List<DailyMetric> {
-    val lines = raw
-      .split("\n")
-      .map { it.trim() }
-      .filter { it.isNotBlank() }
-
-    if (lines.size < 2) return emptyList()
-
-    val headers = lines.first().split(",").map { it.trim().lowercase() }
-    val dateIdx = headers.indexOf("date")
-    val stepsIdx = headers.indexOf("steps")
-    val activeIdx = headers.indexOf("active_minutes")
-    val caloriesIdx = headers.indexOf("calories_burned")
-    val hrIdx = headers.indexOf("avg_heart_rate")
-
-    if (dateIdx < 0) return emptyList()
-
-    val out = mutableListOf<DailyMetric>()
-    for (line in lines.drop(1)) {
-      val cols = line.split(",").map { it.trim() }
-      val date = cols.getOrNull(dateIdx).orEmpty().take(10)
-      if (!Regex("\\d{4}-\\d{2}-\\d{2}").matches(date)) continue
-
-      out += DailyMetric(
-        date = date,
-        steps = cols.getOrNull(stepsIdx).toIntOrNullSafe(),
-        activeMinutes = cols.getOrNull(activeIdx).toIntOrNullSafe(),
-        caloriesBurned = cols.getOrNull(caloriesIdx).toIntOrNullSafe(),
-        avgHeartRate = cols.getOrNull(hrIdx).toIntOrNullSafe()
-      )
-    }
-
-    return out
-  }
-
-  private fun JSONObject.optIntOrNull(key: String): Int? {
-    if (!has(key) || isNull(key)) return null
-    val value = opt(key)
-    return when (value) {
-      is Number -> value.toInt()
-      is String -> value.trim().toIntOrNull()
-      else -> null
-    }
-  }
-
-  private fun String?.toIntOrNullSafe(): Int? {
-    val normalized = this?.trim().orEmpty()
-    if (normalized.isBlank()) return null
-    return normalized.toIntOrNull()
   }
 }

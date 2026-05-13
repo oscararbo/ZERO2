@@ -5,8 +5,6 @@ data class MainUiState(
     val username: String = "",
     val password: String = "",
     val daysBack: Int = 3,
-    val importFormat: String = "json",
-    val importPayload: String = "",
     val loggedIn: Boolean = false,
     val healthConnectAvailable: Boolean = false,
     val permissionsGranted: Boolean = false,

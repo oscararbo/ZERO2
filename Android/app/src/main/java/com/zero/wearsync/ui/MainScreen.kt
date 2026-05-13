@@ -26,10 +26,6 @@ fun MainScreen(
     onPasswordChange: (String) -> Unit,
     onAutoDetectBackend: () -> Unit,
     onDaysBackChange: (String) -> Unit,
-    onImportFormatChange: (String) -> Unit,
-    onImportPayloadChange: (String) -> Unit,
-    onFillSampleImport: () -> Unit,
-    onImportManualData: () -> Unit,
     onLogin: () -> Unit,
     onLogout: () -> Unit,
     onRequestPermissions: () -> Unit,
@@ -91,29 +87,6 @@ fun MainScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
-
-            Text("Import data (recommended: JSON for Health Connect-like payloads)")
-
-            OutlinedTextField(
-                value = state.importFormat,
-                onValueChange = onImportFormatChange,
-                label = { Text("Import format: json or csv") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            OutlinedTextField(
-                value = state.importPayload,
-                onValueChange = onImportPayloadChange,
-                label = { Text("JSON/CSV payload") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 6
-            )
-
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = onFillSampleImport, enabled = !state.working) { Text("Load sample") }
-                Button(onClick = onImportManualData, enabled = !state.working) { Text("Import data") }
-            }
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = onRequestPermissions, enabled = !state.working) {
