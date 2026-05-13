@@ -24,6 +24,7 @@ fun MainScreen(
     onBackendUrlChange: (String) -> Unit,
     onUsernameChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
+    onAutoDetectBackend: () -> Unit,
     onDaysBackChange: (String) -> Unit,
     onLogin: () -> Unit,
     onLogout: () -> Unit,
@@ -51,6 +52,10 @@ fun MainScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
+
+            Button(onClick = onAutoDetectBackend, enabled = !state.working) {
+                Text("Auto detect backend")
+            }
 
             OutlinedTextField(
                 value = state.username,

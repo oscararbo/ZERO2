@@ -9,6 +9,7 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.zero.wearsync.domain.ServiceLocator
+import com.zero.wearsync.sync.BackendDiscovery
 import com.zero.wearsync.sync.HealthConnectReader
 import com.zero.wearsync.sync.SyncWorker
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,7 @@ import java.util.concurrent.TimeUnit
 class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val locator = ServiceLocator.get(app)
     private val reader = HealthConnectReader(app)
+    private val discovery = BackendDiscovery(app)
     private val _state = MutableStateFlow(
         MainUiState(
             backendUrl = locator.repository.currentBackendUrl(),
@@ -33,6 +35,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     init {
         refreshPermissionsAndPending()
+        if (_state.value.backendUrl.isBlank()) {
+            autoDetectBackend()
+        }
     }
 
     fun onBackendUrlChange(value: String) {
@@ -70,6 +75,25 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     onFailure = { "Login failed: ${it.message}" }
                 )
             )
+        }
+    }
+
+    fun autoDetectBackend() {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(working = true, status = "Detecting backend URL...")
+            val detected = discovery.discoverBaseUrl()
+            if (detected != null) {
+                _state.value = _state.value.copy(
+                    working = false,
+                    backendUrl = detected,
+                    status = "Detected backend: $detected"
+                )
+            } else {
+                _state.value = _state.value.copy(
+                    working = false,
+                    status = "Auto detect failed. Enter backend URL manually."
+                )
+            }
         }
     }
 

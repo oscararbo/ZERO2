@@ -14,5 +14,5 @@ export class PageTopHeaderComponent {
   @Input() brand = 'ZΞRO';
   @Input() kicker = '';
   @Input() title = '';
-  @Input() backRoute = '/dashboard';
+  @Input() backRoute: string | null = null;
 }

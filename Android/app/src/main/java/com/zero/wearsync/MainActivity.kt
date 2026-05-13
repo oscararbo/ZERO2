@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
                         onBackendUrlChange = viewModel::onBackendUrlChange,
                         onUsernameChange = viewModel::onUsernameChange,
                         onPasswordChange = viewModel::onPasswordChange,
+                        onAutoDetectBackend = viewModel::autoDetectBackend,
                         onDaysBackChange = viewModel::onDaysBackChange,
                         onLogin = viewModel::login,
                         onLogout = viewModel::logout,

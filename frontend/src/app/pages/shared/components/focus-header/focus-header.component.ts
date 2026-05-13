@@ -14,6 +14,6 @@ export class FocusHeaderComponent {
   @Input({ required: true }) title = '';
   @Input() kicker = 'Focus';
   @Input() brand = 'ZERO';
-  @Input() backLink: string | null = '/dashboard';
+  @Input() backLink: string | null = null;
   @Input() showBack = true;
 }

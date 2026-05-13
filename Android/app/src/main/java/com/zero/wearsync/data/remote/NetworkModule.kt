@@ -2,7 +2,6 @@ package com.zero.wearsync.data.remote
 
 import com.google.gson.Gson
 import com.zero.wearsync.domain.SessionManager
-import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
@@ -39,7 +38,7 @@ class RetrofitProvider(
         val base = sessionManager.backendUrl
         if (refresh.isBlank() || base.isBlank()) return@Authenticator null
 
-        val newToken = runBlocking { refreshToken(base, refresh) } ?: return@Authenticator null
+        val newToken = refreshToken(base, refresh) ?: return@Authenticator null
         sessionManager.accessToken = newToken
 
         response.request.newBuilder()
@@ -53,7 +52,7 @@ class RetrofitProvider(
         .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC })
         .build()
 
-    private suspend fun refreshToken(baseUrl: String, refresh: String): String? {
+    private fun refreshToken(baseUrl: String, refresh: String): String? {
         val json = gson.toJson(RefreshRequest(refresh))
         val request = Request.Builder()
             .url("${baseUrl}api/token/refresh/")

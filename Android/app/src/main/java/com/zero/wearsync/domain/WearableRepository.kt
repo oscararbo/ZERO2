@@ -15,7 +15,11 @@ class WearableRepository(
 ) {
     suspend fun login(baseUrl: String, username: String, password: String): Result<Unit> {
         return runCatching {
-            sessionManager.backendUrl = baseUrl
+            val normalizedBase = baseUrl.trim().ifBlank { sessionManager.backendUrl }
+            if (normalizedBase.isBlank()) {
+                throw IllegalStateException("Backend URL is empty. Auto detect first or set it manually.")
+            }
+            sessionManager.backendUrl = normalizedBase
             val response = apiProvider.api().login(LoginRequest(username.trim(), password))
             if (!response.ok || response.data == null) {
                 throw IllegalStateException(response.message ?: "Login failed")

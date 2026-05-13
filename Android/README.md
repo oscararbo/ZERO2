@@ -6,6 +6,7 @@ Proyecto Android robusto para sincronizar datos desde Health Connect (Samsung He
 
 - Login contra `POST /api/login/` con JWT.
 - Refresh automático de access token con `POST /api/token/refresh/`.
+- Auto-detección del backend en la red local (`/api/health/`) para no buscar IP manualmente.
 - Lectura de pasos, sesiones (minutos activos), calorías y FC desde Health Connect.
 - Cola local en Room (`pending_sync`) para tolerancia offline.
 - Sincronización manual y periódica con WorkManager (cada 6 horas).
@@ -25,6 +26,20 @@ Proyecto Android robusto para sincronizar datos desde Health Connect (Samsung He
 3. Espera a que termine `Gradle Sync`.
 4. Si Android Studio pide actualizar plugins/dependencias, acepta las recomendaciones estables.
 
+Compatibilidad incluida: el proyecto está fijado para funcionar con Gradle 8.5 (AGP 8.3.2).
+
+## Si sale error `org.gradle.api.internal.HasConvention`
+
+1. Cierra Android Studio.
+2. Borra cachés locales del proyecto: carpeta `Android/.gradle/`.
+3. Abre Android Studio de nuevo y ejecuta `Sync Project with Gradle Files`.
+4. Si persiste, usa `File > Invalidate Caches / Restart`.
+5. En `Settings > Build, Execution, Deployment > Build Tools > Gradle`:
+  - `Gradle JDK`: selecciona Java 17 (por ejemplo `Android Studio jbr`).
+  - `Gradle distribution`: `Use gradle wrapper`.
+
+Nota: este proyecto ya usa `kapt` para Room (sin KSP) para evitar ese conflicto con ciertas combinaciones de caché/daemon.
+
 ## Probar en móvil
 
 1. Activa `Opciones de desarrollador` y `Depuración USB`.
@@ -32,7 +47,8 @@ Proyecto Android robusto para sincronizar datos desde Health Connect (Samsung He
 3. En Android Studio, selecciona tu dispositivo.
 4. Ejecuta `Run 'app'`.
 5. En la app:
-   - Backend URL: `http://<IP_DE_TU_PC>:8000/` (no uses `localhost` desde móvil).
+  - Pulsa `Auto detect backend` para detectar tu servidor automáticamente.
+  - Si no detecta (redes restringidas), pon manualmente `http://<IP_DE_TU_PC>:8000/`.
    - Username/password de tu usuario en ZERO.
    - Pulsa `Login`.
    - Pulsa `Permissions` y acepta Health Connect.
