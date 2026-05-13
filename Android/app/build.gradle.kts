@@ -48,8 +48,10 @@ android {
     targetCompatibility = JavaVersion.VERSION_17
   }
 
-  kotlinOptions {
-    jvmTarget = "17"
+  kotlin {
+    compilerOptions {
+      jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
   }
 
   buildFeatures {
@@ -59,13 +61,14 @@ android {
   packaging {
     resources {
       excludes += "/META-INF/{AL2.0,LGPL2.1}"
+      excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
     }
   }
 }
 
 dependencies {
-  implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.21")
-  implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.21")
+  implementation("org.jetbrains.kotlin:kotlin-stdlib:2.2.0")
+  implementation("org.jetbrains.kotlin:kotlin-reflect:2.2.0")
 
   val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
   implementation(composeBom)
