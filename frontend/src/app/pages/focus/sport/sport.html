@@ -159,26 +159,26 @@
       </article>
     </cdk-virtual-scroll-viewport>
 
+    <div class="video-container">
     <section class="video-panel" *ngIf="activeVideo() as video">
-      <div class="video-head">
-        <strong>{{ video.title || 'Exercise video' }}</strong>
-        <button class="quick-btn" type="button" (click)="closeExerciseVideo()">Close</button>
-      </div>
-      <div *ngIf="videoLoading()" class="results-strip">Loading video...</div>
-      <iframe
-        *ngIf="activeVideoSafeUrl()"
-        class="video-frame"
-        [src]="activeVideoSafeUrl()"
-        title="Exercise demo"
-        loading="lazy"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allowfullscreen>
-      </iframe>
-      <a *ngIf="video.url" class="video-link" [href]="video.url" target="_blank" rel="noopener noreferrer">
-        Open on YouTube
-      </a>
-    </section>
+        <div class="video-head">
+          <strong>{{ video.title || 'Exercise video' }}</strong>
+          <button class="quick-btn" type="button" (click)="closeExerciseVideo()">Close</button>
+        </div>
+        <div *ngIf="videoLoading()" class="results-strip">Loading video...</div>
+        <iframe *ngIf="activeVideoSafeUrl()"
+          class="video-frame"
+          [src]="activeVideoSafeUrl()"
+          title="Exercise demo"
+          frameborder="0" loading="lazy"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
+        </iframe>
+        <a *ngIf="video.url" class="video-link" [href]="video.url" target="_blank" rel="noopener noreferrer">
+          Open on YouTube
+        </a>
+      </section>
+    </div>
 
     <button
       class="mobile-save-fab"

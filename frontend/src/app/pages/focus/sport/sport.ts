@@ -149,11 +149,18 @@ export class SportComponent implements OnInit {
     this.videoLoading.set(true);
     this.exerciseService.getExerciseVideo(exercise.id).subscribe({
       next: (video) => {
-        this.activeVideo.set(video);
-        this.activeVideoSafeUrl.set(
-          video.embed_url ? this.sanitizer.bypassSecurityTrustResourceUrl(video.embed_url) : null
-        );
-        this.videoLoading.set(false);
+        this.activeVideoSafeUrl.set(null);
+
+        setTimeout(() => {
+          this.activeVideo.set(video);
+
+          this.activeVideoSafeUrl.set(
+            video.embed_url
+              ? this.sanitizer.bypassSecurityTrustResourceUrl(video.embed_url)
+              : null
+          );
+          this.videoLoading.set(false);
+        });
         if (!video.embed_url && !video.url) {
           this.showToast('No video available for this exercise.');
         } else if (!video.embed_url && video.url) {
