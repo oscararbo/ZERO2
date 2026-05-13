@@ -45,6 +45,7 @@ export class SportComponent implements OnInit {
   allExercises = signal<Record<string, Exercise[]>>({});
   exerciseState = signal<Record<number, { sets: number; reps: number; completed: boolean }>>({});
   hasCompletedExercises = signal(false);
+  videoSectionOpen = signal(false);
   activeVideo = signal<ExerciseVideo | null>(null);
   activeVideoSafeUrl = signal<SafeResourceUrl | null>(null);
   videoLoading = signal(false);
@@ -146,37 +147,51 @@ export class SportComponent implements OnInit {
   }
 
   openExerciseVideo(exercise: Exercise) {
+    this.videoSectionOpen.set(true);
     this.videoLoading.set(true);
-    this.exerciseService.getExerciseVideo(exercise.id).subscribe({
-      next: (video) => {
-        this.activeVideoSafeUrl.set(null);
-
-        setTimeout(() => {
+    this.activeVideo.set(null);
+    this.activeVideoSafeUrl.set(null);
+    this.exerciseService
+      .getExerciseVideo(exercise.id)
+      .subscribe({
+        next: (video) => {
+          if (!video.embed_url && !video.url) {
+            this.closeExerciseVideo();
+            this.showToast(
+              'No video available for this exercise.'
+            );
+            return;
+          }
           this.activeVideo.set(video);
-
           this.activeVideoSafeUrl.set(
             video.embed_url
-              ? this.sanitizer.bypassSecurityTrustResourceUrl(video.embed_url)
+              ? this.sanitizer.bypassSecurityTrustResourceUrl(
+                  video.embed_url
+                )
               : null
           );
           this.videoLoading.set(false);
-        });
-        if (!video.embed_url && !video.url) {
-          this.showToast('No video available for this exercise.');
-        } else if (!video.embed_url && video.url) {
-          this.showToast('No embed available — use the link below to watch on YouTube.');
-        }
-      },
-      error: () => {
-        this.videoLoading.set(false);
-        this.showToast('No video found for this exercise.');
-      },
-    });
+          if (!video.embed_url && video.url) {
+            this.showToast(
+              'No embed available — use the link below to watch on YouTube.'
+            );
+          }
+        },
+        error: () => {
+          this.closeExerciseVideo();
+          this.videoLoading.set(false);
+          this.showToast(
+            'No video found for this exercise.'
+          );
+        },
+      });
   }
 
   closeExerciseVideo() {
+    this.videoSectionOpen.set(false);
     this.activeVideo.set(null);
     this.activeVideoSafeUrl.set(null);
+    this.videoLoading.set(false);
   }
 
   updateExerciseState(exerciseId: number, field: 'sets' | 'reps' | 'completed', value: any) {
