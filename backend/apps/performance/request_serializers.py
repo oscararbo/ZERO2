@@ -19,7 +19,14 @@ class WearableIngestItemSerializer(serializers.Serializer):
     steps = serializers.IntegerField(min_value=0, required=False, allow_null=True)
     active_minutes = serializers.IntegerField(min_value=0, required=False, allow_null=True)
     calories_burned = serializers.IntegerField(min_value=0, required=False, allow_null=True)
-    avg_heart_rate = serializers.IntegerField(min_value=30, max_value=220, required=False, allow_null=True)
+    avg_heart_rate = serializers.IntegerField(required=False, allow_null=True)
+
+    def validate_avg_heart_rate(self, value):
+        if value is None:
+            return None
+        if 30 <= value <= 220:
+            return value
+        return None
 
 
 class WearableIngestRequestSerializer(serializers.Serializer):

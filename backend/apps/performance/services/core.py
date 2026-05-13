@@ -395,6 +395,13 @@ def ingest_wearable_entries(
     created = 0
 
     for entry in entries:
+        avg_heart_rate = entry.get('avg_heart_rate')
+        if avg_heart_rate is not None and not (30 <= int(avg_heart_rate) <= 220):
+            avg_heart_rate = None
+        raw_payload = dict(entry)
+        date_value = raw_payload.get('date')
+        if hasattr(date_value, 'isoformat'):
+            raw_payload['date'] = date_value.isoformat()
 
         _, was_created = (
             WearableSnapshot.objects.update_or_create(
@@ -410,10 +417,8 @@ def ingest_wearable_entries(
                     'calories_burned': entry.get(
                         'calories_burned'
                     ),
-                    'avg_heart_rate': entry.get(
-                        'avg_heart_rate'
-                    ),
-                    'raw_payload': entry,
+                    'avg_heart_rate': avg_heart_rate,
+                    'raw_payload': raw_payload,
                 },
             )
         )
