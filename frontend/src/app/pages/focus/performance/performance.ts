@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FocusPageHeaderComponent } from '../../shared/components/focus-page-header/focus-page-header';
+import type { Chart } from 'chart.js/auto';
 import {
   FeatureFlag,
   NutritionPlusResponse,
@@ -19,8 +20,11 @@ import {
   styleUrls: ['./performance.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PerformanceComponent implements OnInit {
+export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
   private performanceService = inject(PerformanceService);
+
+  @ViewChild('wearablesChart') wearablesChartRef?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('recoveryChart') recoveryChartRef?: ElementRef<HTMLCanvasElement>;
 
   loading = signal(true);
   toast = signal<string | null>(null);
@@ -56,6 +60,9 @@ export class PerformanceComponent implements OnInit {
   bulkImportFileName = signal('');
   bulkImportLoading = signal(false);
 
+  private charts: Chart[] = [];
+  private chartsReady = false;
+
   readonly plannerCompletion = computed(() => {
     const p = this.weeklyPlan();
     if (!p || p.items.length === 0) return 0;
@@ -64,8 +71,48 @@ export class PerformanceComponent implements OnInit {
 
   readonly latestRecovery = computed(() => this.recoveryLogs()[0] ?? null);
 
+  readonly wearablesSummary = computed(() => {
+    const items = this.wearables();
+    const steps = items.map((row) => row.steps ?? 0);
+    const active = items.map((row) => row.active_minutes ?? 0);
+    const heart = items.map((row) => row.avg_heart_rate ?? 0).filter((value) => value > 0);
+
+    const totalSteps = steps.reduce((sum, value) => sum + value, 0);
+    return {
+      rows: items.length,
+      totalSteps,
+      averageSteps: items.length ? Math.round(totalSteps / items.length) : 0,
+      averageActiveMinutes: items.length ? Math.round(active.reduce((sum, value) => sum + value, 0) / items.length) : 0,
+      averageHeartRate: heart.length ? Math.round(heart.reduce((sum, value) => sum + value, 0) / heart.length) : 0,
+      maxSteps: steps.length ? Math.max(...steps) : 0,
+    };
+  });
+
+  readonly recoverySummary = computed(() => {
+    const items = this.recoveryLogs();
+    const scores = items.map((row) => row.recovery_score);
+    const sleep = items.map((row) => row.sleep_hours);
+
+    return {
+      rows: items.length,
+      averageScore: items.length ? Math.round(scores.reduce((sum, value) => sum + value, 0) / items.length) : 0,
+      averageSleep: items.length ? (sleep.reduce((sum, value) => sum + value, 0) / items.length).toFixed(1) : '0.0',
+      bestScore: scores.length ? Math.max(...scores) : 0,
+      latestScore: scores[0] ?? 0,
+    };
+  });
+
   ngOnInit(): void {
     this.reloadAll();
+  }
+
+  ngAfterViewInit(): void {
+    this.chartsReady = true;
+    void this.renderCharts();
+  }
+
+  ngOnDestroy(): void {
+    this.destroyCharts();
   }
 
   reloadAll(): void {
@@ -83,11 +130,17 @@ export class PerformanceComponent implements OnInit {
       error: () => this.nutrition.set(null),
     });
     this.performanceService.getRecoveryLogs().subscribe({
-      next: (v) => this.recoveryLogs.set(v),
+      next: (v) => {
+        this.recoveryLogs.set(v);
+        void this.renderCharts();
+      },
       error: () => { this.recoveryLogs.set([]); this.showToast('Recovery logs unavailable (service starting up).', 'error'); },
     });
     this.performanceService.getWearables().subscribe({
-      next: (v) => this.wearables.set(v),
+      next: (v) => {
+        this.wearables.set(v);
+        void this.renderCharts();
+      },
       error: () => this.wearables.set([]),
     });
     this.performanceService.getFeatureFlags().subscribe({
@@ -122,7 +175,10 @@ export class PerformanceComponent implements OnInit {
     this.performanceService.saveRecoveryLog(this.recoveryForm()).subscribe({
       next: () => {
         this.performanceService.getRecoveryLogs().subscribe({
-          next: (v) => this.recoveryLogs.set(v),
+          next: (v) => {
+            this.recoveryLogs.set(v);
+            void this.renderCharts();
+          },
           error: () => this.recoveryLogs.set([]),
         });
         this.showToast('Recovery log saved.');
@@ -152,7 +208,10 @@ export class PerformanceComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.performanceService.getWearables().subscribe({
-          next: (v) => this.wearables.set(v),
+          next: (v) => {
+            this.wearables.set(v);
+            void this.renderCharts();
+          },
           error: () => this.wearables.set([]),
         });
         this.showToast('Wearable snapshot synced.');
@@ -239,7 +298,10 @@ export class PerformanceComponent implements OnInit {
       next: (summary) => {
         this.bulkImportLoading.set(false);
         this.performanceService.getWearables().subscribe({
-          next: (v) => this.wearables.set(v),
+          next: (v) => {
+            this.wearables.set(v);
+            void this.renderCharts();
+          },
           error: () => this.wearables.set([]),
         });
         this.showToast(`Imported ${summary.processed} wearable entries.`);
@@ -321,6 +383,112 @@ export class PerformanceComponent implements OnInit {
       error: () => this.showToast('Could not queue video sync — service unavailable.', 'error'),
     });
   }
+
+  private destroyCharts(): void {
+    this.charts.forEach((chart) => chart.destroy());
+    this.charts = [];
+  }
+
+  private async renderCharts(): Promise<void> {
+    if (!this.chartsReady) return;
+
+    const wearablesCanvas = this.wearablesChartRef?.nativeElement;
+    const recoveryCanvas = this.recoveryChartRef?.nativeElement;
+    if (!wearablesCanvas || !recoveryCanvas) return;
+
+    this.destroyCharts();
+
+    const chartModule = await import('chart.js/auto');
+    const ChartClass = chartModule.Chart;
+
+    const wearables = [...this.wearables()].sort((a, b) => a.date.localeCompare(b.date)).slice(-14);
+    const recovery = [...this.recoveryLogs()].sort((a, b) => a.date.localeCompare(b.date)).slice(-14);
+
+    const wearablesLabels = (wearables.length ? wearables : [{ date: 'No data' } as WearableSnapshot]).map((row) => row.date.slice(5));
+    const recoveryLabels = (recovery.length ? recovery : [{ date: 'No data' } as RecoveryLog]).map((row) => row.date.slice(5));
+
+    this.charts.push(new ChartClass(wearablesCanvas, {
+      type: 'bar',
+      data: {
+        labels: wearablesLabels,
+        datasets: [
+          {
+            label: 'Steps',
+            data: (wearables.length ? wearables : [{ steps: 0 } as WearableSnapshot]).map((row) => row.steps ?? 0),
+            backgroundColor: 'rgba(160, 132, 255, 0.55)',
+            borderColor: 'rgba(160, 132, 255, 1)',
+            borderWidth: 1,
+            borderRadius: 8,
+            yAxisID: 'y',
+          },
+          {
+            label: 'Active min',
+            data: (wearables.length ? wearables : [{ active_minutes: 0 } as WearableSnapshot]).map((row) => row.active_minutes ?? 0),
+            borderColor: 'rgba(90, 200, 250, 1)',
+            backgroundColor: 'rgba(90, 200, 250, 0.25)',
+            type: 'line',
+            tension: 0.35,
+            fill: false,
+            yAxisID: 'y1',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#f1f3f6' } },
+        },
+        scales: {
+          x: { ticks: { color: '#aab2c0' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+          y: { beginAtZero: true, ticks: { color: '#aab2c0' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+          y1: {
+            beginAtZero: true,
+            position: 'right',
+            ticks: { color: '#aab2c0' },
+            grid: { drawOnChartArea: false },
+          },
+        },
+      },
+    }));
+
+    this.charts.push(new ChartClass(recoveryCanvas, {
+      type: 'line',
+      data: {
+        labels: recoveryLabels,
+        datasets: [
+          {
+            label: 'Recovery score',
+            data: (recovery.length ? recovery : [{ recovery_score: 0 } as RecoveryLog]).map((row) => row.recovery_score),
+            borderColor: 'rgba(255, 196, 61, 1)',
+            backgroundColor: 'rgba(255, 196, 61, 0.18)',
+            tension: 0.35,
+            fill: true,
+          },
+          {
+            label: 'Sleep hours',
+            data: (recovery.length ? recovery : [{ sleep_hours: 0 } as RecoveryLog]).map((row) => row.sleep_hours),
+            borderColor: 'rgba(120, 255, 214, 1)',
+            backgroundColor: 'rgba(120, 255, 214, 0.14)',
+            tension: 0.3,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#f1f3f6' } },
+        },
+        scales: {
+          x: { ticks: { color: '#aab2c0' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+          y: { beginAtZero: true, ticks: { color: '#aab2c0' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+        },
+      },
+    }));
+  }
+
   private showToast(message: string, type: 'success' | 'error' = 'success'): void {
     this.toastType.set(type);
     this.toast.set(message);

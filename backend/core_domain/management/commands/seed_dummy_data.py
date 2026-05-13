@@ -17,9 +17,12 @@ from core_domain.models import (
     JournalEntry,
     MoodEntry,
     Profile,
+    RecoveryLog,
+    WearableSnapshot,
     UserBadge,
     UserTemplateVersion,
 )
+from apps.performance.services import build_weekly_plan
 
 
 class Command(BaseCommand):
@@ -45,16 +48,22 @@ class Command(BaseCommand):
 
         exercises = self._ensure_exercises()
         admin_user = self._ensure_admin(password)
+        prueba_user = self._ensure_prueba_user()
         users = self._ensure_dummy_users(users_to_create, password)
+        all_users = [prueba_user] + users
 
-        self._ensure_profiles(users)
-        self._generate_mood_and_journal(users, days)
-        self._generate_sessions(users, exercises, days)
-        self._generate_challenges(users, days)
-        self._generate_templates(users)
+        self._ensure_profiles(all_users)
+        self._generate_mood_and_journal(all_users, days)
+        self._generate_sessions(all_users, exercises, days)
+        self._generate_performance_records(all_users, days)
+        self._generate_challenges(all_users, days)
+        self._generate_templates(all_users)
+        self._generate_prueba_profile(prueba_user)
+        self._generate_prueba_activity(prueba_user, exercises, max(days, 60))
 
         self.stdout.write(self.style.SUCCESS("Dummy data generation completed."))
         self.stdout.write(f"Admin user: {admin_user.username}")
+        self.stdout.write(f"Special user: {prueba_user.username} / Prueba1")
         self.stdout.write(f"Users total: {User.objects.count()}")
         self.stdout.write(f"Profiles total: {Profile.objects.count()}")
         self.stdout.write(f"Exercises total: {Exercise.objects.count()}")
@@ -82,6 +91,7 @@ class Command(BaseCommand):
 
         Profile.objects.exclude(user__is_superuser=True).delete()
         User.objects.filter(username__startswith="demo_user_").delete()
+        User.objects.filter(username="Prueba").delete()
 
     def _ensure_admin(self, password):
         admin_user, created = User.objects.get_or_create(
@@ -123,6 +133,18 @@ class Command(BaseCommand):
         )
         return admin_user
 
+    def _ensure_prueba_user(self):
+        user, created = User.objects.get_or_create(
+            username="Prueba",
+            defaults={"email": "prueba@example.com", "is_active": True},
+        )
+        if created or not user.check_password("Prueba1"):
+            user.set_password("Prueba1")
+            user.is_staff = False
+            user.is_superuser = False
+            user.save(update_fields=["password", "is_staff", "is_superuser"])
+        return user
+
     def _ensure_dummy_users(self, users_to_create, password):
         users = []
 
@@ -150,10 +172,27 @@ class Command(BaseCommand):
 
     def _ensure_profiles(self, users):
         for idx, user in enumerate(users, start=1):
-            goal = ["bulk", "cut", "maintain"][idx % 3]
-            profile, _ = Profile.objects.get_or_create(
-                user=user,
-                defaults={
+            if user.username == "Prueba":
+                goal = "maintain"
+                defaults = {
+                    "full_name": "Prueba",
+                    "weekly_goal": 6,
+                    "fitness_goal": goal,
+                    "weight": 81,
+                    "height": 179,
+                    "macro_calories_target": 2550,
+                    "macro_protein_target": 185,
+                    "macro_carbs_target": 285,
+                    "macro_fat_target": 78,
+                    "sport": True,
+                    "food": True,
+                    "mindset": True,
+                    "growth": True,
+                    "challenges": True,
+                }
+            else:
+                goal = ["bulk", "cut", "maintain"][idx % 3]
+                defaults = {
                     "full_name": f"Demo User {idx:02d}",
                     "weekly_goal": random.randint(2, 6),
                     "fitness_goal": goal,
@@ -168,12 +207,165 @@ class Command(BaseCommand):
                     "mindset": random.random() > 0.25,
                     "growth": random.random() > 0.3,
                     "challenges": random.random() > 0.1,
-                },
+                }
+            profile, _ = Profile.objects.get_or_create(
+                user=user,
+                defaults=defaults,
             )
 
-            profile.full_name = profile.full_name or f"Demo User {idx:02d}"
+            profile.full_name = profile.full_name or defaults["full_name"]
             profile.fitness_goal = goal
             profile.save()
+
+    def _generate_performance_records(self, users, days):
+        today = timezone.now().date()
+
+        for user in users:
+            for offset in range(days):
+                day = today - timedelta(days=offset)
+
+                sleep_hours = round(6.0 + ((offset + len(user.username)) % 6) * 0.45, 1)
+                stress_level = 2 + ((offset + len(user.username)) % 7)
+                soreness_level = 2 + ((offset * 2 + len(user.username)) % 7)
+                resting_hr = 56 + ((offset + len(user.username)) % 18)
+                steps = 4200 + (offset * 317) % 8800
+
+                RecoveryLog.objects.update_or_create(
+                    user=user,
+                    date=day,
+                    defaults={
+                        "sleep_hours": sleep_hours,
+                        "stress_level": min(10, stress_level),
+                        "soreness_level": min(10, soreness_level),
+                        "resting_heart_rate": resting_hr,
+                        "steps": steps,
+                        "recovery_score": max(0, min(100, int((sleep_hours / 8.0) * 45))),
+                    },
+                )
+
+                WearableSnapshot.objects.update_or_create(
+                    user=user,
+                    provider="samsung_health",
+                    date=day,
+                    defaults={
+                        "source": "seeded-performance",
+                        "steps": steps,
+                        "active_minutes": 18 + ((offset * 3) % 62),
+                        "calories_burned": 280 + ((offset * 41) % 680),
+                        "avg_heart_rate": 58 + ((offset * 5) % 42),
+                        "raw_payload": {
+                            "date": day.isoformat(),
+                            "steps": steps,
+                            "active_minutes": 18 + ((offset * 3) % 62),
+                            "calories_burned": 280 + ((offset * 41) % 680),
+                            "avg_heart_rate": 58 + ((offset * 5) % 42),
+                            "source": "seeded-performance",
+                        },
+                    },
+                )
+
+    def _generate_prueba_profile(self, user):
+        Profile.objects.update_or_create(
+            user=user,
+            defaults={
+                "full_name": "Prueba",
+                "weekly_goal": 7,
+                "fitness_goal": "maintain",
+                "weight": 84,
+                "height": 181,
+                "macro_calories_target": 2650,
+                "macro_protein_target": 190,
+                "macro_carbs_target": 300,
+                "macro_fat_target": 82,
+                "sport": True,
+                "food": True,
+                "mindset": True,
+                "growth": True,
+                "challenges": True,
+            },
+        )
+
+        build_weekly_plan(user)
+
+    def _generate_prueba_activity(self, user, exercises, days):
+        today = timezone.now().date()
+        cycling_exercises = list(exercises)
+
+        date_field = ExerciseSession._meta.get_field("date")
+        original_auto_now_add = date_field.auto_now_add
+        date_field.auto_now_add = False
+
+        try:
+            for offset in range(days):
+                day = today - timedelta(days=offset)
+                mood_value = 3 + (offset % 8)
+
+                MoodEntry.objects.update_or_create(
+                    user=user,
+                    date=day,
+                    defaults={"value": min(10, mood_value)},
+                )
+
+                JournalEntry.objects.get_or_create(
+                    user=user,
+                    content=f"Prueba day {offset + 1}: training, recovery and wearable data reviewed.",
+                )
+
+                RecoveryLog.objects.update_or_create(
+                    user=user,
+                    date=day,
+                    defaults={
+                        "sleep_hours": round(5.5 + (offset % 6) * 0.6, 1),
+                        "stress_level": 3 + (offset % 6),
+                        "soreness_level": 2 + ((offset + 2) % 6),
+                        "resting_heart_rate": 57 + ((offset * 2) % 18),
+                        "steps": 6000 + (offset * 290) % 9000,
+                        "recovery_score": 42 + (offset % 28),
+                    },
+                )
+
+                WearableSnapshot.objects.update_or_create(
+                    user=user,
+                    provider="samsung_health",
+                    date=day,
+                    defaults={
+                        "source": "prueba-seed",
+                        "steps": 7000 + (offset * 333) % 11000,
+                        "active_minutes": 25 + (offset % 55),
+                        "calories_burned": 340 + (offset * 37) % 760,
+                        "avg_heart_rate": 60 + (offset % 46),
+                        "raw_payload": {
+                            "date": day.isoformat(),
+                            "steps": 7000 + (offset * 333) % 11000,
+                            "active_minutes": 25 + (offset % 55),
+                            "calories_burned": 340 + (offset * 37) % 760,
+                            "avg_heart_rate": 60 + (offset % 46),
+                            "source": "prueba-seed",
+                        },
+                    },
+                )
+
+                if offset % 2 == 0:
+                    location = "gym" if offset % 4 == 0 else "home"
+                    session, _ = ExerciseSession.objects.get_or_create(
+                        user=user,
+                        date=day,
+                        location=location,
+                        defaults={"completed_exercises": 4 + (offset % 3)},
+                    )
+                    for index in range(4):
+                        exercise = cycling_exercises[(offset * 4 + index) % len(cycling_exercises)]
+                        CompletedExercise.objects.get_or_create(
+                            session=session,
+                            exercise=exercise,
+                            defaults={
+                                "sets_completed": max(1, exercise.default_sets),
+                                "reps_per_set": max(4, exercise.default_reps),
+                                "notes": "Prueba seeded activity.",
+                            },
+                        )
+        finally:
+            date_field.auto_now_add = original_auto_now_add
 
     def _generate_mood_and_journal(self, users, days):
         today = timezone.now().date()

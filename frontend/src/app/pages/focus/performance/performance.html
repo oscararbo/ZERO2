@@ -12,6 +12,60 @@
             <div>
               <strong>{{ item.date }} · {{ item.focus_area | titlecase }}</strong>
               <p>{{ item.planned_workout }}</p>
+
+        <section class="grid-two insights">
+          <article class="card">
+            <h3>Wearable Insights</h3>
+            <p class="muted">Imported and synced wearable rows are summarized here as step and activity charts.</p>
+            <div class="summary-grid">
+              <div>
+                <span>Rows</span>
+                <strong>{{ wearablesSummary().rows }}</strong>
+              </div>
+              <div>
+                <span>Total Steps</span>
+                <strong>{{ wearablesSummary().totalSteps | number:'1.0-0' }}</strong>
+              </div>
+              <div>
+                <span>Avg Steps</span>
+                <strong>{{ wearablesSummary().averageSteps | number:'1.0-0' }}</strong>
+              </div>
+              <div>
+                <span>Avg Active Min</span>
+                <strong>{{ wearablesSummary().averageActiveMinutes | number:'1.0-0' }}</strong>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas #wearablesChart></canvas>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Recovery Trend</h3>
+            <p class="muted">Recovery log values also feed a time series so you can compare score and sleep quality.</p>
+            <div class="summary-grid">
+              <div>
+                <span>Rows</span>
+                <strong>{{ recoverySummary().rows }}</strong>
+              </div>
+              <div>
+                <span>Avg Score</span>
+                <strong>{{ recoverySummary().averageScore }}</strong>
+              </div>
+              <div>
+                <span>Avg Sleep</span>
+                <strong>{{ recoverySummary().averageSleep }}</strong>
+              </div>
+              <div>
+                <span>Best Score</span>
+                <strong>{{ recoverySummary().bestScore }}</strong>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas #recoveryChart></canvas>
+            </div>
+          </article>
+        </section>
             </div>
           </label>
         </div>
