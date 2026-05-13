@@ -6,7 +6,6 @@ import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.StepsRecord
-import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import java.time.Instant
@@ -18,7 +17,26 @@ class HealthConnectReader(private val context: Context) {
     private val client by lazy { HealthConnectClient.getOrCreate(context) }
     private val zone: ZoneId = ZoneId.systemDefault()
 
+    fun isSdkAvailable(): Boolean {
+      return try {
+        HealthConnectClient.getSdkStatus(context, PROVIDER_PACKAGE) ==
+          HealthConnectClient.SDK_AVAILABLE
+      } catch (e: Exception) {
+        false
+      }
+    }
+
+    fun availabilityMessage(): String {
+        return when (HealthConnectClient.getSdkStatus(context, PROVIDER_PACKAGE)) {
+            HealthConnectClient.SDK_AVAILABLE -> "Health Connect available"
+            HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED ->
+                "Update Health Connect from Play Store and try again"
+            else -> "Health Connect is not available on this device"
+        }
+    }
+
     suspend fun hasAllPermissions(): Boolean {
+        if (!isSdkAvailable()) return false
         val granted = client.permissionController.getGrantedPermissions()
         return granted.containsAll(requiredPermissions)
     }
@@ -54,12 +72,6 @@ class HealthConnectReader(private val context: Context) {
             forDate(date).activeMinutes += minutes
         }
 
-        val calorieRows = client.readRecords(ReadRecordsRequest(TotalCaloriesBurnedRecord::class, range)).records
-        for (row in calorieRows) {
-            val date = row.startTime.atZone(zone).toLocalDate().toString()
-            forDate(date).calories += row.energy.inKilocalories
-        }
-
         val heartRows = client.readRecords(ReadRecordsRequest(HeartRateRecord::class, range)).records
         for (row in heartRows) {
             val date = row.startTime.atZone(zone).toLocalDate().toString()
@@ -75,17 +87,18 @@ class HealthConnectReader(private val context: Context) {
                 date = date,
                 steps = if (v.steps > 0) v.steps else null,
                 activeMinutes = if (v.activeMinutes > 0) v.activeMinutes else null,
-                caloriesBurned = if (v.calories > 0) v.calories.roundToInt() else null,
+                caloriesBurned = null,
                 avgHeartRate = if (v.hrSamples > 0) (v.hrSum.toDouble() / v.hrSamples).roundToInt() else null
             )
         }
     }
 
     companion object {
+        private const val PROVIDER_PACKAGE = "com.google.android.apps.healthdata"
+
         val requiredPermissions = setOf(
             HealthPermission.getReadPermission(StepsRecord::class),
             HealthPermission.getReadPermission(ExerciseSessionRecord::class),
-            HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
             HealthPermission.getReadPermission(HeartRateRecord::class)
         )
     }

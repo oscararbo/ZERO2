@@ -68,7 +68,7 @@ class RetrofitProvider(
     }
 
     fun api(): ZeroApi {
-        val baseUrl = sessionManager.backendUrl.ifBlank { "http://10.0.2.2:8000/" }
+        val baseUrl = sessionManager.backendUrl.ifBlank { "https://zero-mbdv.onrender.com/" }
         return Retrofit.Builder()
             .baseUrl(baseUrl)
             .client(client)

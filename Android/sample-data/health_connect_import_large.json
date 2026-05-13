@@ -1,0 +1,2944 @@
+﻿{
+    "entries":  [
+                    {
+                        "date":  "2025-01-01",
+                        "steps":  6000,
+                        "active_minutes":  25,
+                        "calories_burned":  180,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2025-01-02",
+                        "steps":  6137,
+                        "active_minutes":  32,
+                        "calories_burned":  191,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2025-01-03",
+                        "steps":  6274,
+                        "active_minutes":  39,
+                        "calories_burned":  202,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2025-01-04",
+                        "steps":  6411,
+                        "active_minutes":  46,
+                        "calories_burned":  213,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2025-01-05",
+                        "steps":  6548,
+                        "active_minutes":  53,
+                        "calories_burned":  224,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2025-01-06",
+                        "steps":  6685,
+                        "active_minutes":  60,
+                        "calories_burned":  235,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2025-01-07",
+                        "steps":  6822,
+                        "active_minutes":  67,
+                        "calories_burned":  246,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2025-01-08",
+                        "steps":  6959,
+                        "active_minutes":  74,
+                        "calories_burned":  257,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2025-01-09",
+                        "steps":  7096,
+                        "active_minutes":  81,
+                        "calories_burned":  268,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2025-01-10",
+                        "steps":  7233,
+                        "active_minutes":  88,
+                        "calories_burned":  279,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2025-01-11",
+                        "steps":  7370,
+                        "active_minutes":  95,
+                        "calories_burned":  290,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2025-01-12",
+                        "steps":  7507,
+                        "active_minutes":  102,
+                        "calories_burned":  301,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2025-01-13",
+                        "steps":  7644,
+                        "active_minutes":  29,
+                        "calories_burned":  312,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2025-01-14",
+                        "steps":  7781,
+                        "active_minutes":  36,
+                        "calories_burned":  323,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2025-01-15",
+                        "steps":  7918,
+                        "active_minutes":  43,
+                        "calories_burned":  334,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2025-01-16",
+                        "steps":  8055,
+                        "active_minutes":  50,
+                        "calories_burned":  345,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2025-01-17",
+                        "steps":  8192,
+                        "active_minutes":  57,
+                        "calories_burned":  356,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2025-01-18",
+                        "steps":  8329,
+                        "active_minutes":  64,
+                        "calories_burned":  367,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2025-01-19",
+                        "steps":  8466,
+                        "active_minutes":  71,
+                        "calories_burned":  378,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2025-01-20",
+                        "steps":  8603,
+                        "active_minutes":  78,
+                        "calories_burned":  389,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2025-01-21",
+                        "steps":  8740,
+                        "active_minutes":  85,
+                        "calories_burned":  400,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2025-01-22",
+                        "steps":  8877,
+                        "active_minutes":  92,
+                        "calories_burned":  411,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2025-01-23",
+                        "steps":  9014,
+                        "active_minutes":  99,
+                        "calories_burned":  422,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2025-01-24",
+                        "steps":  9151,
+                        "active_minutes":  26,
+                        "calories_burned":  433,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2025-01-25",
+                        "steps":  9288,
+                        "active_minutes":  33,
+                        "calories_burned":  444,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2025-01-26",
+                        "steps":  9425,
+                        "active_minutes":  40,
+                        "calories_burned":  455,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2025-01-27",
+                        "steps":  9562,
+                        "active_minutes":  47,
+                        "calories_burned":  466,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2025-01-28",
+                        "steps":  9699,
+                        "active_minutes":  54,
+                        "calories_burned":  477,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2025-01-29",
+                        "steps":  9836,
+                        "active_minutes":  61,
+                        "calories_burned":  488,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2025-01-30",
+                        "steps":  9973,
+                        "active_minutes":  68,
+                        "calories_burned":  499,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2025-01-31",
+                        "steps":  10110,
+                        "active_minutes":  75,
+                        "calories_burned":  510,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2025-02-01",
+                        "steps":  10247,
+                        "active_minutes":  82,
+                        "calories_burned":  521,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2025-02-02",
+                        "steps":  10384,
+                        "active_minutes":  89,
+                        "calories_burned":  532,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2025-02-03",
+                        "steps":  10521,
+                        "active_minutes":  96,
+                        "calories_burned":  543,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2025-02-04",
+                        "steps":  10658,
+                        "active_minutes":  103,
+                        "calories_burned":  554,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2025-02-05",
+                        "steps":  10795,
+                        "active_minutes":  30,
+                        "calories_burned":  565,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2025-02-06",
+                        "steps":  10932,
+                        "active_minutes":  37,
+                        "calories_burned":  576,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2025-02-07",
+                        "steps":  11069,
+                        "active_minutes":  44,
+                        "calories_burned":  587,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2025-02-08",
+                        "steps":  11206,
+                        "active_minutes":  51,
+                        "calories_burned":  598,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2025-02-09",
+                        "steps":  11343,
+                        "active_minutes":  58,
+                        "calories_burned":  609,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2025-02-10",
+                        "steps":  11480,
+                        "active_minutes":  65,
+                        "calories_burned":  620,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2025-02-11",
+                        "steps":  11617,
+                        "active_minutes":  72,
+                        "calories_burned":  631,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2025-02-12",
+                        "steps":  11754,
+                        "active_minutes":  79,
+                        "calories_burned":  642,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2025-02-13",
+                        "steps":  11891,
+                        "active_minutes":  86,
+                        "calories_burned":  653,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2025-02-14",
+                        "steps":  12028,
+                        "active_minutes":  93,
+                        "calories_burned":  664,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2025-02-15",
+                        "steps":  12165,
+                        "active_minutes":  100,
+                        "calories_burned":  675,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2025-02-16",
+                        "steps":  12302,
+                        "active_minutes":  27,
+                        "calories_burned":  686,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2025-02-17",
+                        "steps":  12439,
+                        "active_minutes":  34,
+                        "calories_burned":  697,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2025-02-18",
+                        "steps":  12576,
+                        "active_minutes":  41,
+                        "calories_burned":  708,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2025-02-19",
+                        "steps":  12713,
+                        "active_minutes":  48,
+                        "calories_burned":  719,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2025-02-20",
+                        "steps":  12850,
+                        "active_minutes":  55,
+                        "calories_burned":  730,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2025-02-21",
+                        "steps":  12987,
+                        "active_minutes":  62,
+                        "calories_burned":  741,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2025-02-22",
+                        "steps":  13124,
+                        "active_minutes":  69,
+                        "calories_burned":  752,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2025-02-23",
+                        "steps":  13261,
+                        "active_minutes":  76,
+                        "calories_burned":  763,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2025-02-24",
+                        "steps":  13398,
+                        "active_minutes":  83,
+                        "calories_burned":  774,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2025-02-25",
+                        "steps":  13535,
+                        "active_minutes":  90,
+                        "calories_burned":  785,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2025-02-26",
+                        "steps":  13672,
+                        "active_minutes":  97,
+                        "calories_burned":  796,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2025-02-27",
+                        "steps":  13809,
+                        "active_minutes":  104,
+                        "calories_burned":  807,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2025-02-28",
+                        "steps":  13946,
+                        "active_minutes":  31,
+                        "calories_burned":  818,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2025-03-01",
+                        "steps":  14083,
+                        "active_minutes":  38,
+                        "calories_burned":  829,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2025-03-02",
+                        "steps":  14220,
+                        "active_minutes":  45,
+                        "calories_burned":  840,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2025-03-03",
+                        "steps":  14357,
+                        "active_minutes":  52,
+                        "calories_burned":  851,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2025-03-04",
+                        "steps":  14494,
+                        "active_minutes":  59,
+                        "calories_burned":  862,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2025-03-05",
+                        "steps":  14631,
+                        "active_minutes":  66,
+                        "calories_burned":  873,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2025-03-06",
+                        "steps":  14768,
+                        "active_minutes":  73,
+                        "calories_burned":  184,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2025-03-07",
+                        "steps":  14905,
+                        "active_minutes":  80,
+                        "calories_burned":  195,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2025-03-08",
+                        "steps":  6042,
+                        "active_minutes":  87,
+                        "calories_burned":  206,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2025-03-09",
+                        "steps":  6179,
+                        "active_minutes":  94,
+                        "calories_burned":  217,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2025-03-10",
+                        "steps":  6316,
+                        "active_minutes":  101,
+                        "calories_burned":  228,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2025-03-11",
+                        "steps":  6453,
+                        "active_minutes":  28,
+                        "calories_burned":  239,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2025-03-12",
+                        "steps":  6590,
+                        "active_minutes":  35,
+                        "calories_burned":  250,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2025-03-13",
+                        "steps":  6727,
+                        "active_minutes":  42,
+                        "calories_burned":  261,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2025-03-14",
+                        "steps":  6864,
+                        "active_minutes":  49,
+                        "calories_burned":  272,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2025-03-15",
+                        "steps":  7001,
+                        "active_minutes":  56,
+                        "calories_burned":  283,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2025-03-16",
+                        "steps":  7138,
+                        "active_minutes":  63,
+                        "calories_burned":  294,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2025-03-17",
+                        "steps":  7275,
+                        "active_minutes":  70,
+                        "calories_burned":  305,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2025-03-18",
+                        "steps":  7412,
+                        "active_minutes":  77,
+                        "calories_burned":  316,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2025-03-19",
+                        "steps":  7549,
+                        "active_minutes":  84,
+                        "calories_burned":  327,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2025-03-20",
+                        "steps":  7686,
+                        "active_minutes":  91,
+                        "calories_burned":  338,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2025-03-21",
+                        "steps":  7823,
+                        "active_minutes":  98,
+                        "calories_burned":  349,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2025-03-22",
+                        "steps":  7960,
+                        "active_minutes":  25,
+                        "calories_burned":  360,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2025-03-23",
+                        "steps":  8097,
+                        "active_minutes":  32,
+                        "calories_burned":  371,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2025-03-24",
+                        "steps":  8234,
+                        "active_minutes":  39,
+                        "calories_burned":  382,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2025-03-25",
+                        "steps":  8371,
+                        "active_minutes":  46,
+                        "calories_burned":  393,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2025-03-26",
+                        "steps":  8508,
+                        "active_minutes":  53,
+                        "calories_burned":  404,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2025-03-27",
+                        "steps":  8645,
+                        "active_minutes":  60,
+                        "calories_burned":  415,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2025-03-28",
+                        "steps":  8782,
+                        "active_minutes":  67,
+                        "calories_burned":  426,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2025-03-29",
+                        "steps":  8919,
+                        "active_minutes":  74,
+                        "calories_burned":  437,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2025-03-30",
+                        "steps":  9056,
+                        "active_minutes":  81,
+                        "calories_burned":  448,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2025-03-31",
+                        "steps":  9193,
+                        "active_minutes":  88,
+                        "calories_burned":  459,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2025-04-01",
+                        "steps":  9330,
+                        "active_minutes":  95,
+                        "calories_burned":  470,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2025-04-02",
+                        "steps":  9467,
+                        "active_minutes":  102,
+                        "calories_burned":  481,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2025-04-03",
+                        "steps":  9604,
+                        "active_minutes":  29,
+                        "calories_burned":  492,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2025-04-04",
+                        "steps":  9741,
+                        "active_minutes":  36,
+                        "calories_burned":  503,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2025-04-05",
+                        "steps":  9878,
+                        "active_minutes":  43,
+                        "calories_burned":  514,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2025-04-06",
+                        "steps":  10015,
+                        "active_minutes":  50,
+                        "calories_burned":  525,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2025-04-07",
+                        "steps":  10152,
+                        "active_minutes":  57,
+                        "calories_burned":  536,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2025-04-08",
+                        "steps":  10289,
+                        "active_minutes":  64,
+                        "calories_burned":  547,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2025-04-09",
+                        "steps":  10426,
+                        "active_minutes":  71,
+                        "calories_burned":  558,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2025-04-10",
+                        "steps":  10563,
+                        "active_minutes":  78,
+                        "calories_burned":  569,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2025-04-11",
+                        "steps":  10700,
+                        "active_minutes":  85,
+                        "calories_burned":  580,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2025-04-12",
+                        "steps":  10837,
+                        "active_minutes":  92,
+                        "calories_burned":  591,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2025-04-13",
+                        "steps":  10974,
+                        "active_minutes":  99,
+                        "calories_burned":  602,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2025-04-14",
+                        "steps":  11111,
+                        "active_minutes":  26,
+                        "calories_burned":  613,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2025-04-15",
+                        "steps":  11248,
+                        "active_minutes":  33,
+                        "calories_burned":  624,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2025-04-16",
+                        "steps":  11385,
+                        "active_minutes":  40,
+                        "calories_burned":  635,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2025-04-17",
+                        "steps":  11522,
+                        "active_minutes":  47,
+                        "calories_burned":  646,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2025-04-18",
+                        "steps":  11659,
+                        "active_minutes":  54,
+                        "calories_burned":  657,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2025-04-19",
+                        "steps":  11796,
+                        "active_minutes":  61,
+                        "calories_burned":  668,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2025-04-20",
+                        "steps":  11933,
+                        "active_minutes":  68,
+                        "calories_burned":  679,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2025-04-21",
+                        "steps":  12070,
+                        "active_minutes":  75,
+                        "calories_burned":  690,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2025-04-22",
+                        "steps":  12207,
+                        "active_minutes":  82,
+                        "calories_burned":  701,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2025-04-23",
+                        "steps":  12344,
+                        "active_minutes":  89,
+                        "calories_burned":  712,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2025-04-24",
+                        "steps":  12481,
+                        "active_minutes":  96,
+                        "calories_burned":  723,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2025-04-25",
+                        "steps":  12618,
+                        "active_minutes":  103,
+                        "calories_burned":  734,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2025-04-26",
+                        "steps":  12755,
+                        "active_minutes":  30,
+                        "calories_burned":  745,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2025-04-27",
+                        "steps":  12892,
+                        "active_minutes":  37,
+                        "calories_burned":  756,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2025-04-28",
+                        "steps":  13029,
+                        "active_minutes":  44,
+                        "calories_burned":  767,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2025-04-29",
+                        "steps":  13166,
+                        "active_minutes":  51,
+                        "calories_burned":  778,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2025-04-30",
+                        "steps":  13303,
+                        "active_minutes":  58,
+                        "calories_burned":  789,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2025-05-01",
+                        "steps":  13440,
+                        "active_minutes":  65,
+                        "calories_burned":  800,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2025-05-02",
+                        "steps":  13577,
+                        "active_minutes":  72,
+                        "calories_burned":  811,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2025-05-03",
+                        "steps":  13714,
+                        "active_minutes":  79,
+                        "calories_burned":  822,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2025-05-04",
+                        "steps":  13851,
+                        "active_minutes":  86,
+                        "calories_burned":  833,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2025-05-05",
+                        "steps":  13988,
+                        "active_minutes":  93,
+                        "calories_burned":  844,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2025-05-06",
+                        "steps":  14125,
+                        "active_minutes":  100,
+                        "calories_burned":  855,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2025-05-07",
+                        "steps":  14262,
+                        "active_minutes":  27,
+                        "calories_burned":  866,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2025-05-08",
+                        "steps":  14399,
+                        "active_minutes":  34,
+                        "calories_burned":  877,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2025-05-09",
+                        "steps":  14536,
+                        "active_minutes":  41,
+                        "calories_burned":  188,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2025-05-10",
+                        "steps":  14673,
+                        "active_minutes":  48,
+                        "calories_burned":  199,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2025-05-11",
+                        "steps":  14810,
+                        "active_minutes":  55,
+                        "calories_burned":  210,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2025-05-12",
+                        "steps":  14947,
+                        "active_minutes":  62,
+                        "calories_burned":  221,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2025-05-13",
+                        "steps":  6084,
+                        "active_minutes":  69,
+                        "calories_burned":  232,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2025-05-14",
+                        "steps":  6221,
+                        "active_minutes":  76,
+                        "calories_burned":  243,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2025-05-15",
+                        "steps":  6358,
+                        "active_minutes":  83,
+                        "calories_burned":  254,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2025-05-16",
+                        "steps":  6495,
+                        "active_minutes":  90,
+                        "calories_burned":  265,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2025-05-17",
+                        "steps":  6632,
+                        "active_minutes":  97,
+                        "calories_burned":  276,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2025-05-18",
+                        "steps":  6769,
+                        "active_minutes":  104,
+                        "calories_burned":  287,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2025-05-19",
+                        "steps":  6906,
+                        "active_minutes":  31,
+                        "calories_burned":  298,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2025-05-20",
+                        "steps":  7043,
+                        "active_minutes":  38,
+                        "calories_burned":  309,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2025-05-21",
+                        "steps":  7180,
+                        "active_minutes":  45,
+                        "calories_burned":  320,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2025-05-22",
+                        "steps":  7317,
+                        "active_minutes":  52,
+                        "calories_burned":  331,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2025-05-23",
+                        "steps":  7454,
+                        "active_minutes":  59,
+                        "calories_burned":  342,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2025-05-24",
+                        "steps":  7591,
+                        "active_minutes":  66,
+                        "calories_burned":  353,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2025-05-25",
+                        "steps":  7728,
+                        "active_minutes":  73,
+                        "calories_burned":  364,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2025-05-26",
+                        "steps":  7865,
+                        "active_minutes":  80,
+                        "calories_burned":  375,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2025-05-27",
+                        "steps":  8002,
+                        "active_minutes":  87,
+                        "calories_burned":  386,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2025-05-28",
+                        "steps":  8139,
+                        "active_minutes":  94,
+                        "calories_burned":  397,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2025-05-29",
+                        "steps":  8276,
+                        "active_minutes":  101,
+                        "calories_burned":  408,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2025-05-30",
+                        "steps":  8413,
+                        "active_minutes":  28,
+                        "calories_burned":  419,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2025-05-31",
+                        "steps":  8550,
+                        "active_minutes":  35,
+                        "calories_burned":  430,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2025-06-01",
+                        "steps":  8687,
+                        "active_minutes":  42,
+                        "calories_burned":  441,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2025-06-02",
+                        "steps":  8824,
+                        "active_minutes":  49,
+                        "calories_burned":  452,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2025-06-03",
+                        "steps":  8961,
+                        "active_minutes":  56,
+                        "calories_burned":  463,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2025-06-04",
+                        "steps":  9098,
+                        "active_minutes":  63,
+                        "calories_burned":  474,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2025-06-05",
+                        "steps":  9235,
+                        "active_minutes":  70,
+                        "calories_burned":  485,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2025-06-06",
+                        "steps":  9372,
+                        "active_minutes":  77,
+                        "calories_burned":  496,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2025-06-07",
+                        "steps":  9509,
+                        "active_minutes":  84,
+                        "calories_burned":  507,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2025-06-08",
+                        "steps":  9646,
+                        "active_minutes":  91,
+                        "calories_burned":  518,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2025-06-09",
+                        "steps":  9783,
+                        "active_minutes":  98,
+                        "calories_burned":  529,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2025-06-10",
+                        "steps":  9920,
+                        "active_minutes":  25,
+                        "calories_burned":  540,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2025-06-11",
+                        "steps":  10057,
+                        "active_minutes":  32,
+                        "calories_burned":  551,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2025-06-12",
+                        "steps":  10194,
+                        "active_minutes":  39,
+                        "calories_burned":  562,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2025-06-13",
+                        "steps":  10331,
+                        "active_minutes":  46,
+                        "calories_burned":  573,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2025-06-14",
+                        "steps":  10468,
+                        "active_minutes":  53,
+                        "calories_burned":  584,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2025-06-15",
+                        "steps":  10605,
+                        "active_minutes":  60,
+                        "calories_burned":  595,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2025-06-16",
+                        "steps":  10742,
+                        "active_minutes":  67,
+                        "calories_burned":  606,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2025-06-17",
+                        "steps":  10879,
+                        "active_minutes":  74,
+                        "calories_burned":  617,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2025-06-18",
+                        "steps":  11016,
+                        "active_minutes":  81,
+                        "calories_burned":  628,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2025-06-19",
+                        "steps":  11153,
+                        "active_minutes":  88,
+                        "calories_burned":  639,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2025-06-20",
+                        "steps":  11290,
+                        "active_minutes":  95,
+                        "calories_burned":  650,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2025-06-21",
+                        "steps":  11427,
+                        "active_minutes":  102,
+                        "calories_burned":  661,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2025-06-22",
+                        "steps":  11564,
+                        "active_minutes":  29,
+                        "calories_burned":  672,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2025-06-23",
+                        "steps":  11701,
+                        "active_minutes":  36,
+                        "calories_burned":  683,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2025-06-24",
+                        "steps":  11838,
+                        "active_minutes":  43,
+                        "calories_burned":  694,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2025-06-25",
+                        "steps":  11975,
+                        "active_minutes":  50,
+                        "calories_burned":  705,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2025-06-26",
+                        "steps":  12112,
+                        "active_minutes":  57,
+                        "calories_burned":  716,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2025-06-27",
+                        "steps":  12249,
+                        "active_minutes":  64,
+                        "calories_burned":  727,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2025-06-28",
+                        "steps":  12386,
+                        "active_minutes":  71,
+                        "calories_burned":  738,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2025-06-29",
+                        "steps":  12523,
+                        "active_minutes":  78,
+                        "calories_burned":  749,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2025-06-30",
+                        "steps":  12660,
+                        "active_minutes":  85,
+                        "calories_burned":  760,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2025-07-01",
+                        "steps":  12797,
+                        "active_minutes":  92,
+                        "calories_burned":  771,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2025-07-02",
+                        "steps":  12934,
+                        "active_minutes":  99,
+                        "calories_burned":  782,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2025-07-03",
+                        "steps":  13071,
+                        "active_minutes":  26,
+                        "calories_burned":  793,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2025-07-04",
+                        "steps":  13208,
+                        "active_minutes":  33,
+                        "calories_burned":  804,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2025-07-05",
+                        "steps":  13345,
+                        "active_minutes":  40,
+                        "calories_burned":  815,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2025-07-06",
+                        "steps":  13482,
+                        "active_minutes":  47,
+                        "calories_burned":  826,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2025-07-07",
+                        "steps":  13619,
+                        "active_minutes":  54,
+                        "calories_burned":  837,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2025-07-08",
+                        "steps":  13756,
+                        "active_minutes":  61,
+                        "calories_burned":  848,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2025-07-09",
+                        "steps":  13893,
+                        "active_minutes":  68,
+                        "calories_burned":  859,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2025-07-10",
+                        "steps":  14030,
+                        "active_minutes":  75,
+                        "calories_burned":  870,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2025-07-11",
+                        "steps":  14167,
+                        "active_minutes":  82,
+                        "calories_burned":  181,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2025-07-12",
+                        "steps":  14304,
+                        "active_minutes":  89,
+                        "calories_burned":  192,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2025-07-13",
+                        "steps":  14441,
+                        "active_minutes":  96,
+                        "calories_burned":  203,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2025-07-14",
+                        "steps":  14578,
+                        "active_minutes":  103,
+                        "calories_burned":  214,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2025-07-15",
+                        "steps":  14715,
+                        "active_minutes":  30,
+                        "calories_burned":  225,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2025-07-16",
+                        "steps":  14852,
+                        "active_minutes":  37,
+                        "calories_burned":  236,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2025-07-17",
+                        "steps":  14989,
+                        "active_minutes":  44,
+                        "calories_burned":  247,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2025-07-18",
+                        "steps":  6126,
+                        "active_minutes":  51,
+                        "calories_burned":  258,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2025-07-19",
+                        "steps":  6263,
+                        "active_minutes":  58,
+                        "calories_burned":  269,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2025-07-20",
+                        "steps":  6400,
+                        "active_minutes":  65,
+                        "calories_burned":  280,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2025-07-21",
+                        "steps":  6537,
+                        "active_minutes":  72,
+                        "calories_burned":  291,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2025-07-22",
+                        "steps":  6674,
+                        "active_minutes":  79,
+                        "calories_burned":  302,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2025-07-23",
+                        "steps":  6811,
+                        "active_minutes":  86,
+                        "calories_burned":  313,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2025-07-24",
+                        "steps":  6948,
+                        "active_minutes":  93,
+                        "calories_burned":  324,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2025-07-25",
+                        "steps":  7085,
+                        "active_minutes":  100,
+                        "calories_burned":  335,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2025-07-26",
+                        "steps":  7222,
+                        "active_minutes":  27,
+                        "calories_burned":  346,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2025-07-27",
+                        "steps":  7359,
+                        "active_minutes":  34,
+                        "calories_burned":  357,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2025-07-28",
+                        "steps":  7496,
+                        "active_minutes":  41,
+                        "calories_burned":  368,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2025-07-29",
+                        "steps":  7633,
+                        "active_minutes":  48,
+                        "calories_burned":  379,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2025-07-30",
+                        "steps":  7770,
+                        "active_minutes":  55,
+                        "calories_burned":  390,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2025-07-31",
+                        "steps":  7907,
+                        "active_minutes":  62,
+                        "calories_burned":  401,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2025-08-01",
+                        "steps":  8044,
+                        "active_minutes":  69,
+                        "calories_burned":  412,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2025-08-02",
+                        "steps":  8181,
+                        "active_minutes":  76,
+                        "calories_burned":  423,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2025-08-03",
+                        "steps":  8318,
+                        "active_minutes":  83,
+                        "calories_burned":  434,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2025-08-04",
+                        "steps":  8455,
+                        "active_minutes":  90,
+                        "calories_burned":  445,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2025-08-05",
+                        "steps":  8592,
+                        "active_minutes":  97,
+                        "calories_burned":  456,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2025-08-06",
+                        "steps":  8729,
+                        "active_minutes":  104,
+                        "calories_burned":  467,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2025-08-07",
+                        "steps":  8866,
+                        "active_minutes":  31,
+                        "calories_burned":  478,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2025-08-08",
+                        "steps":  9003,
+                        "active_minutes":  38,
+                        "calories_burned":  489,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2025-08-09",
+                        "steps":  9140,
+                        "active_minutes":  45,
+                        "calories_burned":  500,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2025-08-10",
+                        "steps":  9277,
+                        "active_minutes":  52,
+                        "calories_burned":  511,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2025-08-11",
+                        "steps":  9414,
+                        "active_minutes":  59,
+                        "calories_burned":  522,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2025-08-12",
+                        "steps":  9551,
+                        "active_minutes":  66,
+                        "calories_burned":  533,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2025-08-13",
+                        "steps":  9688,
+                        "active_minutes":  73,
+                        "calories_burned":  544,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2025-08-14",
+                        "steps":  9825,
+                        "active_minutes":  80,
+                        "calories_burned":  555,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2025-08-15",
+                        "steps":  9962,
+                        "active_minutes":  87,
+                        "calories_burned":  566,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2025-08-16",
+                        "steps":  10099,
+                        "active_minutes":  94,
+                        "calories_burned":  577,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2025-08-17",
+                        "steps":  10236,
+                        "active_minutes":  101,
+                        "calories_burned":  588,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2025-08-18",
+                        "steps":  10373,
+                        "active_minutes":  28,
+                        "calories_burned":  599,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2025-08-19",
+                        "steps":  10510,
+                        "active_minutes":  35,
+                        "calories_burned":  610,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2025-08-20",
+                        "steps":  10647,
+                        "active_minutes":  42,
+                        "calories_burned":  621,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2025-08-21",
+                        "steps":  10784,
+                        "active_minutes":  49,
+                        "calories_burned":  632,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2025-08-22",
+                        "steps":  10921,
+                        "active_minutes":  56,
+                        "calories_burned":  643,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2025-08-23",
+                        "steps":  11058,
+                        "active_minutes":  63,
+                        "calories_burned":  654,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2025-08-24",
+                        "steps":  11195,
+                        "active_minutes":  70,
+                        "calories_burned":  665,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2025-08-25",
+                        "steps":  11332,
+                        "active_minutes":  77,
+                        "calories_burned":  676,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2025-08-26",
+                        "steps":  11469,
+                        "active_minutes":  84,
+                        "calories_burned":  687,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2025-08-27",
+                        "steps":  11606,
+                        "active_minutes":  91,
+                        "calories_burned":  698,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2025-08-28",
+                        "steps":  11743,
+                        "active_minutes":  98,
+                        "calories_burned":  709,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2025-08-29",
+                        "steps":  11880,
+                        "active_minutes":  25,
+                        "calories_burned":  720,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2025-08-30",
+                        "steps":  12017,
+                        "active_minutes":  32,
+                        "calories_burned":  731,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2025-08-31",
+                        "steps":  12154,
+                        "active_minutes":  39,
+                        "calories_burned":  742,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2025-09-01",
+                        "steps":  12291,
+                        "active_minutes":  46,
+                        "calories_burned":  753,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2025-09-02",
+                        "steps":  12428,
+                        "active_minutes":  53,
+                        "calories_burned":  764,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2025-09-03",
+                        "steps":  12565,
+                        "active_minutes":  60,
+                        "calories_burned":  775,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2025-09-04",
+                        "steps":  12702,
+                        "active_minutes":  67,
+                        "calories_burned":  786,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2025-09-05",
+                        "steps":  12839,
+                        "active_minutes":  74,
+                        "calories_burned":  797,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2025-09-06",
+                        "steps":  12976,
+                        "active_minutes":  81,
+                        "calories_burned":  808,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2025-09-07",
+                        "steps":  13113,
+                        "active_minutes":  88,
+                        "calories_burned":  819,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2025-09-08",
+                        "steps":  13250,
+                        "active_minutes":  95,
+                        "calories_burned":  830,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2025-09-09",
+                        "steps":  13387,
+                        "active_minutes":  102,
+                        "calories_burned":  841,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2025-09-10",
+                        "steps":  13524,
+                        "active_minutes":  29,
+                        "calories_burned":  852,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2025-09-11",
+                        "steps":  13661,
+                        "active_minutes":  36,
+                        "calories_burned":  863,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2025-09-12",
+                        "steps":  13798,
+                        "active_minutes":  43,
+                        "calories_burned":  874,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2025-09-13",
+                        "steps":  13935,
+                        "active_minutes":  50,
+                        "calories_burned":  185,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2025-09-14",
+                        "steps":  14072,
+                        "active_minutes":  57,
+                        "calories_burned":  196,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2025-09-15",
+                        "steps":  14209,
+                        "active_minutes":  64,
+                        "calories_burned":  207,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2025-09-16",
+                        "steps":  14346,
+                        "active_minutes":  71,
+                        "calories_burned":  218,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2025-09-17",
+                        "steps":  14483,
+                        "active_minutes":  78,
+                        "calories_burned":  229,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2025-09-18",
+                        "steps":  14620,
+                        "active_minutes":  85,
+                        "calories_burned":  240,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2025-09-19",
+                        "steps":  14757,
+                        "active_minutes":  92,
+                        "calories_burned":  251,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2025-09-20",
+                        "steps":  14894,
+                        "active_minutes":  99,
+                        "calories_burned":  262,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2025-09-21",
+                        "steps":  6031,
+                        "active_minutes":  26,
+                        "calories_burned":  273,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2025-09-22",
+                        "steps":  6168,
+                        "active_minutes":  33,
+                        "calories_burned":  284,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2025-09-23",
+                        "steps":  6305,
+                        "active_minutes":  40,
+                        "calories_burned":  295,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2025-09-24",
+                        "steps":  6442,
+                        "active_minutes":  47,
+                        "calories_burned":  306,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2025-09-25",
+                        "steps":  6579,
+                        "active_minutes":  54,
+                        "calories_burned":  317,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2025-09-26",
+                        "steps":  6716,
+                        "active_minutes":  61,
+                        "calories_burned":  328,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2025-09-27",
+                        "steps":  6853,
+                        "active_minutes":  68,
+                        "calories_burned":  339,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2025-09-28",
+                        "steps":  6990,
+                        "active_minutes":  75,
+                        "calories_burned":  350,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2025-09-29",
+                        "steps":  7127,
+                        "active_minutes":  82,
+                        "calories_burned":  361,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2025-09-30",
+                        "steps":  7264,
+                        "active_minutes":  89,
+                        "calories_burned":  372,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2025-10-01",
+                        "steps":  7401,
+                        "active_minutes":  96,
+                        "calories_burned":  383,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2025-10-02",
+                        "steps":  7538,
+                        "active_minutes":  103,
+                        "calories_burned":  394,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2025-10-03",
+                        "steps":  7675,
+                        "active_minutes":  30,
+                        "calories_burned":  405,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2025-10-04",
+                        "steps":  7812,
+                        "active_minutes":  37,
+                        "calories_burned":  416,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2025-10-05",
+                        "steps":  7949,
+                        "active_minutes":  44,
+                        "calories_burned":  427,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2025-10-06",
+                        "steps":  8086,
+                        "active_minutes":  51,
+                        "calories_burned":  438,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2025-10-07",
+                        "steps":  8223,
+                        "active_minutes":  58,
+                        "calories_burned":  449,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2025-10-08",
+                        "steps":  8360,
+                        "active_minutes":  65,
+                        "calories_burned":  460,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2025-10-09",
+                        "steps":  8497,
+                        "active_minutes":  72,
+                        "calories_burned":  471,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2025-10-10",
+                        "steps":  8634,
+                        "active_minutes":  79,
+                        "calories_burned":  482,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2025-10-11",
+                        "steps":  8771,
+                        "active_minutes":  86,
+                        "calories_burned":  493,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2025-10-12",
+                        "steps":  8908,
+                        "active_minutes":  93,
+                        "calories_burned":  504,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2025-10-13",
+                        "steps":  9045,
+                        "active_minutes":  100,
+                        "calories_burned":  515,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2025-10-14",
+                        "steps":  9182,
+                        "active_minutes":  27,
+                        "calories_burned":  526,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2025-10-15",
+                        "steps":  9319,
+                        "active_minutes":  34,
+                        "calories_burned":  537,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2025-10-16",
+                        "steps":  9456,
+                        "active_minutes":  41,
+                        "calories_burned":  548,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2025-10-17",
+                        "steps":  9593,
+                        "active_minutes":  48,
+                        "calories_burned":  559,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2025-10-18",
+                        "steps":  9730,
+                        "active_minutes":  55,
+                        "calories_burned":  570,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2025-10-19",
+                        "steps":  9867,
+                        "active_minutes":  62,
+                        "calories_burned":  581,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2025-10-20",
+                        "steps":  10004,
+                        "active_minutes":  69,
+                        "calories_burned":  592,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2025-10-21",
+                        "steps":  10141,
+                        "active_minutes":  76,
+                        "calories_burned":  603,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2025-10-22",
+                        "steps":  10278,
+                        "active_minutes":  83,
+                        "calories_burned":  614,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2025-10-23",
+                        "steps":  10415,
+                        "active_minutes":  90,
+                        "calories_burned":  625,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2025-10-24",
+                        "steps":  10552,
+                        "active_minutes":  97,
+                        "calories_burned":  636,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2025-10-25",
+                        "steps":  10689,
+                        "active_minutes":  104,
+                        "calories_burned":  647,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2025-10-26",
+                        "steps":  10826,
+                        "active_minutes":  31,
+                        "calories_burned":  658,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2025-10-27",
+                        "steps":  10963,
+                        "active_minutes":  38,
+                        "calories_burned":  669,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2025-10-28",
+                        "steps":  11100,
+                        "active_minutes":  45,
+                        "calories_burned":  680,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2025-10-29",
+                        "steps":  11237,
+                        "active_minutes":  52,
+                        "calories_burned":  691,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2025-10-30",
+                        "steps":  11374,
+                        "active_minutes":  59,
+                        "calories_burned":  702,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2025-10-31",
+                        "steps":  11511,
+                        "active_minutes":  66,
+                        "calories_burned":  713,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2025-11-01",
+                        "steps":  11648,
+                        "active_minutes":  73,
+                        "calories_burned":  724,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2025-11-02",
+                        "steps":  11785,
+                        "active_minutes":  80,
+                        "calories_burned":  735,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2025-11-03",
+                        "steps":  11922,
+                        "active_minutes":  87,
+                        "calories_burned":  746,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2025-11-04",
+                        "steps":  12059,
+                        "active_minutes":  94,
+                        "calories_burned":  757,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2025-11-05",
+                        "steps":  12196,
+                        "active_minutes":  101,
+                        "calories_burned":  768,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2025-11-06",
+                        "steps":  12333,
+                        "active_minutes":  28,
+                        "calories_burned":  779,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2025-11-07",
+                        "steps":  12470,
+                        "active_minutes":  35,
+                        "calories_burned":  790,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2025-11-08",
+                        "steps":  12607,
+                        "active_minutes":  42,
+                        "calories_burned":  801,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2025-11-09",
+                        "steps":  12744,
+                        "active_minutes":  49,
+                        "calories_burned":  812,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2025-11-10",
+                        "steps":  12881,
+                        "active_minutes":  56,
+                        "calories_burned":  823,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2025-11-11",
+                        "steps":  13018,
+                        "active_minutes":  63,
+                        "calories_burned":  834,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2025-11-12",
+                        "steps":  13155,
+                        "active_minutes":  70,
+                        "calories_burned":  845,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2025-11-13",
+                        "steps":  13292,
+                        "active_minutes":  77,
+                        "calories_burned":  856,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2025-11-14",
+                        "steps":  13429,
+                        "active_minutes":  84,
+                        "calories_burned":  867,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2025-11-15",
+                        "steps":  13566,
+                        "active_minutes":  91,
+                        "calories_burned":  878,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2025-11-16",
+                        "steps":  13703,
+                        "active_minutes":  98,
+                        "calories_burned":  189,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2025-11-17",
+                        "steps":  13840,
+                        "active_minutes":  25,
+                        "calories_burned":  200,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2025-11-18",
+                        "steps":  13977,
+                        "active_minutes":  32,
+                        "calories_burned":  211,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2025-11-19",
+                        "steps":  14114,
+                        "active_minutes":  39,
+                        "calories_burned":  222,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2025-11-20",
+                        "steps":  14251,
+                        "active_minutes":  46,
+                        "calories_burned":  233,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2025-11-21",
+                        "steps":  14388,
+                        "active_minutes":  53,
+                        "calories_burned":  244,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2025-11-22",
+                        "steps":  14525,
+                        "active_minutes":  60,
+                        "calories_burned":  255,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2025-11-23",
+                        "steps":  14662,
+                        "active_minutes":  67,
+                        "calories_burned":  266,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2025-11-24",
+                        "steps":  14799,
+                        "active_minutes":  74,
+                        "calories_burned":  277,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2025-11-25",
+                        "steps":  14936,
+                        "active_minutes":  81,
+                        "calories_burned":  288,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2025-11-26",
+                        "steps":  6073,
+                        "active_minutes":  88,
+                        "calories_burned":  299,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2025-11-27",
+                        "steps":  6210,
+                        "active_minutes":  95,
+                        "calories_burned":  310,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2025-11-28",
+                        "steps":  6347,
+                        "active_minutes":  102,
+                        "calories_burned":  321,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2025-11-29",
+                        "steps":  6484,
+                        "active_minutes":  29,
+                        "calories_burned":  332,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2025-11-30",
+                        "steps":  6621,
+                        "active_minutes":  36,
+                        "calories_burned":  343,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2025-12-01",
+                        "steps":  6758,
+                        "active_minutes":  43,
+                        "calories_burned":  354,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2025-12-02",
+                        "steps":  6895,
+                        "active_minutes":  50,
+                        "calories_burned":  365,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2025-12-03",
+                        "steps":  7032,
+                        "active_minutes":  57,
+                        "calories_burned":  376,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2025-12-04",
+                        "steps":  7169,
+                        "active_minutes":  64,
+                        "calories_burned":  387,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2025-12-05",
+                        "steps":  7306,
+                        "active_minutes":  71,
+                        "calories_burned":  398,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2025-12-06",
+                        "steps":  7443,
+                        "active_minutes":  78,
+                        "calories_burned":  409,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2025-12-07",
+                        "steps":  7580,
+                        "active_minutes":  85,
+                        "calories_burned":  420,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2025-12-08",
+                        "steps":  7717,
+                        "active_minutes":  92,
+                        "calories_burned":  431,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2025-12-09",
+                        "steps":  7854,
+                        "active_minutes":  99,
+                        "calories_burned":  442,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2025-12-10",
+                        "steps":  7991,
+                        "active_minutes":  26,
+                        "calories_burned":  453,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2025-12-11",
+                        "steps":  8128,
+                        "active_minutes":  33,
+                        "calories_burned":  464,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2025-12-12",
+                        "steps":  8265,
+                        "active_minutes":  40,
+                        "calories_burned":  475,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2025-12-13",
+                        "steps":  8402,
+                        "active_minutes":  47,
+                        "calories_burned":  486,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2025-12-14",
+                        "steps":  8539,
+                        "active_minutes":  54,
+                        "calories_burned":  497,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2025-12-15",
+                        "steps":  8676,
+                        "active_minutes":  61,
+                        "calories_burned":  508,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2025-12-16",
+                        "steps":  8813,
+                        "active_minutes":  68,
+                        "calories_burned":  519,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2025-12-17",
+                        "steps":  8950,
+                        "active_minutes":  75,
+                        "calories_burned":  530,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2025-12-18",
+                        "steps":  9087,
+                        "active_minutes":  82,
+                        "calories_burned":  541,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2025-12-19",
+                        "steps":  9224,
+                        "active_minutes":  89,
+                        "calories_burned":  552,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2025-12-20",
+                        "steps":  9361,
+                        "active_minutes":  96,
+                        "calories_burned":  563,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2025-12-21",
+                        "steps":  9498,
+                        "active_minutes":  103,
+                        "calories_burned":  574,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2025-12-22",
+                        "steps":  9635,
+                        "active_minutes":  30,
+                        "calories_burned":  585,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2025-12-23",
+                        "steps":  9772,
+                        "active_minutes":  37,
+                        "calories_burned":  596,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2025-12-24",
+                        "steps":  9909,
+                        "active_minutes":  44,
+                        "calories_burned":  607,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2025-12-25",
+                        "steps":  10046,
+                        "active_minutes":  51,
+                        "calories_burned":  618,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2025-12-26",
+                        "steps":  10183,
+                        "active_minutes":  58,
+                        "calories_burned":  629,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2025-12-27",
+                        "steps":  10320,
+                        "active_minutes":  65,
+                        "calories_burned":  640,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2025-12-28",
+                        "steps":  10457,
+                        "active_minutes":  72,
+                        "calories_burned":  651,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2025-12-29",
+                        "steps":  10594,
+                        "active_minutes":  79,
+                        "calories_burned":  662,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2025-12-30",
+                        "steps":  10731,
+                        "active_minutes":  86,
+                        "calories_burned":  673,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2025-12-31",
+                        "steps":  10868,
+                        "active_minutes":  93,
+                        "calories_burned":  684,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2026-01-01",
+                        "steps":  11005,
+                        "active_minutes":  100,
+                        "calories_burned":  695,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2026-01-02",
+                        "steps":  11142,
+                        "active_minutes":  27,
+                        "calories_burned":  706,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2026-01-03",
+                        "steps":  11279,
+                        "active_minutes":  34,
+                        "calories_burned":  717,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2026-01-04",
+                        "steps":  11416,
+                        "active_minutes":  41,
+                        "calories_burned":  728,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2026-01-05",
+                        "steps":  11553,
+                        "active_minutes":  48,
+                        "calories_burned":  739,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2026-01-06",
+                        "steps":  11690,
+                        "active_minutes":  55,
+                        "calories_burned":  750,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2026-01-07",
+                        "steps":  11827,
+                        "active_minutes":  62,
+                        "calories_burned":  761,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2026-01-08",
+                        "steps":  11964,
+                        "active_minutes":  69,
+                        "calories_burned":  772,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2026-01-09",
+                        "steps":  12101,
+                        "active_minutes":  76,
+                        "calories_burned":  783,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2026-01-10",
+                        "steps":  12238,
+                        "active_minutes":  83,
+                        "calories_burned":  794,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2026-01-11",
+                        "steps":  12375,
+                        "active_minutes":  90,
+                        "calories_burned":  805,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2026-01-12",
+                        "steps":  12512,
+                        "active_minutes":  97,
+                        "calories_burned":  816,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2026-01-13",
+                        "steps":  12649,
+                        "active_minutes":  104,
+                        "calories_burned":  827,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2026-01-14",
+                        "steps":  12786,
+                        "active_minutes":  31,
+                        "calories_burned":  838,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2026-01-15",
+                        "steps":  12923,
+                        "active_minutes":  38,
+                        "calories_burned":  849,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2026-01-16",
+                        "steps":  13060,
+                        "active_minutes":  45,
+                        "calories_burned":  860,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2026-01-17",
+                        "steps":  13197,
+                        "active_minutes":  52,
+                        "calories_burned":  871,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2026-01-18",
+                        "steps":  13334,
+                        "active_minutes":  59,
+                        "calories_burned":  182,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2026-01-19",
+                        "steps":  13471,
+                        "active_minutes":  66,
+                        "calories_burned":  193,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2026-01-20",
+                        "steps":  13608,
+                        "active_minutes":  73,
+                        "calories_burned":  204,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2026-01-21",
+                        "steps":  13745,
+                        "active_minutes":  80,
+                        "calories_burned":  215,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2026-01-22",
+                        "steps":  13882,
+                        "active_minutes":  87,
+                        "calories_burned":  226,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2026-01-23",
+                        "steps":  14019,
+                        "active_minutes":  94,
+                        "calories_burned":  237,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2026-01-24",
+                        "steps":  14156,
+                        "active_minutes":  101,
+                        "calories_burned":  248,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2026-01-25",
+                        "steps":  14293,
+                        "active_minutes":  28,
+                        "calories_burned":  259,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2026-01-26",
+                        "steps":  14430,
+                        "active_minutes":  35,
+                        "calories_burned":  270,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2026-01-27",
+                        "steps":  14567,
+                        "active_minutes":  42,
+                        "calories_burned":  281,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2026-01-28",
+                        "steps":  14704,
+                        "active_minutes":  49,
+                        "calories_burned":  292,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2026-01-29",
+                        "steps":  14841,
+                        "active_minutes":  56,
+                        "calories_burned":  303,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2026-01-30",
+                        "steps":  14978,
+                        "active_minutes":  63,
+                        "calories_burned":  314,
+                        "avg_heart_rate":  115
+                    },
+                    {
+                        "date":  "2026-01-31",
+                        "steps":  6115,
+                        "active_minutes":  70,
+                        "calories_burned":  325,
+                        "avg_heart_rate":  118
+                    },
+                    {
+                        "date":  "2026-02-01",
+                        "steps":  6252,
+                        "active_minutes":  77,
+                        "calories_burned":  336,
+                        "avg_heart_rate":  121
+                    },
+                    {
+                        "date":  "2026-02-02",
+                        "steps":  6389,
+                        "active_minutes":  84,
+                        "calories_burned":  347,
+                        "avg_heart_rate":  124
+                    },
+                    {
+                        "date":  "2026-02-03",
+                        "steps":  6526,
+                        "active_minutes":  91,
+                        "calories_burned":  358,
+                        "avg_heart_rate":  127
+                    },
+                    {
+                        "date":  "2026-02-04",
+                        "steps":  6663,
+                        "active_minutes":  98,
+                        "calories_burned":  369,
+                        "avg_heart_rate":  130
+                    },
+                    {
+                        "date":  "2026-02-05",
+                        "steps":  6800,
+                        "active_minutes":  25,
+                        "calories_burned":  380,
+                        "avg_heart_rate":  58
+                    },
+                    {
+                        "date":  "2026-02-06",
+                        "steps":  6937,
+                        "active_minutes":  32,
+                        "calories_burned":  391,
+                        "avg_heart_rate":  61
+                    },
+                    {
+                        "date":  "2026-02-07",
+                        "steps":  7074,
+                        "active_minutes":  39,
+                        "calories_burned":  402,
+                        "avg_heart_rate":  64
+                    },
+                    {
+                        "date":  "2026-02-08",
+                        "steps":  7211,
+                        "active_minutes":  46,
+                        "calories_burned":  413,
+                        "avg_heart_rate":  67
+                    },
+                    {
+                        "date":  "2026-02-09",
+                        "steps":  7348,
+                        "active_minutes":  53,
+                        "calories_burned":  424,
+                        "avg_heart_rate":  70
+                    },
+                    {
+                        "date":  "2026-02-10",
+                        "steps":  7485,
+                        "active_minutes":  60,
+                        "calories_burned":  435,
+                        "avg_heart_rate":  73
+                    },
+                    {
+                        "date":  "2026-02-11",
+                        "steps":  7622,
+                        "active_minutes":  67,
+                        "calories_burned":  446,
+                        "avg_heart_rate":  76
+                    },
+                    {
+                        "date":  "2026-02-12",
+                        "steps":  7759,
+                        "active_minutes":  74,
+                        "calories_burned":  457,
+                        "avg_heart_rate":  79
+                    },
+                    {
+                        "date":  "2026-02-13",
+                        "steps":  7896,
+                        "active_minutes":  81,
+                        "calories_burned":  468,
+                        "avg_heart_rate":  82
+                    },
+                    {
+                        "date":  "2026-02-14",
+                        "steps":  8033,
+                        "active_minutes":  88,
+                        "calories_burned":  479,
+                        "avg_heart_rate":  85
+                    },
+                    {
+                        "date":  "2026-02-15",
+                        "steps":  8170,
+                        "active_minutes":  95,
+                        "calories_burned":  490,
+                        "avg_heart_rate":  88
+                    },
+                    {
+                        "date":  "2026-02-16",
+                        "steps":  8307,
+                        "active_minutes":  102,
+                        "calories_burned":  501,
+                        "avg_heart_rate":  91
+                    },
+                    {
+                        "date":  "2026-02-17",
+                        "steps":  8444,
+                        "active_minutes":  29,
+                        "calories_burned":  512,
+                        "avg_heart_rate":  94
+                    },
+                    {
+                        "date":  "2026-02-18",
+                        "steps":  8581,
+                        "active_minutes":  36,
+                        "calories_burned":  523,
+                        "avg_heart_rate":  97
+                    },
+                    {
+                        "date":  "2026-02-19",
+                        "steps":  8718,
+                        "active_minutes":  43,
+                        "calories_burned":  534,
+                        "avg_heart_rate":  100
+                    },
+                    {
+                        "date":  "2026-02-20",
+                        "steps":  8855,
+                        "active_minutes":  50,
+                        "calories_burned":  545,
+                        "avg_heart_rate":  103
+                    },
+                    {
+                        "date":  "2026-02-21",
+                        "steps":  8992,
+                        "active_minutes":  57,
+                        "calories_burned":  556,
+                        "avg_heart_rate":  106
+                    },
+                    {
+                        "date":  "2026-02-22",
+                        "steps":  9129,
+                        "active_minutes":  64,
+                        "calories_burned":  567,
+                        "avg_heart_rate":  109
+                    },
+                    {
+                        "date":  "2026-02-23",
+                        "steps":  9266,
+                        "active_minutes":  71,
+                        "calories_burned":  578,
+                        "avg_heart_rate":  112
+                    },
+                    {
+                        "date":  "2026-02-24",
+                        "steps":  9403,
+                        "active_minutes":  78,
+                        "calories_burned":  589,
+                        "avg_heart_rate":  115
+                    }
+                ]
+}

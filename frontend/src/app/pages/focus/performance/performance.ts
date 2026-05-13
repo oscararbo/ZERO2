@@ -53,6 +53,7 @@ export class PerformanceComponent implements OnInit {
 
   bulkImportText = signal('');
   bulkImportFormat = signal<'json' | 'csv'>('json');
+  bulkImportFileName = signal('');
   bulkImportLoading = signal(false);
 
   readonly plannerCompletion = computed(() => {
@@ -173,16 +174,28 @@ export class PerformanceComponent implements OnInit {
     const file = input.files?.[0];
     if (!file) return;
 
+    const lowerName = file.name.toLowerCase();
+    const isCsv = lowerName.endsWith('.csv');
+    const isJson = lowerName.endsWith('.json');
+    const mime = (file.type || '').toLowerCase();
+    const validMimes = ['text/csv', 'application/csv', 'application/vnd.ms-excel', 'application/json', 'text/json'];
+    const isMimeAllowed = !mime || validMimes.includes(mime);
+
+    if ((!isCsv && !isJson) || !isMimeAllowed) {
+      this.bulkImportFileName.set('');
+      this.bulkImportText.set('');
+      input.value = '';
+      this.showToast('Only .csv or .json files are allowed.', 'error');
+      return;
+    }
+
+    this.bulkImportFileName.set(file.name);
+    this.bulkImportFormat.set(isCsv ? 'csv' : 'json');
+
     const reader = new FileReader();
     reader.onload = () => {
       const text = String(reader.result ?? '');
       this.bulkImportText.set(text);
-      const lower = file.name.toLowerCase();
-      if (lower.endsWith('.csv')) {
-        this.bulkImportFormat.set('csv');
-      } else if (lower.endsWith('.json')) {
-        this.bulkImportFormat.set('json');
-      }
     };
     reader.readAsText(file);
   }
@@ -220,6 +233,8 @@ export class PerformanceComponent implements OnInit {
       provider: f.provider,
       source: f.source || 'bulk-import',
       entries,
+      import_format: this.bulkImportFormat(),
+      import_filename: this.bulkImportFileName() || undefined,
     }).subscribe({
       next: (summary) => {
         this.bulkImportLoading.set(false);

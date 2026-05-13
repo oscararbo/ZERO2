@@ -1,25 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <queries>
+    <package android:name="com.google.android.apps.healthdata"/>
+  </queries>
 
-    <application
-        android:allowBackup="true"
-        android:fullBackupContent="@xml/backup_rules"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:label="ZERO Wear Sync"
-        android:supportsRtl="true"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+  <uses-permission android:name="android.permission.health.READ_STEPS"/>
+  <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
+  <uses-permission android:name="android.permission.health.READ_EXERCISE"/>
 
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
+  <application
+    android:allowBackup="true"
+    android:label="ZERO Wear Sync"
+    android:supportsRtl="true"
+    android:theme="@android:style/Theme.Material.Light.NoActionBar">
+
+    <activity
+      android:name=".MainActivity"
+      android:exported="true">
+
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+
+    </activity>
+
+    <activity
+      android:name=".PermissionsRationaleActivity"
+      android:exported="true">
+      <intent-filter>
+        <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+      </intent-filter>
+    </activity>
+
+    <activity-alias
+      android:name=".ViewPermissionUsageActivity"
+      android:exported="true"
+      android:targetActivity=".PermissionsRationaleActivity"
+      android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+        <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+      </intent-filter>
+    </activity-alias>
+
+    <activity
+      android:name=".OnboardingActivity"
+      android:exported="true"
+      android:permission="com.google.android.apps.healthdata.permission.START_ONBOARDING">
+      <intent-filter>
+        <action android:name="androidx.health.ACTION_SHOW_ONBOARDING" />
+      </intent-filter>
+    </activity>
+
+    <activity-alias
+      android:name=".UAndAboveOnboardingActivity"
+      android:exported="true"
+      android:targetActivity=".OnboardingActivity"
+      android:permission="android.permission.health.START_ONBOARDING">
+      <intent-filter>
+        <action android:name="android.health.connect.action.SHOW_ONBOARDING" />
+      </intent-filter>
+    </activity-alias>
+
+  </application>
 
 </manifest>

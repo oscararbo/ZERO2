@@ -70,8 +70,15 @@ class ExerciseSessionView(APIView):
         location = request_serializer.validated_data['location']
         exercises = request_serializer.validated_data.get('exercises', [])
 
-        session = get_or_create_session(request.user, location)
-        result = upsert_session_exercises(session, exercises)
+        try:
+            session = get_or_create_session(request.user, location)
+            result = upsert_session_exercises(session, exercises)
+        except (ProgrammingError, OperationalError, DatabaseError) as exc:
+            return error_response(
+                'No se pudo guardar la sesión. Inténtalo de nuevo.',
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
         if not result.ok:
             return error_response(result.error, status_code=result.code)
 

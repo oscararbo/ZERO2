@@ -23,9 +23,7 @@ class BackendDiscovery(private val context: Context) {
 
     suspend fun discoverBaseUrl(): String? = withContext(Dispatchers.IO) {
         val quickCandidates = listOf(
-            "http://10.0.2.2:8000/",
-            "http://127.0.0.1:8000/",
-            "http://localhost:8000/"
+            "https://zero-mbdv.onrender.com/",
         )
 
         quickCandidates.firstOrNull { probe(it) }?.let { return@withContext it }
@@ -59,7 +57,8 @@ class BackendDiscovery(private val context: Context) {
             client.newCall(req).execute().use { response ->
                 if (!response.isSuccessful) return@use false
                 val body = response.body?.string().orEmpty().lowercase()
-                body.contains("\"ok\":true") && body.contains("zero-backend")
+                val okMatch = Regex("\"ok\"\\s*:\\s*true").containsMatchIn(body)
+                okMatch && body.contains("zero-backend")
             }
         }.getOrDefault(false)
     }

@@ -120,6 +120,8 @@ export class PerformanceService {
   ingestWearables(payload: {
     provider: 'samsung_health' | 'manual';
     source?: string;
+    import_format?: 'json' | 'csv';
+    import_filename?: string;
     entries: Array<{
       date: string;
       steps?: number | null;

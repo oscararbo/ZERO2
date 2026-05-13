@@ -18,12 +18,12 @@ configurations.configureEach {
 
 android {
   namespace = "com.zero.wearsync"
-  compileSdk = 36 // Actualizado a 36
+  compileSdk = 37 // Actualizado a 36
 
   defaultConfig {
     applicationId = "com.zero.wearsync"
     minSdk = 28
-    targetSdk = 36 // Actualizado a 36
+    targetSdk = 37 // Actualizado a 36
     versionCode = 1
     versionName = "1.0.0"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -95,7 +95,7 @@ dependencies {
   implementation("com.squareup.okhttp3:okhttp:5.3.2")
   implementation("com.squareup.okhttp3:logging-interceptor:5.3.2")
 
-  implementation("androidx.health.connect:connect-client:1.1.0")
+  implementation("androidx.health.connect:connect-client:1.2.0-alpha04")
 
   implementation("androidx.security:security-crypto:1.1.0")
 

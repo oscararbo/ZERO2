@@ -13,12 +13,32 @@ class WearableRepository(
     private val apiProvider: RetrofitProvider,
     private val pendingSyncDao: PendingSyncDao
 ) {
+    private fun enforceSecureBaseUrl(baseUrl: String): String {
+        val trimmed = baseUrl.trim()
+        if (trimmed.isBlank()) return trimmed
+
+        val isLocalHttp = trimmed.startsWith("http://10.0.2.2") ||
+            trimmed.startsWith("http://127.0.0.1") ||
+            trimmed.startsWith("http://localhost")
+
+        if (trimmed.startsWith("http://") && !isLocalHttp) {
+            return "https://${trimmed.removePrefix("http://")}".trimEnd('/') + "/"
+        }
+
+        return trimmed
+    }
+
     suspend fun login(baseUrl: String, username: String, password: String): Result<Unit> {
         return runCatching {
-            val normalizedBase = baseUrl.trim().ifBlank { sessionManager.backendUrl }
+            val normalizedBase = enforceSecureBaseUrl(baseUrl.ifBlank { sessionManager.backendUrl })
             if (normalizedBase.isBlank()) {
                 throw IllegalStateException("Backend URL is empty. Auto detect first or set it manually.")
             }
+
+            if (normalizedBase.startsWith("http://") && !normalizedBase.contains("10.0.2.2") && !normalizedBase.contains("127.0.0.1") && !normalizedBase.contains("localhost")) {
+                throw IllegalStateException("Use HTTPS backend URL. Cleartext HTTP is blocked by Android security policy.")
+            }
+
             sessionManager.backendUrl = normalizedBase
             val response = apiProvider.api().login(LoginRequest(username.trim(), password))
             if (!response.ok || response.data == null) {

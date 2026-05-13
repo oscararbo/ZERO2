@@ -10,149 +10,360 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.zero.wearsync.domain.ServiceLocator
 import com.zero.wearsync.sync.BackendDiscovery
+import com.zero.wearsync.sync.DailyMetric
 import com.zero.wearsync.sync.HealthConnectReader
 import com.zero.wearsync.sync.SyncWorker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
-    private val locator = ServiceLocator.get(app)
-    private val reader = HealthConnectReader(app)
-    private val discovery = BackendDiscovery(app)
-    private val _state = MutableStateFlow(
-        MainUiState(
-            backendUrl = locator.repository.currentBackendUrl(),
-            username = locator.repository.currentUsername(),
-            loggedIn = locator.repository.hasSession()
-        )
+
+  private companion object {
+    const val DEFAULT_CLOUD_BACKEND = "https://zero-mbdv.onrender.com/"
+  }
+
+  private val locator = ServiceLocator.get(app)
+  private val reader = HealthConnectReader(app)
+  private val discovery = BackendDiscovery(app)
+
+  private val _state = MutableStateFlow(
+    MainUiState(
+      backendUrl = locator.repository.currentBackendUrl().ifBlank { DEFAULT_CLOUD_BACKEND },
+      username = locator.repository.currentUsername(),
+      loggedIn = locator.repository.hasSession(),
+      healthConnectAvailable = reader.isSdkAvailable()
     )
-    val state: StateFlow<MainUiState> = _state.asStateFlow()
+  )
 
-    val requiredPermissions: Set<String> = HealthConnectReader.requiredPermissions
+  val state: StateFlow<MainUiState> = _state.asStateFlow()
 
-    init {
-        refreshPermissionsAndPending()
-        if (_state.value.backendUrl.isBlank()) {
-            autoDetectBackend()
-        }
+  val requiredPermissions: Set<String> = HealthConnectReader.requiredPermissions
+
+  init {
+    refreshPermissionsAndPending()
+    if (locator.repository.currentBackendUrl().isBlank()) {
+      autoDetectBackend()
+    }
+  }
+
+  fun onBackendUrlChange(v: String) {
+    _state.value = _state.value.copy(backendUrl = v)
+  }
+
+  fun onUsernameChange(v: String) {
+    _state.value = _state.value.copy(username = v)
+  }
+
+  fun onPasswordChange(v: String) {
+    _state.value = _state.value.copy(password = v)
+  }
+
+  fun onDaysBackChange(v: String) {
+    val parsed = v.toIntOrNull()?.coerceIn(1, 14) ?: 3
+    _state.value = _state.value.copy(daysBack = parsed)
+  }
+
+  fun onImportFormatChange(v: String) {
+    val next = if (v.lowercase() == "csv") "csv" else "json"
+    _state.value = _state.value.copy(importFormat = next)
+  }
+
+  fun onImportPayloadChange(v: String) {
+    _state.value = _state.value.copy(importPayload = v)
+  }
+
+  fun fillSampleImport() {
+    val sample = """
+      [
+        {"date":"2026-05-10","steps":8420,"active_minutes":38,"avg_heart_rate":112},
+        {"date":"2026-05-11","steps":10550,"active_minutes":54,"avg_heart_rate":118}
+      ]
+    """.trimIndent()
+    _state.value = _state.value.copy(importFormat = "json", importPayload = sample)
+  }
+
+  fun onPermissionResult(granted: Set<String>) {
+    val ok = granted.containsAll(requiredPermissions)
+    _state.value = _state.value.copy(
+      permissionsGranted = ok,
+      status = if (ok) "Permisos de Health Connect concedidos" else "Faltan permisos de Health Connect"
+    )
+  }
+
+  fun canRequestHealthPermissions(): Boolean {
+    val available = reader.isSdkAvailable()
+    _state.value = _state.value.copy(healthConnectAvailable = available)
+    if (!available) {
+      _state.value = _state.value.copy(
+        status = "Health Connect no disponible o sin actualizar. Abre Health Connect desde el boton de la app."
+      )
+    }
+    return available
+  }
+
+  fun onPermissionRequestLaunchFailed() {
+    _state.value = _state.value.copy(
+      status = "No se pudo abrir el dialogo de permisos. Abre Health Connect manualmente."
+    )
+  }
+
+  fun onOpenHealthConnectTriggered() {
+    _state.value = _state.value.copy(
+      status = "En Health Connect: App permissions > ZERO Wear Sync > permitir todo."
+    )
+  }
+
+  fun login() = viewModelScope.launch {
+    val s = _state.value
+    if (s.backendUrl.isBlank()) {
+      _state.value = s.copy(status = "Backend URL obligatoria")
+      return@launch
     }
 
-    fun onBackendUrlChange(value: String) {
-        _state.value = _state.value.copy(backendUrl = value)
+    _state.value = _state.value.copy(working = true, status = "Iniciando sesion...")
+    val result = locator.repository.login(s.backendUrl, s.username, s.password)
+
+    _state.value = _state.value.copy(
+      working = false,
+      loggedIn = result.isSuccess,
+      status = result.fold(
+        onSuccess = { "Login correcto" },
+        onFailure = { "Login failed: ${it.message}" }
+      )
+    )
+  }
+
+  fun logout() {
+    locator.repository.logout()
+    _state.value = _state.value.copy(loggedIn = false, status = "Sesion cerrada")
+  }
+
+  fun autoDetectBackend() = viewModelScope.launch {
+    _state.value = _state.value.copy(working = true, status = "Detectando backend...")
+    val detected = discovery.discoverBaseUrl()
+
+    if (detected != null) {
+      _state.value = _state.value.copy(
+        backendUrl = detected,
+        working = false,
+        status = "Backend detectado: $detected"
+      )
+    } else {
+      _state.value = _state.value.copy(
+        working = false,
+        status = "No se pudo detectar backend automaticamente"
+      )
     }
+  }
 
-    fun onUsernameChange(value: String) {
-        _state.value = _state.value.copy(username = value)
-    }
+  fun syncNow() = viewModelScope.launch {
+    _state.value = _state.value.copy(working = true, status = "Leyendo Health Connect...")
 
-    fun onPasswordChange(value: String) {
-        _state.value = _state.value.copy(password = value)
-    }
+    try {
+      if (!_state.value.loggedIn) {
+        _state.value = _state.value.copy(working = false, status = "Haz login primero")
+        return@launch
+      }
 
-    fun onDaysBackChange(value: String) {
-        val parsed = value.toIntOrNull()?.coerceIn(1, 14) ?: 3
-        _state.value = _state.value.copy(daysBack = parsed)
-    }
+      if (!reader.isSdkAvailable()) {
+        _state.value = _state.value.copy(working = false, status = "Health Connect no disponible")
+        return@launch
+      }
 
-    fun onPermissionResult(granted: Set<String>) {
-        val ok = granted.containsAll(requiredPermissions)
-        _state.value = _state.value.copy(permissionsGranted = ok)
-    }
+      if (!reader.hasAllPermissions()) {
+        _state.value = _state.value.copy(working = false, status = "Concede permisos de Health Connect")
+        return@launch
+      }
 
-    fun login() {
-        viewModelScope.launch {
-            _state.value = _state.value.copy(working = true, status = "Logging in...")
-            val s = _state.value
-            val result = locator.repository.login(s.backendUrl, s.username, s.password)
-            _state.value = _state.value.copy(
-                working = false,
-                loggedIn = result.isSuccess,
-                status = result.fold(
-                    onSuccess = { "Login successful" },
-                    onFailure = { "Login failed: ${it.message}" }
-                )
-            )
-        }
-    }
+      val metrics = reader.readDailyMetrics(_state.value.daysBack)
+      locator.repository.enqueueMetrics(metrics)
+      val syncResult = locator.repository.syncPending()
+      val pending = locator.repository.pendingCount()
 
-    fun autoDetectBackend() {
-        viewModelScope.launch {
-            _state.value = _state.value.copy(working = true, status = "Detecting backend URL...")
-            val detected = discovery.discoverBaseUrl()
-            if (detected != null) {
-                _state.value = _state.value.copy(
-                    working = false,
-                    backendUrl = detected,
-                    status = "Detected backend: $detected"
-                )
-            } else {
-                _state.value = _state.value.copy(
-                    working = false,
-                    status = "Auto detect failed. Enter backend URL manually."
-                )
-            }
-        }
-    }
-
-    fun logout() {
-        locator.repository.logout()
-        _state.value = _state.value.copy(loggedIn = false, status = "Session cleared")
-    }
-
-    fun syncNow() {
-        viewModelScope.launch {
-            _state.value = _state.value.copy(working = true, status = "Reading Health Connect...")
-            try {
-                if (!reader.hasAllPermissions()) {
-                    _state.value = _state.value.copy(working = false, status = "Grant Health Connect permissions first")
-                    return@launch
-                }
-
-                val metrics = reader.readDailyMetrics(_state.value.daysBack)
-                locator.repository.enqueueMetrics(metrics)
-                val sync = locator.repository.syncPending()
-                val pending = locator.repository.pendingCount()
-
-                _state.value = _state.value.copy(
-                    working = false,
-                    pendingRows = pending,
-                    status = sync.fold(
-                        onSuccess = { it },
-                        onFailure = { "Sync failed: ${it.message}" }
-                    )
-                )
-            } catch (e: Exception) {
-                _state.value = _state.value.copy(working = false, status = "Sync error: ${e.message}")
-            }
-        }
-    }
-
-    fun schedulePeriodicSync() {
-        val request = PeriodicWorkRequestBuilder<SyncWorker>(6, TimeUnit.HOURS)
-            .setConstraints(
-                Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
-                    .build()
-            )
-            .build()
-
-        WorkManager.getInstance(getApplication()).enqueueUniquePeriodicWork(
-            "zero-periodic-health-sync",
-            ExistingPeriodicWorkPolicy.UPDATE,
-            request
+      _state.value = _state.value.copy(
+        working = false,
+        pendingRows = pending,
+        status = syncResult.fold(
+          onSuccess = { it },
+          onFailure = { "Sync failed: ${it.message}" }
         )
+      )
+    } catch (e: Exception) {
+      _state.value = _state.value.copy(
+        working = false,
+        status = "Sync error: ${e.message}"
+      )
+    }
+  }
 
-        _state.value = _state.value.copy(status = "Periodic sync enabled (every 6h)")
+  fun importManualData() = viewModelScope.launch {
+    val payload = _state.value.importPayload.trim()
+    if (payload.isBlank()) {
+      _state.value = _state.value.copy(status = "Pega datos JSON/CSV antes de importar")
+      return@launch
     }
 
-    fun refreshPermissionsAndPending() {
-        viewModelScope.launch {
-            val perms = runCatching { reader.hasAllPermissions() }.getOrDefault(false)
-            val pending = runCatching { locator.repository.pendingCount() }.getOrDefault(0)
-            _state.value = _state.value.copy(permissionsGranted = perms, pendingRows = pending)
-        }
+    _state.value = _state.value.copy(working = true, status = "Importando datos...")
+
+    try {
+      val metrics = parseImportedMetrics(payload, _state.value.importFormat)
+      if (metrics.isEmpty()) {
+        _state.value = _state.value.copy(working = false, status = "No se encontraron filas validas")
+        return@launch
+      }
+
+      locator.repository.enqueueMetrics(metrics)
+
+      if (_state.value.loggedIn) {
+        val syncResult = locator.repository.syncPending()
+        val pending = locator.repository.pendingCount()
+        _state.value = _state.value.copy(
+          working = false,
+          pendingRows = pending,
+          status = syncResult.fold(
+            onSuccess = { "Importadas ${metrics.size} filas. $it" },
+            onFailure = { "Importadas ${metrics.size} filas, pero sync fallo: ${it.message}" }
+          )
+        )
+      } else {
+        val pending = locator.repository.pendingCount()
+        _state.value = _state.value.copy(
+          working = false,
+          pendingRows = pending,
+          status = "Importadas ${metrics.size} filas en cola. Haz login y pulsa Sync now"
+        )
+      }
+    } catch (e: Exception) {
+      _state.value = _state.value.copy(working = false, status = "Import error: ${e.message}")
     }
+  }
+
+  fun schedulePeriodicSync() {
+    if (!_state.value.loggedIn) {
+      _state.value = _state.value.copy(status = "Haz login primero")
+      return
+    }
+    if (!reader.isSdkAvailable()) {
+      _state.value = _state.value.copy(status = "Health Connect no disponible")
+      return
+    }
+    if (!_state.value.permissionsGranted) {
+      _state.value = _state.value.copy(status = "Concede permisos de Health Connect")
+      return
+    }
+
+    val request = PeriodicWorkRequestBuilder<SyncWorker>(6, TimeUnit.HOURS)
+      .setConstraints(
+        Constraints.Builder()
+          .setRequiredNetworkType(NetworkType.CONNECTED)
+          .build()
+      )
+      .build()
+
+    WorkManager.getInstance(getApplication()).enqueueUniquePeriodicWork(
+      "zero-periodic-health-sync",
+      ExistingPeriodicWorkPolicy.UPDATE,
+      request
+    )
+
+    _state.value = _state.value.copy(status = "Sync periodica activada (cada 6h)")
+  }
+
+  fun refreshPermissionsAndPending() = viewModelScope.launch {
+    val hcAvailable = reader.isSdkAvailable()
+    val perms = runCatching { reader.hasAllPermissions() }.getOrDefault(false)
+    val pending = runCatching { locator.repository.pendingCount() }.getOrDefault(0)
+
+    _state.value = _state.value.copy(
+      healthConnectAvailable = hcAvailable,
+      permissionsGranted = perms,
+      pendingRows = pending,
+      status = if (!hcAvailable) "Health Connect no disponible o sin actualizar" else _state.value.status
+    )
+  }
+
+  private fun parseImportedMetrics(raw: String, format: String): List<DailyMetric> {
+    return if (format.lowercase() == "csv") parseCsvMetrics(raw) else parseJsonMetrics(raw)
+  }
+
+  private fun parseJsonMetrics(raw: String): List<DailyMetric> {
+    val rows: JSONArray = if (raw.trim().startsWith("[")) {
+      JSONArray(raw)
+    } else {
+      val obj = JSONObject(raw)
+      obj.optJSONArray("entries") ?: JSONArray()
+    }
+
+    val out = mutableListOf<DailyMetric>()
+    for (i in 0 until rows.length()) {
+      val row = rows.optJSONObject(i) ?: continue
+      val date = row.optString("date", "").trim().take(10)
+      if (!Regex("\\d{4}-\\d{2}-\\d{2}").matches(date)) continue
+
+      out += DailyMetric(
+        date = date,
+        steps = row.optIntOrNull("steps"),
+        activeMinutes = row.optIntOrNull("active_minutes"),
+        caloriesBurned = row.optIntOrNull("calories_burned"),
+        avgHeartRate = row.optIntOrNull("avg_heart_rate")
+      )
+    }
+    return out
+  }
+
+  private fun parseCsvMetrics(raw: String): List<DailyMetric> {
+    val lines = raw
+      .split("\n")
+      .map { it.trim() }
+      .filter { it.isNotBlank() }
+
+    if (lines.size < 2) return emptyList()
+
+    val headers = lines.first().split(",").map { it.trim().lowercase() }
+    val dateIdx = headers.indexOf("date")
+    val stepsIdx = headers.indexOf("steps")
+    val activeIdx = headers.indexOf("active_minutes")
+    val caloriesIdx = headers.indexOf("calories_burned")
+    val hrIdx = headers.indexOf("avg_heart_rate")
+
+    if (dateIdx < 0) return emptyList()
+
+    val out = mutableListOf<DailyMetric>()
+    for (line in lines.drop(1)) {
+      val cols = line.split(",").map { it.trim() }
+      val date = cols.getOrNull(dateIdx).orEmpty().take(10)
+      if (!Regex("\\d{4}-\\d{2}-\\d{2}").matches(date)) continue
+
+      out += DailyMetric(
+        date = date,
+        steps = cols.getOrNull(stepsIdx).toIntOrNullSafe(),
+        activeMinutes = cols.getOrNull(activeIdx).toIntOrNullSafe(),
+        caloriesBurned = cols.getOrNull(caloriesIdx).toIntOrNullSafe(),
+        avgHeartRate = cols.getOrNull(hrIdx).toIntOrNullSafe()
+      )
+    }
+
+    return out
+  }
+
+  private fun JSONObject.optIntOrNull(key: String): Int? {
+    if (!has(key) || isNull(key)) return null
+    val value = opt(key)
+    return when (value) {
+      is Number -> value.toInt()
+      is String -> value.trim().toIntOrNull()
+      else -> null
+    }
+  }
+
+  private fun String?.toIntOrNullSafe(): Int? {
+    val normalized = this?.trim().orEmpty()
+    if (normalized.isBlank()) return null
+    return normalized.toIntOrNull()
+  }
 }

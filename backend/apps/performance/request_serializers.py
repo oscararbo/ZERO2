@@ -26,6 +26,24 @@ class WearableIngestRequestSerializer(serializers.Serializer):
     provider = serializers.ChoiceField(choices=['samsung_health', 'manual'])
     source = serializers.CharField(required=False, allow_blank=True, max_length=120)
     entries = WearableIngestItemSerializer(many=True)
+    import_format = serializers.ChoiceField(choices=['json', 'csv'], required=False)
+    import_filename = serializers.CharField(required=False, max_length=200)
+
+    def validate(self, attrs):
+        filename = (attrs.get('import_filename') or '').strip().lower()
+        import_format = attrs.get('import_format')
+
+        if filename and not (filename.endswith('.json') or filename.endswith('.csv')):
+            raise serializers.ValidationError({
+                'import_filename': 'Only .csv or .json files are allowed.'
+            })
+
+        if filename and import_format and not filename.endswith(f'.{import_format}'):
+            raise serializers.ValidationError({
+                'import_filename': 'File extension does not match the selected import format.'
+            })
+
+        return attrs
 
 
 class AsyncJobCreateRequestSerializer(serializers.Serializer):

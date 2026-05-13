@@ -26,9 +26,14 @@ fun MainScreen(
     onPasswordChange: (String) -> Unit,
     onAutoDetectBackend: () -> Unit,
     onDaysBackChange: (String) -> Unit,
+    onImportFormatChange: (String) -> Unit,
+    onImportPayloadChange: (String) -> Unit,
+    onFillSampleImport: () -> Unit,
+    onImportManualData: () -> Unit,
     onLogin: () -> Unit,
     onLogout: () -> Unit,
     onRequestPermissions: () -> Unit,
+    onOpenHealthConnect: () -> Unit,
     onSyncNow: () -> Unit,
     onSchedulePeriodic: () -> Unit,
     onRefreshStatus: () -> Unit
@@ -48,7 +53,7 @@ fun MainScreen(
                 value = state.backendUrl,
                 onValueChange = onBackendUrlChange,
                 label = { Text("Backend URL") },
-                placeholder = { Text("http://10.0.2.2:8000/") },
+                placeholder = { Text("https://zero-mbdv.onrender.com/") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -87,8 +92,39 @@ fun MainScreen(
                 singleLine = true
             )
 
+            Text("Import data (recommended: JSON for Health Connect-like payloads)")
+
+            OutlinedTextField(
+                value = state.importFormat,
+                onValueChange = onImportFormatChange,
+                label = { Text("Import format: json or csv") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            OutlinedTextField(
+                value = state.importPayload,
+                onValueChange = onImportPayloadChange,
+                label = { Text("JSON/CSV payload") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 6
+            )
+
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = onRequestPermissions, enabled = !state.working) { Text("Permissions") }
+                Button(onClick = onFillSampleImport, enabled = !state.working) { Text("Load sample") }
+                Button(onClick = onImportManualData, enabled = !state.working) { Text("Import data") }
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = onRequestPermissions, enabled = !state.working) {
+                    Text("Permissions")
+                }
+                Button(onClick = onOpenHealthConnect, enabled = !state.working) {
+                    Text("Open Health Connect")
+                }
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = onSyncNow, enabled = !state.working && state.loggedIn) { Text("Sync now") }
             }
 
@@ -98,6 +134,7 @@ fun MainScreen(
             }
 
             Text("Logged in: ${state.loggedIn}")
+            Text("Health Connect available: ${state.healthConnectAvailable}")
             Text("Permissions granted: ${state.permissionsGranted}")
             Text("Pending queue rows: ${state.pendingRows}")
             Text("Status: ${state.status}")

@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.utils import timezone
 
 from core_domain.models import CompletedExercise, Exercise, ExerciseSession
@@ -6,11 +7,20 @@ from common.services.results import failure, success
 
 def get_or_create_session(user, location):
     today = timezone.now().date()
-    session, _ = ExerciseSession.objects.get_or_create(
-        user=user,
-        date=today,
-        location=location,
-    )
+    try:
+        session, _ = ExerciseSession.objects.get_or_create(
+            user=user,
+            date=today,
+            location=location,
+        )
+    except IntegrityError:
+        # Race condition: another request created the session between our
+        # SELECT and INSERT. Fall back to a plain GET.
+        session = ExerciseSession.objects.get(
+            user=user,
+            date=today,
+            location=location,
+        )
     return session
 
 
