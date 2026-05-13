@@ -10,8 +10,8 @@ configurations.configureEach {
     if (requested.group == "org.jetbrains.kotlin" &&
       (requested.name.startsWith("kotlin-stdlib") || requested.name == "kotlin-reflect")
     ) {
-      useVersion("1.9.25") // Mantener alineado con la versión de Kotlin
-      because("Keep stdlib/reflect aligned with Kotlin 1.9.25 compiler")
+      useVersion("2.2.0")
+      because("Keep stdlib/reflect aligned with Kotlin 2.2.0 compiler")
     }
   }
 }
