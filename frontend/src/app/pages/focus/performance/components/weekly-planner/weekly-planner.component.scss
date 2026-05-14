@@ -1,0 +1,386 @@
+:host {
+  display: contents;
+}
+
+.planner-card {
+  display: grid;
+  gap: 14px;
+}
+
+.planner-range {
+  margin: 6px 0 0;
+  font-size: 12px;
+  opacity: 0.62;
+}
+
+.planner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+
+  h3 {
+    margin: 0;
+  }
+
+  .planner-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+
+    .nav-btn {
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    input {
+      height: 36px;
+      padding: 0 10px;
+      font-size: 13px;
+      flex: 0 0 auto;
+    }
+  }
+}
+
+.planner-composer {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+
+  .composer-wide {
+    grid-column: span 2;
+  }
+
+  .composer-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    align-self: end;
+    padding-bottom: 10px;
+  }
+
+  .composer-add {
+    align-self: end;
+    margin-top: 0;
+  }
+}
+
+.planner-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+  max-height: 460px;
+  overflow-y: auto;
+  padding-right: 2px;
+  align-items: start;
+}
+
+.planner-day {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  // Ensure content starts at top; do NOT stretch to fill calendar height
+  align-self: start;
+
+  header {
+    display: grid;
+    gap: 2px;
+
+    strong {
+      font-size: 13px;
+    }
+
+    small {
+      opacity: 0.55;
+      font-size: 11px;
+    }
+  }
+}
+
+.planner-day-events {
+  display: grid;
+  gap: 8px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.planner-event {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  display: grid;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+  overflow: hidden;
+  min-width: 0;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  p,
+  small {
+    margin: 0;
+    font-size: 12px;
+    opacity: 0.75;
+  }
+}
+
+.planner-event-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  align-items: start;
+  min-width: 0;
+}
+
+.event-title-truncate {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+.event-notes-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  display: block;
+}
+
+.remove-event {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+  padding: 0 2px;
+}
+
+.repeat-badge {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 2px 8px;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+// Event detail popup
+.event-detail-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 8000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.15s ease;
+}
+
+.event-detail-box {
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 16px;
+  padding: 22px;
+  width: 100%;
+  max-width: 480px;
+  display: grid;
+  gap: 14px;
+  animation: slideUp 0.18s ease;
+}
+
+.event-detail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+  }
+}
+
+.detail-close {
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.14);
+  }
+}
+
+.event-detail-form {
+  display: grid;
+  gap: 10px;
+
+  label {
+    display: grid;
+    gap: 5px;
+    font-size: 12px;
+    opacity: 0.85;
+  }
+
+  textarea {
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    padding: 8px 10px;
+    resize: vertical;
+    font-size: 13px;
+  }
+}
+
+.detail-time-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+
+  label {
+    display: grid;
+    gap: 5px;
+    font-size: 12px;
+    opacity: 0.85;
+  }
+}
+
+.detail-readonly {
+  input[disabled], input[readonly] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.readonly-hint {
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+.detail-toggle {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px !important;
+  opacity: 1 !important;
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+}
+
+.event-detail-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.detail-actions-right {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-delete-event {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.25);
+  }
+}
+
+.btn-cancel-detail,
+.btn-save-detail {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.btn-save-detail {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.28);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.18);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .planner-composer {
+    grid-template-columns: 1fr;
+
+    .composer-wide {
+      grid-column: auto;
+    }
+  }
+
+  .planner-calendar {
+    grid-template-columns: 1fr;
+  }
+
+  .planner-day-events {
+    max-height: none;
+  }
+}

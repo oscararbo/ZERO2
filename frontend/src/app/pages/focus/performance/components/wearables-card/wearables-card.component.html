@@ -1,0 +1,23 @@
+<article class="card card-full">
+  <div class="wearables-header">
+    <h3>Wearables Data</h3>
+    <div class="date-range-picker">
+      <label>From
+        <input type="date" [ngModel]="wearableDateFrom()" (ngModelChange)="setWearableDateFrom($event)" [max]="getTodayDate()" />
+      </label>
+      <label>To
+        <input type="date" [ngModel]="wearableDateTo()" (ngModelChange)="setWearableDateTo($event)" [max]="getTodayDate()" />
+      </label>
+      <p class="muted">Max 7 days range. No future dates.</p>
+    </div>
+  </div>
+  <div class="chart-wrap">
+    <canvas #wearablesChart></canvas>
+  </div>
+  <div class="wearables-summary">
+    <div><span>Steps</span><strong>{{ wearablesSummary().totalSteps | number:'1.0-0' }}</strong></div>
+    <div><span>Avg Daily</span><strong>{{ wearablesSummary().averageSteps | number:'1.0-0' }}</strong></div>
+    <div><span>Active Min</span><strong>{{ wearablesSummary().averageActiveMinutes }}</strong></div>
+    <div><span>Avg HR</span><strong>{{ wearablesSummary().averageHeartRate }}</strong></div>
+  </div>
+</article>

@@ -17,6 +17,7 @@ import {
 import { AuthService } from '../../../core/auth.service';
 import { TemplateService, UserTemplateVersion } from '../../../core/template.service';
 import { FocusPageHeaderComponent } from '../../shared/components/focus-page-header/focus-page-header';
+import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 import { LoadMoreButtonComponent } from '../../shared/components/load-more-button/load-more-button.component';
 import { UiSelectComponent, UiSelectOption } from '../../shared/components/ui-select/ui-select.component';
 
@@ -39,6 +40,7 @@ type ChallengeViewModel = Challenge & {
     FocusPageHeaderComponent,
     LoadMoreButtonComponent,
     UiSelectComponent,
+    ConfirmModalComponent,
   ],
   templateUrl: './challenges.html',
   styleUrls: ['./challenges.scss'],
@@ -55,7 +57,8 @@ export class ChallengesComponent implements OnInit {
   saving = signal(false);
   toast = signal<{ msg: string; type: 'success' | 'error' } | null>(null);
 
-  activeTab = signal<'all' | 'mine' | 'joined' | 'create'>('all');
+  activeTab = signal<'all' | 'mine' | 'joined' | 'completed' | 'expired' | 'create'>('all');
+  confirmDeleteTarget = signal<Challenge | null>(null);
   activeFilter = signal<ChallengeCategory | 'all'>('all');
   searchTerm = signal('');
   sortMode = signal<'recent' | 'popular' | 'completed'>('recent');
@@ -132,7 +135,7 @@ export class ChallengesComponent implements OnInit {
     title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(120)]],
     description: [''],
     category: ['general' as ChallengeCategory, Validators.required],
-    duration_days: [7, [Validators.required, Validators.min(1), Validators.max(365)]],
+    duration_days: [7, [Validators.required, Validators.min(1), Validators.max(30)]],
     target_count: [1, [Validators.required, Validators.min(1), Validators.max(1000)]],
   });
 
@@ -174,13 +177,19 @@ export class ChallengesComponent implements OnInit {
     const currentUsername = this.currentUsername;
     let list = [...this.challenges()];
 
-    // Filter by tab (all/mine/joined)
+    // Filter by tab
     if (tab === 'mine') {
       list = list.filter((c) => c.creator_username === currentUsername);
     } else if (tab === 'joined') {
-      list = list.filter((c) => c.my_participation !== null && c.creator_username !== currentUsername);
+      list = list.filter((c) => c.my_participation !== null && c.creator_username !== currentUsername && !c.is_expired);
+    } else if (tab === 'completed') {
+      list = list.filter((c) => c.my_participation?.completed === true);
+    } else if (tab === 'expired') {
+      list = list.filter((c) => c.is_expired && c.my_participation !== null);
+    } else {
+      // 'all': exclude expired challenges
+      list = list.filter((c) => !c.is_expired);
     }
-    // tab === 'all' shows everything
 
     // Filter by category
     if (filter !== 'all') {
@@ -371,7 +380,7 @@ export class ChallengesComponent implements OnInit {
     });
   }
 
-  setTab(tab: 'all' | 'mine' | 'joined' | 'create'): void {
+  setTab(tab: 'all' | 'mine' | 'joined' | 'completed' | 'expired' | 'create'): void {
     this.activeTab.set(tab);
     // Tab change now filters locally via computed, no backend call needed
     // Only reset expandedId when creating a new challenge
@@ -678,11 +687,18 @@ export class ChallengesComponent implements OnInit {
     });
   }
 
+  private updateChallengeLocal(id: number, patch: Partial<Challenge>): void {
+    this.challenges.update((list) => list.map((c) => c.id === id ? { ...c, ...patch } : c));
+  }
+
   join(challenge: Challenge): void {
     this.challengeService.joinChallenge(challenge.id).subscribe({
-      next: () => {
+      next: (participation) => {
+        this.updateChallengeLocal(challenge.id, {
+          my_participation: participation,
+          participant_count: challenge.participant_count + 1,
+        });
         this.showToast('Joined challenge!', 'success');
-        this.loadChallenges();
         this.loadInsights();
       },
       error: () => this.showToast('Could not join.', 'error'),
@@ -692,8 +708,11 @@ export class ChallengesComponent implements OnInit {
   leave(challenge: Challenge): void {
     this.challengeService.leaveChallenge(challenge.id).subscribe({
       next: () => {
+        this.updateChallengeLocal(challenge.id, {
+          my_participation: null,
+          participant_count: Math.max(0, challenge.participant_count - 1),
+        });
         this.showToast('Left challenge.', 'success');
-        this.loadChallenges();
       },
       error: () => this.showToast('Could not leave.', 'error'),
     });
@@ -715,11 +734,11 @@ export class ChallengesComponent implements OnInit {
       progress: this.progressValue(),
       notes: this.progressNotes(),
     }).subscribe({
-      next: () => {
+      next: (participation) => {
         this.saving.set(false);
         this.progressEditing.set(null);
+        this.updateChallengeLocal(challenge.id, { my_participation: participation });
         this.showToast('Progress updated!', 'success');
-        this.loadChallenges();
         this.loadInsights();
       },
       error: () => {
@@ -738,10 +757,10 @@ export class ChallengesComponent implements OnInit {
       delta: step,
       notes: participation.notes ?? '',
     }).subscribe({
-      next: () => {
+      next: (updated) => {
         this.quickUpdatingId.set(null);
+        this.updateChallengeLocal(challenge.id, { my_participation: updated });
         this.showToast(`Progress +${step}%`, 'success');
-        this.loadChallenges();
         this.loadInsights();
       },
       error: () => {
@@ -760,10 +779,10 @@ export class ChallengesComponent implements OnInit {
       progress: 100,
       notes: participation.notes ?? '',
     }).subscribe({
-      next: () => {
+      next: (updated) => {
         this.quickUpdatingId.set(null);
+        this.updateChallengeLocal(challenge.id, { my_participation: updated });
         this.showToast('Challenge completed!', 'success');
-        this.loadChallenges();
         this.loadInsights();
       },
       error: () => {
@@ -774,11 +793,18 @@ export class ChallengesComponent implements OnInit {
   }
 
   deleteChallenge(challenge: Challenge): void {
-    if (!confirm(`Delete "${challenge.title}"?`)) return;
+    this.confirmDeleteTarget.set(challenge);
+  }
+
+  confirmDelete(): void {
+    const challenge = this.confirmDeleteTarget();
+    if (!challenge) return;
+    this.confirmDeleteTarget.set(null);
     this.challengeService.deleteChallenge(challenge.id).subscribe({
       next: () => {
+        this.challenges.update((list) => list.filter((c) => c.id !== challenge.id));
+        if (this.expandedId() === challenge.id) this.expandedId.set(null);
         this.showToast('Challenge deleted.', 'success');
-        this.loadChallenges();
       },
       error: () => this.showToast('Could not delete.', 'error'),
     });

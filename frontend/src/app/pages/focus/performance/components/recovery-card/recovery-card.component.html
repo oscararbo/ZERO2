@@ -1,0 +1,33 @@
+<article class="card card-recovery">
+  <h3>Recovery Score</h3>
+  <div class="recovery-display">
+    <div class="sleep-score" [style.--score-color]="getScoreColor(latestRecoveryScore())">
+      <div class="score-number">{{ latestRecoveryScore() }}</div>
+      <div class="score-label">Sleep Quality Score</div>
+      <div class="sleep-hours">{{ latestRecoverySleepHours() }}h sleep</div>
+    </div>
+    <div class="recovery-inputs">
+      <label>Sleep (hours)
+        <input type="number" min="0" max="24"
+          [ngModel]="recoveryForm().sleep_hours"
+          (ngModelChange)="setRecoveryField('sleep_hours', +$event)" />
+      </label>
+      <label>Stress (1-10)
+        <input type="number" min="1" max="10"
+          [ngModel]="recoveryForm().stress_level"
+          (ngModelChange)="setRecoveryField('stress_level', +$event)" />
+      </label>
+      <label>Soreness (1-10)
+        <input type="number" min="1" max="10"
+          [ngModel]="recoveryForm().soreness_level"
+          (ngModelChange)="setRecoveryField('soreness_level', +$event)" />
+      </label>
+      <label>Resting HR
+        <input type="number" min="30" max="220"
+          [ngModel]="recoveryForm().resting_heart_rate"
+          (ngModelChange)="setRecoveryField('resting_heart_rate', $event === '' ? null : +$event)" />
+      </label>
+      <button class="action" (click)="saveRecovery()">Save Recovery</button>
+    </div>
+  </div>
+</article>

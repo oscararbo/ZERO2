@@ -1,0 +1,64 @@
+:host {
+  display: contents;
+}
+
+.recovery-display {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sleep-score {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 32px;
+  border: 2px solid var(--score-color, #666);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  text-align: center;
+}
+
+.score-number {
+  font-size: 72px;
+  font-weight: 700;
+  color: var(--score-color, #666);
+  line-height: 1;
+}
+
+.score-label {
+  font-size: 14px;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sleep-hours {
+  font-size: 18px;
+  font-weight: 500;
+  color: rgba(120, 255, 214, 1);
+}
+
+.recovery-inputs {
+  display: grid;
+  gap: 12px;
+
+  label {
+    display: grid;
+    gap: 6px;
+    font-size: 12px;
+    opacity: 0.85;
+  }
+
+  button {
+    grid-column: 1 / -1;
+    margin-top: 8px;
+  }
+}

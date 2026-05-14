@@ -632,8 +632,17 @@ h3 {
   width: 100%;
 }
 
+.updates-scroll {
+  max-height: min(320px, 48vh);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 4px;
+}
+
 .update-item {
-  padding: 8px;
+  padding: 10px;
   border-radius: 8px;
   border: 1px solid rgba(255,255,255,.08);
   background: rgba(255,255,255,.03);
@@ -657,6 +666,33 @@ h3 {
   font-size: 13px;
   line-height: 1.4;
   opacity: .82;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  max-width: 100%;
+}
+
+.expired-badge {
+  display: inline-block;
+  background: rgba(200, 80, 80, 0.25);
+  border: 1px solid rgba(200, 80, 80, 0.55);
+  color: #e57373;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-bottom: 4px;
+}
+
+.expired-card {
+  opacity: 0.75;
+  cursor: default;
+
+  .card-main {
+    cursor: default;
+  }
 }
 
 .empty-inline {

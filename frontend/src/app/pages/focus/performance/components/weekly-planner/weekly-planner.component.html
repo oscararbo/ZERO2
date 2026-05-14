@@ -1,0 +1,114 @@
+<article class="card card-full planner-card">
+  <div class="planner-header">
+    <div>
+      <h3>Weekly Planner</h3>
+      <p class="muted">Plan the full week with hour-based events and optional recurring entries.</p>
+      <p class="planner-range">{{ plannerWeekLabel() }}</p>
+    </div>
+    <div class="planner-controls">
+      <button type="button" class="nav-btn" (click)="shiftPlannerWeek(-1)">Previous</button>
+      <input type="date" [ngModel]="plannerSelectedWeek()" (ngModelChange)="setPlannerSelectedWeek($event)" />
+      <button type="button" class="nav-btn" (click)="shiftPlannerWeek(1)">Next</button>
+    </div>
+  </div>
+
+  <div class="planner-composer">
+    <label>
+      Event title
+      <input type="text" [ngModel]="plannerEventTitle()" (ngModelChange)="plannerEventTitle.set($event)" placeholder="Morning run, meal prep, review..." />
+    </label>
+    <label>
+      Date
+      <input type="date" [ngModel]="plannerEventDate()" (ngModelChange)="plannerEventDate.set($event)"
+        [min]="plannerWeekDays()[0].date" [max]="plannerWeekDays()[6].date" />
+    </label>
+    <label>
+      Start
+      <input type="time" [ngModel]="plannerEventStart()" (ngModelChange)="plannerEventStart.set($event)" />
+    </label>
+    <label>
+      End
+      <input type="time" [ngModel]="plannerEventEnd()" (ngModelChange)="plannerEventEnd.set($event)" />
+    </label>
+    <label class="composer-wide">
+      Notes
+      <input type="text" [ngModel]="plannerEventNotes()" (ngModelChange)="plannerEventNotes.set($event)" placeholder="Optional notes" />
+    </label>
+    <label class="composer-toggle">
+      <input type="checkbox" [ngModel]="plannerEventRepeatWeekly()" (ngModelChange)="plannerEventRepeatWeekly.set($event)" />
+      Repeat weekly
+    </label>
+    <button class="action composer-add" type="button" (click)="addPlannerEvent()">Add event</button>
+  </div>
+
+  <div class="planner-calendar">
+    <article class="planner-day" *ngFor="let day of plannerWeekDays()">
+      <header>
+        <strong>{{ day.label }}</strong>
+      </header>
+      <div class="planner-day-events">
+        <article
+          class="planner-event"
+          *ngFor="let event of plannerEventsByDay()[day.date]"
+          (click)="openEventDetail(event)">
+          <div class="planner-event-head">
+            <strong class="event-title-truncate">{{ event.title }}</strong>
+            <button type="button" class="remove-event" (click)="removePlannerEvent(event.id); $event.stopPropagation()">×</button>
+          </div>
+          <p>{{ event.startTime }} - {{ event.endTime }}</p>
+          <small *ngIf="event.notes" class="event-notes-truncate">{{ event.notes }}</small>
+          <span class="repeat-badge" *ngIf="event.repeatWeekly">Repeats weekly</span>
+        </article>
+        <p class="empty-inline" *ngIf="plannerEventsByDay()[day.date].length === 0">No events</p>
+      </div>
+    </article>
+  </div>
+</article>
+
+<!-- Event detail / edit popup -->
+<div class="event-detail-backdrop" *ngIf="detailEvent() as ev" (click)="closeEventDetail()">
+  <div class="event-detail-box" (click)="$event.stopPropagation()">
+    <div class="event-detail-head">
+      <h3>Edit Event</h3>
+      <button class="detail-close" type="button" (click)="closeEventDetail()">×</button>
+    </div>
+
+    <div class="event-detail-form">
+      <label>
+        Title
+        <input type="text" [ngModel]="ev.title" (ngModelChange)="patchDetail('title', $event)" placeholder="Event title" />
+      </label>
+      <label class="detail-readonly">
+        Day
+        <input type="date" [ngModel]="ev.date" [disabled]="true" readonly />
+        <small class="readonly-hint">Day cannot be changed. Delete and re-create to move to a different day.</small>
+      </label>
+      <div class="detail-time-row">
+        <label>
+          Start
+          <input type="time" [ngModel]="ev.startTime" (ngModelChange)="patchDetail('startTime', $event)" />
+        </label>
+        <label>
+          End
+          <input type="time" [ngModel]="ev.endTime" (ngModelChange)="patchDetail('endTime', $event)" />
+        </label>
+      </div>
+      <label>
+        Notes
+        <textarea rows="3" [ngModel]="ev.notes" (ngModelChange)="patchDetail('notes', $event)" placeholder="Optional notes..."></textarea>
+      </label>
+      <label class="detail-toggle">
+        <input type="checkbox" [ngModel]="ev.repeatWeekly" (ngModelChange)="patchDetail('repeatWeekly', $event)" />
+        Repeat weekly
+      </label>
+    </div>
+
+    <div class="event-detail-actions">
+      <button class="btn-delete-event" type="button" (click)="removePlannerEvent(ev.id)">Delete event</button>
+      <div class="detail-actions-right">
+        <button class="btn-cancel-detail" type="button" (click)="closeEventDetail()">Cancel</button>
+        <button class="btn-save-detail" type="button" (click)="saveEventDetail()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
