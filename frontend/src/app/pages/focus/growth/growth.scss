@@ -91,7 +91,6 @@ h1 {
   overflow: hidden;
   margin-bottom: 8px;
 }
-
 .momentum-bar span {
   display: block;
   height: 100%;
@@ -246,6 +245,9 @@ h1 {
   .goals-list {
     list-style: none;
     padding: 0;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
 
     .goal-item {
       display: flex;
@@ -334,6 +336,10 @@ h1 {
   }
 
   .journal-entries {
+    max-height: 360px;
+    overflow-y: auto;
+    padding-right: 4px;
+
     .journal-entry {
       background: rgba(255, 255, 255, 0.04);
       padding: 1rem;

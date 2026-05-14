@@ -2,26 +2,68 @@
   <app-focus-page-header title="Performance Hub" [toastMessage]="toast()" [toastType]="toastType()"></app-focus-page-header>
 
   <main class="content" *ngIf="!loading(); else loadingTpl">
-    <!-- Weekly Planner: Full width, single day + date range -->
-    <article class="card card-full">
+    <!-- Weekly Planner -->
+    <article class="card card-full planner-card">
       <div class="planner-header">
-        <h3>Weekly Planner</h3>
+        <div>
+          <h3>Weekly Planner</h3>
+          <p class="muted">Plan the full week with hour-based events and optional recurring entries.</p>
+          <p class="planner-range">{{ plannerWeekLabel() }}</p>
+        </div>
         <div class="planner-controls">
-          <input type="date" [ngModel]="plannerDate()" (ngModelChange)="setPlannerDate($event)" />
-          <p class="muted">Select a date (up to 7 days range)</p>
+          <button type="button" class="nav-btn" (click)="shiftPlannerWeek(-1)">Previous</button>
+          <input type="date" [ngModel]="plannerSelectedWeek()" (ngModelChange)="setPlannerSelectedWeek($event)" />
+          <button type="button" class="nav-btn" (click)="shiftPlannerWeek(1)">Next</button>
         </div>
       </div>
-      <div class="plan-list" *ngIf="weeklyPlan() as plan">
-        <label class="plan-item" *ngFor="let item of plan.items | slice:(getPlannerDayIndex()):((getPlannerDayIndex())+1)">
-          <input type="checkbox" [checked]="item.completed" (change)="togglePlanItem(item.id, !item.completed)" />
-          <div>
-            <strong>{{ item.date }}</strong>
-            <p class="focus-tag">{{ item.focus_area | titlecase }}</p>
-            <p class="workout-text">{{ item.planned_workout }}</p>
-            <p class="meal-text">{{ item.planned_meal_focus }}</p>
-            <p class="mindset-text">{{ item.mindset_task }}</p>
-          </div>
+
+      <div class="planner-composer">
+        <label>
+          Event title
+          <input type="text" [ngModel]="plannerEventTitle()" (ngModelChange)="setPlannerEventTitle($event)" placeholder="Morning run, meal prep, review..." />
         </label>
+        <label>
+          Date
+          <input type="date" [ngModel]="plannerEventDate()" (ngModelChange)="setPlannerEventDate($event)" [min]="plannerWeekDays()[0].date" [max]="plannerWeekDays()[6].date" />
+        </label>
+        <label>
+          Start
+          <input type="time" [ngModel]="plannerEventStart()" (ngModelChange)="setPlannerEventStart($event)" />
+        </label>
+        <label>
+          End
+          <input type="time" [ngModel]="plannerEventEnd()" (ngModelChange)="setPlannerEventEnd($event)" />
+        </label>
+        <label class="composer-wide">
+          Notes
+          <input type="text" [ngModel]="plannerEventNotes()" (ngModelChange)="setPlannerEventNotes($event)" placeholder="Optional notes" />
+        </label>
+        <label class="composer-toggle">
+          <input type="checkbox" [ngModel]="plannerEventRepeatWeekly()" (ngModelChange)="setPlannerEventRepeatWeekly($event)" />
+          Repeat weekly
+        </label>
+        <button class="action composer-add" type="button" (click)="addPlannerEvent()">Add event</button>
+      </div>
+
+      <div class="planner-calendar">
+        <article class="planner-day" *ngFor="let day of plannerWeekDays()">
+          <header>
+            <strong>{{ day.label }}</strong>
+            <small>{{ day.date }}</small>
+          </header>
+          <div class="planner-day-events">
+            <article class="planner-event" *ngFor="let event of plannerEventsByDay()[day.date]">
+              <div class="planner-event-head">
+                <strong>{{ event.title }}</strong>
+                <button type="button" class="remove-event" (click)="removePlannerEvent(event.id)">×</button>
+              </div>
+              <p>{{ event.startTime }} - {{ event.endTime }}</p>
+              <small *ngIf="event.notes">{{ event.notes }}</small>
+              <span class="repeat-badge" *ngIf="event.repeatWeekly">Repeats weekly</span>
+            </article>
+            <p class="empty-inline" *ngIf="plannerEventsByDay()[day.date].length === 0">No events</p>
+          </div>
+        </article>
       </div>
     </article>
 
@@ -29,10 +71,10 @@
     <article class="card card-recovery">
       <h3>Recovery Score</h3>
       <div class="recovery-display">
-        <div class="sleep-score" [style.--score-color]="getScoreColor((latestRecovery()?.recovery_score) || 0)">
-          <div class="score-number">{{ (latestRecovery()?.recovery_score) || '—' }}</div>
+        <div class="sleep-score" [style.--score-color]="getScoreColor(latestRecoveryScore())">
+          <div class="score-number">{{ latestRecoveryScore() }}</div>
           <div class="score-label">Sleep Quality Score</div>
-          <div class="sleep-hours">{{ (latestRecovery()?.sleep_hours) || '—' }}h sleep</div>
+          <div class="sleep-hours">{{ latestRecoverySleepHours() }}h sleep</div>
         </div>
         <div class="recovery-inputs">
           <label>Sleep (hours)

@@ -83,7 +83,7 @@
     </app-page-state>
 
     <div class="meals-container" *ngIf="!loadingMeals() && !mealError() && hasMeals()">
-      <article class="meal-card" *ngFor="let meal of displayMeals(); trackBy: trackByMealId">
+      <article class="meal-card" [class.meal-card--full]="displayMeals().length === 1" *ngFor="let meal of displayMeals(); trackBy: trackByMealId">
         <div class="meal-header d-flex justify-content-between align-items-start gap-3">
           <h3>{{ meal.recipe.title }}</h3>
           <div class="meal-time">{{ meal.time }}</div>

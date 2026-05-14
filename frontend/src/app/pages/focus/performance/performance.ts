@@ -12,6 +12,16 @@ import {
   WearableSnapshot,
 } from '../../../core/performance.service';
 
+interface PlannerEvent {
+  id: number;
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  notes: string;
+  repeatWeekly: boolean;
+}
+
 @Component({
   selector: 'app-performance',
   standalone: true,
@@ -63,6 +73,14 @@ export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
   plannerDate = signal<string>(this.getTodayDateValue());
   wearableDateFrom = signal<string>(this.getDateNDaysAgo(6));
   wearableDateTo = signal<string>(this.getTodayDateValue());
+  plannerSelectedWeek = signal<string>(this.getTodayDateValue());
+  plannerEventTitle = signal('');
+  plannerEventDate = signal(this.getTodayDateValue());
+  plannerEventStart = signal('08:00');
+  plannerEventEnd = signal('09:00');
+  plannerEventNotes = signal('');
+  plannerEventRepeatWeekly = signal(false);
+  plannerEvents = signal<PlannerEvent[]>([]);
 
   private charts: Chart[] = [];
   private chartsReady = false;
@@ -78,16 +96,44 @@ export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
     return d.toISOString().split('T')[0];
   }
 
+  private weekStart(dateValue: string): Date {
+    const date = new Date(dateValue);
+    const day = date.getDay();
+    const diff = (day + 6) % 7;
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - diff);
+    return date;
+  }
+
+  private formatDate(date: Date): string {
+    return date.toISOString().slice(0, 10);
+  }
+
+  private formatTimeLabel(value: string): string {
+    if (!value) return '';
+    return value.slice(0, 5);
+  }
+
   readonly plannerCompletion = computed(() => {
     const p = this.weeklyPlan();
     if (!p || p.items.length === 0) return 0;
     return Math.round((p.completed_items / p.items.length) * 100);
   });
 
-  readonly latestRecovery = computed(() => this.recoveryLogs()[0] ?? null);
+  readonly latestRecovery = computed(() => [...this.recoveryLogs()].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null);
+  readonly latestRecoveryScore = computed(() => this.latestRecovery()?.recovery_score ?? 0);
+  readonly latestRecoverySleepHours = computed(() => this.latestRecovery()?.sleep_hours ?? 0);
+
+  readonly selectedWearables = computed(() => {
+    const fromDate = this.wearableDateFrom();
+    const toDate = this.wearableDateTo();
+    return this.wearables()
+      .filter((row) => row.date >= fromDate && row.date <= toDate)
+      .sort((a, b) => a.date.localeCompare(b.date));
+  });
 
   readonly wearablesSummary = computed(() => {
-    const items = this.wearables();
+    const items = this.selectedWearables();
     const steps = items.map((row) => row.steps ?? 0);
     const active = items.map((row) => row.active_minutes ?? 0);
     const heart = items.map((row) => row.avg_heart_rate ?? 0).filter((value) => value > 0);
@@ -117,7 +163,35 @@ export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   });
 
+  readonly plannerWeekDays = computed(() => {
+    const start = this.weekStart(this.plannerSelectedWeek());
+    return Array.from({ length: 7 }, (_value, index) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + index);
+      return {
+        date: this.formatDate(date),
+        label: date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }),
+      };
+    });
+  });
+
+  readonly plannerWeekLabel = computed(() => {
+    const days = this.plannerWeekDays();
+    if (days.length === 0) return '';
+    return `${days[0].label} - ${days[6].label}`;
+  });
+
+  readonly plannerEventsByDay = computed(() => {
+    const weekDays = this.plannerWeekDays().map((day) => day.date);
+    const result: Record<string, PlannerEvent[]> = {};
+    for (const day of weekDays) {
+      result[day] = this.eventsForDay(day);
+    }
+    return result;
+  });
+
   ngOnInit(): void {
+    this.loadPlannerEvents();
     this.reloadAll();
   }
 
@@ -183,7 +257,22 @@ export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   setRecoveryField<K extends keyof ReturnType<typeof this.recoveryForm>>(field: K, value: ReturnType<typeof this.recoveryForm>[K]): void {
-    this.recoveryForm.set({ ...this.recoveryForm(), [field]: value });
+    const next = { ...this.recoveryForm(), [field]: value };
+
+    if (field === 'sleep_hours') {
+      next.sleep_hours = Math.max(0, Math.min(24, Number(value) || 0));
+    }
+    if (field === 'stress_level') {
+      next.stress_level = Math.max(1, Math.min(10, Number(value) || 1));
+    }
+    if (field === 'soreness_level') {
+      next.soreness_level = Math.max(1, Math.min(10, Number(value) || 1));
+    }
+    if (field === 'resting_heart_rate') {
+      next.resting_heart_rate = value === null ? null : Math.max(30, Math.min(220, Number(value) || 0));
+    }
+
+    this.recoveryForm.set(next);
   }
 
   saveRecovery(): void {
@@ -250,6 +339,15 @@ export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
   setWearableDateFrom(value: string): void {
     const from = new Date(value);
     const to = new Date(this.wearableDateTo());
+    const today = new Date();
+    if (from > today) {
+      this.showToast('Future dates not allowed', 'error');
+      return;
+    }
+    if (from > to) {
+      this.showToast('Start date must be before end date', 'error');
+      return;
+    }
     const diffDays = Math.floor((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
     if (diffDays <= 7) {
       this.wearableDateFrom.set(value);
@@ -267,6 +365,10 @@ export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     const from = new Date(this.wearableDateFrom());
+    if (selectedDate < from) {
+      this.showToast('End date must be after start date', 'error');
+      return;
+    }
     const diffDays = Math.floor((selectedDate.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
     if (diffDays <= 7) {
       this.wearableDateTo.set(value);
@@ -274,6 +376,105 @@ export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
     } else {
       this.showToast('Max 7 day range allowed', 'error');
     }
+  }
+
+  setPlannerSelectedWeek(value: string): void {
+    this.plannerSelectedWeek.set(value);
+    this.plannerEventDate.set(value);
+  }
+
+  shiftPlannerWeek(delta: number): void {
+    const start = this.weekStart(this.plannerSelectedWeek());
+    start.setDate(start.getDate() + (delta * 7));
+    const next = this.formatDate(start);
+    this.setPlannerSelectedWeek(next);
+  }
+
+  setPlannerEventTitle(value: string): void {
+    this.plannerEventTitle.set(value);
+  }
+
+  setPlannerEventDate(value: string): void {
+    this.plannerEventDate.set(value);
+  }
+
+  setPlannerEventStart(value: string): void {
+    this.plannerEventStart.set(value);
+  }
+
+  setPlannerEventEnd(value: string): void {
+    this.plannerEventEnd.set(value);
+  }
+
+  setPlannerEventNotes(value: string): void {
+    this.plannerEventNotes.set(value);
+  }
+
+  setPlannerEventRepeatWeekly(value: boolean): void {
+    this.plannerEventRepeatWeekly.set(value);
+  }
+
+  addPlannerEvent(): void {
+    const title = this.plannerEventTitle().trim();
+    const date = this.plannerEventDate();
+    const startTime = this.plannerEventStart();
+    const endTime = this.plannerEventEnd();
+    if (!title || !date || !startTime || !endTime) {
+      this.showToast('Add title, date and time before saving the event.', 'error');
+      return;
+    }
+    if (endTime <= startTime) {
+      this.showToast('Event end time must be after the start time.', 'error');
+      return;
+    }
+
+    const event: PlannerEvent = {
+      id: Date.now(),
+      title,
+      date,
+      startTime,
+      endTime,
+      notes: this.plannerEventNotes().trim(),
+      repeatWeekly: this.plannerEventRepeatWeekly(),
+    };
+
+    this.plannerEvents.update((current) => [...current, event].sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime)));
+    localStorage.setItem('performancePlannerEvents', JSON.stringify(this.plannerEvents()));
+    this.plannerEventTitle.set('');
+    this.plannerEventNotes.set('');
+    this.plannerEventRepeatWeekly.set(false);
+    this.showToast('Planner event added.');
+  }
+
+  removePlannerEvent(eventId: number): void {
+    this.plannerEvents.update((current) => current.filter((event) => event.id !== eventId));
+    localStorage.setItem('performancePlannerEvents', JSON.stringify(this.plannerEvents()));
+  }
+
+  loadPlannerEvents(): void {
+    try {
+      const saved = localStorage.getItem('performancePlannerEvents');
+      if (!saved) return;
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        this.plannerEvents.set(parsed);
+      }
+    } catch {
+      this.plannerEvents.set([]);
+    }
+  }
+
+  eventsForDay(dateValue: string): PlannerEvent[] {
+    const targetDate = new Date(dateValue);
+    const targetDow = targetDate.getDay();
+    return this.plannerEvents().filter((event) => {
+      const eventDate = new Date(event.date);
+      if (event.repeatWeekly) {
+        if (targetDate < eventDate) return false;
+        return targetDow === eventDate.getDay();
+      }
+      return event.date === dateValue;
+    });
   }
 
   getTodayDate(): string {
@@ -289,10 +490,9 @@ export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getScoreColor(score: number | null | undefined): string {
     if (!score) return '#666';
-    if (score >= 8) return '#4caf50'; // Green
-    if (score >= 6) return '#2196f3'; // Blue
-    if (score >= 4) return '#ff9800'; // Orange
-    return '#f44336'; // Red
+    if (score <= 40) return '#ef4444';
+    if (score <= 65) return '#f59e0b';
+    return '#22c55e';
   }
 
   onBulkFileSelected(event: Event): void {
@@ -461,11 +661,7 @@ export class PerformanceComponent implements OnInit, AfterViewInit, OnDestroy {
     const ChartClass = chartModule.Chart;
 
     // Filter wearables by date range
-    const fromDate = this.wearableDateFrom();
-    const toDate = this.wearableDateTo();
-    const wearables = this.wearables()
-      .filter((w) => w.date >= fromDate && w.date <= toDate)
-      .sort((a, b) => a.date.localeCompare(b.date));
+    const wearables = this.selectedWearables();
 
     const wearablesLabels = (wearables.length ? wearables : [{ date: 'No data' } as WearableSnapshot]).map((row) => row.date.slice(5));
 

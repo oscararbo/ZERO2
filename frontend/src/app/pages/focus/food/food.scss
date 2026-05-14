@@ -208,9 +208,13 @@ h1 {
 // Meals Container
 .meals-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
   margin-bottom: 32px;
+}
+
+.meal-card--full {
+  grid-column: 1 / -1;
 }
 
 .meal-card {
@@ -564,6 +568,10 @@ h1 {
 
   .meals-container {
     grid-template-columns: 1fr;
+  }
+
+  .meal-card--full {
+    grid-column: auto;
   }
 
   .meal-stats {

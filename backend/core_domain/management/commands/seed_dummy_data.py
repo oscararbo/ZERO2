@@ -47,7 +47,7 @@ class Command(BaseCommand):
             self._reset_application_data()
 
         exercises = self._ensure_exercises()
-        admin_user = self._ensure_admin(password)
+        admin_user = self._ensure_admin('Admin1')
         prueba_user = self._ensure_prueba_user()
         users = self._ensure_dummy_users(users_to_create, password)
         all_users = [prueba_user] + users
@@ -62,7 +62,7 @@ class Command(BaseCommand):
         self._generate_prueba_activity(prueba_user, exercises, max(days, 60))
 
         self.stdout.write(self.style.SUCCESS("Dummy data generation completed."))
-        self.stdout.write(f"Admin user: {admin_user.username}")
+        self.stdout.write(f"Admin user: {admin_user.username} / Admin1")
         self.stdout.write(f"Special user: {prueba_user.username} / Prueba1")
         self.stdout.write(f"Users total: {User.objects.count()}")
         self.stdout.write(f"Profiles total: {Profile.objects.count()}")
@@ -92,30 +92,23 @@ class Command(BaseCommand):
         Profile.objects.exclude(user__is_superuser=True).delete()
         User.objects.filter(username__startswith="demo_user_").delete()
         User.objects.filter(username="Prueba").delete()
+        User.objects.filter(username="Admin").delete()
 
     def _ensure_admin(self, password):
         admin_user, created = User.objects.get_or_create(
-            username="admin_demo",
-            defaults={"email": "admin_demo@example.com", "is_staff": True, "is_superuser": True},
+            username="Admin",
+            defaults={"email": "admin@example.com", "is_staff": True, "is_superuser": True, "is_active": True},
         )
-        if created:
-            admin_user.set_password(password)
-            admin_user.save(update_fields=["password"])
-        else:
-            changed = False
-            if not admin_user.is_staff:
-                admin_user.is_staff = True
-                changed = True
-            if not admin_user.is_superuser:
-                admin_user.is_superuser = True
-                changed = True
-            if changed:
-                admin_user.save(update_fields=["is_staff", "is_superuser"])
+        admin_user.is_staff = True
+        admin_user.is_superuser = True
+        admin_user.is_active = True
+        admin_user.set_password(password)
+        admin_user.save(update_fields=["password", "is_staff", "is_superuser", "is_active"])
 
         Profile.objects.get_or_create(
             user=admin_user,
             defaults={
-                "full_name": "Admin Demo",
+                "full_name": "Admin",
                 "weekly_goal": 5,
                 "fitness_goal": "maintain",
                 "weight": 78,

@@ -264,11 +264,10 @@
       </div>
 
       <!-- Single unified challenge list -->
-      <div class="challenge-list challenge-list-virtual" *ngIf="!loading() && visibleChallenges().length > 0">
-        <cdk-virtual-scroll-viewport class="challenge-viewport" [itemSize]="expandedId() ? 800 : 172" [minBufferPx]="456" [maxBufferPx]="760">
-          <article
-            class="challenge-card"
-            *cdkVirtualFor="let c of visibleChallenges(); trackBy: trackByChallengeId"
+      <div class="challenge-list challenge-list-scroll" *ngIf="!loading() && visibleChallenges().length > 0">
+        <article
+          class="challenge-card"
+          *ngFor="let c of visibleChallenges(); trackBy: trackByChallengeId"
             [attr.data-challenge-id]="c.id"
             [class.expanded]="expandedId() === c.id"
             [class.completed-card]="c.my_participation?.completed">
@@ -430,8 +429,7 @@
               </div>
 
             </div>
-          </article>
-        </cdk-virtual-scroll-viewport>
+        </article>
       </div>
     </div>
 
