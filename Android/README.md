@@ -1,6 +1,14 @@
 # ZERO Android Wear Sync (Samsung Health)
 
+Actualizado: mayo 2026.
+
 Proyecto Android robusto para sincronizar datos desde Health Connect (Samsung Health) al backend ZERO.
+
+## Estado actual
+
+- Compatible con backend actual de ZERO (`/api/login/`, `/api/token/refresh/`, `/api/performance/wearables/`).
+- Sin cambios breaking en el contrato de ingesta de wearables.
+- Recomendado mantener Android SDK 35 + JDK 17 para evitar inconsistencias de build.
 
 ## Qué incluye
 

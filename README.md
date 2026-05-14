@@ -10,6 +10,7 @@ Actualizado: mayo 2026.
 |------|-----------|
 | Backend | Django 6 + Django REST Framework + SimpleJWT |
 | Frontend | Angular 21 (standalone, signals) + TypeScript + SCSS |
+| Android | Kotlin + Jetpack (WorkManager, Room, Health Connect) |
 | Base de datos | SQLite (desarrollo) |
 
 ## Características principales
@@ -31,6 +32,10 @@ Actualizado: mayo 2026.
 - Mindset (`Daily Inspiration`) y Growth (`Daily Growth Quote`) ahora tienen fallback local + caché diaria + recarga forzada con `New Quote`.
 - Panel admin responsive en móvil/tablet (chips, KPIs, controles, tablas y metadatos de alertas).
 - Skeletons añadidos para KPIs, comparación y bloques de top usuarios/alertas mientras carga.
+- Challenges actualizado: pestañas `Completed` y `Expired`, confirm modal para borrado propio, actualización local al unirse/salir/editar progreso (sin recargar toda la página), y `duration_days` limitado a 30 días.
+- Challenges expirados ya no aparecen en `All`; en `My Challenges` siguen visibles con estado de caducado.
+- Updates de challenges mejorados: sin botón `Load more updates`, con scroll vertical propio y ajuste de texto largo sin desbordes horizontales.
+- Performance Hub refactorizado en subcomponentes (`Weekly Planner`, `Recovery Score`, `Wearables`) y ajuste visual responsive en planner/recovery.
 
 ## Inicio rápido
 
@@ -77,6 +82,21 @@ Build de producción:
 ```bash
 npm run build
 ```
+
+### Android
+
+```bash
+cd Android
+# Windows
+.\gradlew.bat assembleDebug
+
+# macOS/Linux
+./gradlew assembleDebug
+```
+
+APK debug generado en:
+
+`Android/app/build/outputs/apk/debug/app-debug.apk`
 
 ## API — Endpoints principales
 
@@ -155,6 +175,27 @@ Nota: todos estos endpoints también están disponibles bajo `/api/v1/`.
 
 ```
 ZERO/
+├── Android/
+│   ├── app/
+│   │   ├── build.gradle.kts
+│   │   ├── proguard-rules.pro
+│   │   └── src/main/
+│   │       ├── AndroidManifest.xml
+│   │       ├── java/com/zero/wearsync/
+│   │       │   ├── MainActivity.kt
+│   │       │   ├── OnboardingActivity.kt
+│   │       │   ├── PermissionsRationaleActivity.kt
+│   │       │   ├── data/
+│   │       │   ├── domain/
+│   │       │   ├── sync/
+│   │       │   └── ui/
+│   │       └── res/
+│   │           ├── values/
+│   │           └── xml/
+│   ├── build.gradle.kts    # configuración de build raíz
+│   ├── settings.gradle.kts
+│   ├── gradle.properties
+│   └── gradle/wrapper/     # wrapper de Gradle
 ├── backend/
 │   ├── config/             # settings, urls, wsgi/asgi
 │   ├── api_compat/         # enrutado externo → /api/...
@@ -162,22 +203,25 @@ ZERO/
 │   ├── core_domain/        # modelos y serializers por dominio
 │   └── apps/
 │       ├── account_auth/   # registro, login, check disponibilidad
-│       ├── profiles/       # perfil + insights analytics
-│       ├── workouts/       # ejercicios, sesiones, progreso
+│       ├── admin_panel/    # KPIs staff, cohortes, alertas y export CSV
+│       ├── challenges/     # challenges, leaderboard, badges, reminders
+│       ├── performance/    # planner, coach, nutrition, recovery, wearables
 │       ├── mindset/        # journal, mood, templates
-│       └── challenges/     # challenges, leaderboard, badges, reminders
+│       ├── profiles/       # perfil + insights analytics
+│       └── workouts/       # ejercicios, sesiones, progreso
 └── frontend/
     └── src/app/
         ├── core/           # servicios, guards, interceptores
         └── pages/
             ├── dashboard/
+            ├── login/
             ├── profile/
             ├── profile-edit/
-            ├── focus/      # sport, food, mindset, growth, challenges
-            ├── shared/     # componentes reutilizables
-            ├── login/
+            ├── focus/      # sport, food, mindset, growth, performance, challenges
             ├── register/
-            └── register-step2/
+            ├── register-step2/
+            ├── shared/     # componentes reutilizables
+            └── admin/
 ```
 
 ## Tests
@@ -267,6 +311,8 @@ python scripts/job_worker.py --interval 300 --limit 20
 
 Este proyecto queda preparado para desplegar el frontend en Vercel con SPA routing y proxy de API.
 
+Estado actual: frontend desplegado en `https://zero-2-pink.vercel.app/`.
+
 ### Archivos ya preparados
 
 - `frontend/vercel.json`
@@ -277,7 +323,7 @@ Este proyecto queda preparado para desplegar el frontend en Vercel con SPA routi
 - `frontend/angular.json`
     - Reemplazo de environment en build de producción.
 
-### 1) Desplegar backend (recomendado: Render/Railway/Fly)
+### 1) Desplegar backend (Render)
 
 Vercel no es la mejor opción para este backend Django completo con estado persistente. Despliega el backend en otro proveedor y usa su dominio HTTPS.
 
@@ -285,9 +331,9 @@ Variables mínimas recomendadas en backend:
 
 - `DJANGO_DEBUG=false`
 - `DJANGO_SECRET_KEY=<tu_clave_larga_y_segura>`
-- `DJANGO_ALLOWED_HOSTS=<tu-backend-dominio>,localhost,127.0.0.1`
-- `DJANGO_CORS_ALLOWED_ORIGINS=https://<tu-frontend-vercel>.vercel.app`
-- `DJANGO_CSRF_TRUSTED_ORIGINS=https://<tu-frontend-vercel>.vercel.app`
+- `DJANGO_ALLOWED_HOSTS=zero-mbdv.onrender.com,localhost,127.0.0.1`
+- `DJANGO_CORS_ALLOWED_ORIGINS=https://zero-2-pink.vercel.app`
+- `DJANGO_CSRF_TRUSTED_ORIGINS=https://zero-2-pink.vercel.app`
 
 Importante:
 
@@ -296,13 +342,11 @@ Importante:
 
 ### 2) Configurar `frontend/vercel.json`
 
-Edita `frontend/vercel.json` y reemplaza:
+Configura el rewrite de API apuntando al backend desplegado en Render:
 
-- `https://REPLACE_WITH_YOUR_BACKEND_DOMAIN`
+- `https://zero-mbdv.onrender.com`
 
-por el dominio real de tu backend, por ejemplo:
-
-- `https://zero-api.onrender.com`
+Estado actual: `frontend/vercel.json` ya apunta a esa URL.
 
 ### 3) Crear proyecto en Vercel
 
@@ -316,7 +360,7 @@ por el dominio real de tu backend, por ejemplo:
 
 ### 4) Verificación post-deploy
 
-1. Abre tu dominio Vercel y prueba navegación directa en rutas internas (ej: `/login`, `/focus/challenges`) para validar fallback SPA.
+1. Abre `https://zero-2-pink.vercel.app/` y prueba navegación directa en rutas internas (ej: `/login`, `/focus/challenges`) para validar fallback SPA.
 2. Prueba login/registro para confirmar que `/api/*` se está reescribiendo al backend.
 3. Verifica en backend que `DJANGO_ALLOWED_HOSTS`, CORS y CSRF incluyen tu dominio final.
 
@@ -325,14 +369,14 @@ por el dominio real de tu backend, por ejemplo:
 - Cada push a la rama conectada dispara nuevo deploy en Vercel.
 - Si cambias dominio de backend, actualiza `frontend/vercel.json` y vuelve a desplegar.
 
-## Despliegue en Railway (backend Django)
+## Despliegue en Render (backend Django)
 
-Esta es la opción recomendada para tu API Django.
+Estado actual: backend desplegado en Render en `https://zero-mbdv.onrender.com`.
 
 ### Archivos backend preparados
 
 - `backend/Procfile`
-    - Arranque con Gunicorn usando el puerto de Railway.
+    - Arranque con Gunicorn usando el puerto de Render.
 - `backend/config/settings.py`
     - Soporte `DATABASE_URL` (PostgreSQL) + fallback SQLite local.
     - Static files listos con WhiteNoise.
@@ -340,17 +384,17 @@ Esta es la opción recomendada para tu API Django.
 - `backend/requirements.txt`
     - Incluye `gunicorn`, `dj-database-url`, `psycopg[binary]`, `whitenoise`.
 
-### 1) Crear proyecto y servicio en Railway
+### 1) Crear proyecto y servicio en Render
 
-1. Crea un nuevo proyecto en Railway.
+1. Crea un nuevo Web Service en Render.
 2. Conecta tu repositorio.
 3. Crea un servicio para el backend con:
      - Root Directory: `backend`
 
 ### 2) Añadir base de datos PostgreSQL
 
-1. En el mismo proyecto, añade plugin `PostgreSQL`.
-2. Railway inyectará `DATABASE_URL` automáticamente en el servicio backend.
+1. Crea una instancia PostgreSQL en Render.
+2. Configura `DATABASE_URL` en el servicio backend usando la URL de esa base de datos.
 
 ### 3) Variables de entorno del backend
 
@@ -358,41 +402,43 @@ En el servicio backend configura:
 
 - `DJANGO_DEBUG=false`
 - `DJANGO_SECRET_KEY=<tu_clave_segura>`
-- `DJANGO_ALLOWED_HOSTS=<tu-backend>.up.railway.app`
-- `DJANGO_CORS_ALLOWED_ORIGINS=https://<tu-frontend>.vercel.app`
-- `DJANGO_CSRF_TRUSTED_ORIGINS=https://<tu-frontend>.vercel.app`
+- `DJANGO_ALLOWED_HOSTS=zero-mbdv.onrender.com`
+- `DJANGO_CORS_ALLOWED_ORIGINS=https://zero-2-pink.vercel.app`
+- `DJANGO_CSRF_TRUSTED_ORIGINS=https://zero-2-pink.vercel.app`
 
 Si añades dominio custom, inclúyelo también en estas variables.
 
-### 4) Build/Start en Railway
+### 4) Build/Start en Render
 
-Railway debería detectar Python automáticamente. Si te pide comandos manuales:
+Render detecta Python automáticamente. Si configuras comandos manuales:
 
 - Build Command: `pip install -r requirements.txt && python manage.py collectstatic --noinput`
 - Start Command: `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120`
 
 ### 5) Migraciones y seed
 
-Desde Railway (shell/command):
+Desde Render (Shell):
 
 ```bash
 python manage.py migrate
 python manage.py seed_dummy_data --reset --users 14 --days 45 --seed 123
 ```
 
-### 6) Conectar frontend (Vercel) con backend (Railway)
+### 6) Conectar frontend (Vercel) con backend (Render)
 
-1. Toma la URL pública del backend Railway, por ejemplo:
-     - `https://zero-backend.up.railway.app`
-2. En `frontend/vercel.json` reemplaza el placeholder:
-     - `https://REPLACE_WITH_YOUR_BACKEND_DOMAIN`
-3. Redeploy del frontend en Vercel.
+1. Usa la URL pública del backend Render:
+    - `https://zero-mbdv.onrender.com`
+2. Verifica que `frontend/vercel.json` tenga ese dominio en el rewrite de `/api/*`.
+3. Redeploy del frontend en Vercel si cambiaste configuración.
 
 ### 7) Checklist final
 
-1. `GET /api/health/` responde 200 en Railway.
+1. `GET https://zero-mbdv.onrender.com/api/health/` responde 200.
 2. Login/registro desde frontend funciona sin errores CORS/CSRF.
 3. Endpoints autenticados responden con token válido.
+
+### 8) Se hace deploy automático al subir un push al repositorio
+1. Url repositorio `https://github.com/oscararbo/ZERO2`
 
 ## Contacto
 

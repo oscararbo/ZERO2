@@ -28,6 +28,10 @@ Actualizado: mayo 2026.
 - Mindset y Growth: citas diarias robustas con fallback local cuando falla el servicio externo.
 - Botón `New Quote` en Mindset/Growth con recarga forzada (no bloqueado por caché del día).
 - Admin: skeletons adicionales (comparación, top usuarios, alertas), alertas reabribles y layout más responsive.
+- Challenges: nuevas pestañas `Completed` y `Expired`; en `All` se ocultan retos expirados y en `My Challenges` se mantienen visibles con badge de caducado.
+- Challenges: acciones de `join/leave/progress` actualizan estado local del listado (sin recargar página completa), y borrado propio con `ConfirmModalComponent`.
+- Challenges: sección de updates simplificada (sin `Load more updates`), scroll vertical local y wrapping de textos largos.
+- Performance: refactor del hub en subcomponentes standalone (`weekly-planner`, `recovery-card`, `wearables-card`) y mejoras de estilo responsive.
 
 ## Inicio rápido
 
@@ -71,10 +75,11 @@ frontend/src/app/
     ├── profile/            # analytics reales por área de interés (bloquea si no hay intereses)
     ├── profile-edit/
     ├── focus/
-    │   ├── challenges/     # scroll virtual, paginación, leaderboard, badges
+    │   ├── challenges/     # tabs all/joined/mine/completed/expired, leaderboard, badges, reminders
     │   ├── food/
     │   ├── growth/
     │   ├── mindset/        # journal, mood, meditación, cita diaria
+    │   ├── performance/    # planner semanal, recovery score, wearables y coach
     │   └── sport/
     └── shared/
         ├── progress-chart/         # Chart.js line chart (templateUrl + styleUrl)
@@ -85,7 +90,8 @@ frontend/src/app/
             ├── focus-page-header/  # header de páginas focus (usa focus-header)
             ├── page-top-header/    # header de perfil/profile-edit (usa focus-header)
             ├── toast/
-            └── load-more-button/
+            ├── load-more-button/
+            └── confirm-modal/
 ```
 
 ## Arquitectura de componentes
@@ -166,6 +172,7 @@ ngOnInit() {
 | `/food` | `FoodComponent` | `authGuard + nonAdminGuard` |
 | `/mindset` | `MindsetComponent` | `authGuard + nonAdminGuard` |
 | `/growth` | `GrowthComponent` | `authGuard + nonAdminGuard` |
+| `/performance` | `PerformanceComponent` | `authGuard + nonAdminGuard` |
 | `/challenges` | `ChallengesComponent` | `authGuard + nonAdminGuard` |
 | `**` | `NotFoundComponent` | — |
 

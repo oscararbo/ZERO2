@@ -4,6 +4,12 @@ API REST del proyecto ZERO, implementada con Django + Django REST Framework.
 
 Actualizado: mayo 2026.
 
+## Estado reciente
+
+- API estable y compatible con frontend Angular 21 (standalone + signals) y app Android.
+- Challenges: frontend consume reglas de expiración y participación para vistas `All`, `Completed`, `Expired` y `My Challenges`.
+- Performance: endpoints de planner/recovery/wearables activos y usados por componentes desacoplados en frontend.
+
 ## Responsabilidades
 
 - Autenticación y autorización JWT con refresh automático
