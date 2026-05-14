@@ -2,6 +2,54 @@
   display: contents;
 }
 
+.card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 18px;
+  background: linear-gradient(160deg, rgba(22, 22, 22, 0.92), rgba(10, 10, 10, 0.98));
+}
+
+.card-full {
+  width: 100%;
+}
+
+h3 {
+  margin: 0;
+}
+
+.muted {
+  opacity: 0.66;
+  margin: 6px 0 0;
+}
+
+input,
+textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  padding: 8px 10px;
+  font-size: 13px;
+  outline: none;
+}
+
+input:focus,
+textarea:focus {
+  border-color: rgba(120, 190, 255, 0.7);
+  box-shadow: 0 0 0 2px rgba(120, 190, 255, 0.2);
+}
+
+.action {
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f6b73c, #f39c12);
+  color: #111;
+  font-weight: 600;
+  padding: 9px 14px;
+  cursor: pointer;
+}
+
 .planner-card {
   display: grid;
   gap: 14px;
@@ -50,11 +98,19 @@
 
 .planner-composer {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(220px, 2fr) minmax(160px, 1.1fr) minmax(120px, 0.8fr) minmax(120px, 0.8fr) minmax(220px, 2fr) auto auto;
   gap: 10px;
+  align-items: end;
+
+  label {
+    display: grid;
+    gap: 6px;
+    font-size: 12px;
+    opacity: 0.9;
+  }
 
   .composer-wide {
-    grid-column: span 2;
+    grid-column: auto;
   }
 
   .composer-toggle {
@@ -68,16 +124,46 @@
   .composer-add {
     align-self: end;
     margin-top: 0;
+    min-width: 126px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 1320px) {
+  .planner-composer {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    .composer-wide {
+      grid-column: span 2;
+    }
+
+    .composer-toggle,
+    .composer-add {
+      grid-column: span 2;
+    }
+  }
+}
+
+@media (max-width: 760px) {
+  .planner-composer {
+    grid-template-columns: 1fr;
+
+    .composer-wide,
+    .composer-toggle,
+    .composer-add {
+      grid-column: auto;
+    }
   }
 }
 
 .planner-calendar {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(148px, 1fr));
   gap: 10px;
-  max-height: 460px;
-  overflow-y: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
   padding-right: 2px;
+  padding-bottom: 4px;
   align-items: start;
 }
 
@@ -110,7 +196,7 @@
 .planner-day-events {
   display: grid;
   gap: 8px;
-  max-height: 360px;
+  max-height: 330px;
   overflow-y: auto;
 }
 
